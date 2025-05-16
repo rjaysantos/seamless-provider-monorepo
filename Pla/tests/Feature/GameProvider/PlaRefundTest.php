@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -25,12 +26,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '1234567890',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2023-12-31 23:59:59',
             'updated_at' => null,
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -61,12 +62,13 @@ class PlaRefundTest extends TestCase
 
         $wallet = new class extends TestWallet {
             public function Resettle(
-                IWalletCredentials $credentials, 
-                string $playID, string $currency, 
-                string $transactionID, 
-                float $amount, 
-                string $betID, 
-                string $settledTransactionID, 
+                IWalletCredentials $credentials,
+                string $playID,
+                string $currency,
+                string $transactionID,
+                float $amount,
+                string $betID,
+                string $settledTransactionID,
                 string $betTime
             ): array {
                 return [
@@ -93,12 +95,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => '27281386',
+            'trx_id' => 'R-1234567890',
             'bet_amount' => 10,
             'win_amount' => 10,
             'created_at' => '2024-01-01 08:00:00',
             'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => 'R-1234567890'
+            'ref_id' => '27281386'
         ]);
     }
 
@@ -290,6 +292,18 @@ class PlaRefundTest extends TestCase
 
     public function test_refund_transactionAlreadyExist_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function Balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 900.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -297,21 +311,21 @@ class PlaRefundTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '1234567890',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => 'R-1234567890',
             'bet_amount' => 10,
             'win_amount' => 10,
             'created_at' => '2024-01-01 00:00:03',
             'updated_at' => '2024-01-01 00:00:03',
-            'ref_id' => 'R-1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -339,25 +353,6 @@ class PlaRefundTest extends TestCase
             ],
             'gameCodeName' => 'aogs'
         ];
-
-        $wallet = new class extends TestWallet {
-            public function Resettle(
-                IWalletCredentials $credentials, 
-                string $playID, string $currency, 
-                string $transactionID, 
-                float $amount, 
-                string $betID, 
-                string $settledTransactionID, 
-                string $betTime
-            ): array {
-                return [
-                    'credit_after' => 1010.0,
-                    'status_code' => 2102
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
@@ -368,7 +363,7 @@ class PlaRefundTest extends TestCase
             'externalTransactionCode' => '8366794157',
             'externalTransactionDate' => '2024-01-01 00:00:00.000',
             'balance' => [
-                'real' => '1010.00',
+                'real' => '900.00',
                 'timestamp' => '2024-01-01 00:00:00.000'
             ]
         ]);
@@ -376,47 +371,6 @@ class PlaRefundTest extends TestCase
 
     public function test_refund_invalidWalletResponse_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
-            'bet_amount' => 10,
-            'win_amount' => 0,
-            'created_at' => '2023-12-31 23:59:59',
-            'updated_at' => null,
-            'ref_id' => '1234567890'
-        ]);
-
-        $payload = [
-            'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
-            'gameRoundCode' => '27281386',
-            'pay' => [
-                'transactionCode' => '8366794157',
-                'transactionDate' => '2024-01-01 00:00:00.000',
-                'amount' => '10',
-                'type' => 'REFUND',
-                'internalFundChanges' => [],
-                'relatedTransactionCode' => '1234567890'
-            ],
-            'jackpot' => [
-                'contributionAmount' => '0.0123456789123456',
-                'winAmount' => '0',
-                'jackpotId' => 'mrj_830_840_850_860_306'
-            ],
-            'gameRoundClose' => [
-                'date' => '2024-01-01 00:00:00.000',
-                'rngGeneratorId' => 'Casino Protego SG100',
-                'rngSoftwareId' => 'Casino CaGS 20.6.2.0'
-            ],
-            'gameCodeName' => 'aogs'
-        ];
-
         $wallet = new class extends TestWallet {
             public function Resettle(
                 IWalletCredentials $credentials, 
@@ -435,30 +389,6 @@ class PlaRefundTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
-        $response = $this->post('pla/prov/gameroundresult', $payload);
-
-        $response->assertStatus(200);
-
-        $response->assertJson([
-            "requestId" => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            "error" =>  [
-                "code" => "INTERNAL_ERROR"
-            ]
-        ]);
-
-        $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => '27281386',
-            'bet_amount' => 10,
-            'win_amount' => 10,
-            'created_at' => '2024-01-01 08:00:00',
-            'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => 'R-1234567890'
-        ]);
-    }
-
-    #[DataProvider('walletAndExpectedAmount')]
-    public function test_refund_validDataGiven_expectedData($wallet, $expectedBalance)
-    {
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -466,12 +396,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '1234567890',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2023-12-31 23:59:59',
             'updated_at' => null,
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -500,7 +430,72 @@ class PlaRefundTest extends TestCase
             'gameCodeName' => 'aogs'
         ];
 
+        $response = $this->post('pla/prov/gameroundresult', $payload);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            "requestId" => 'b0f09415-8eec-493d-8e70-c0659b972653',
+            "error" =>  [
+                "code" => "INTERNAL_ERROR"
+            ]
+        ]);
+
+        $this->assertDatabaseMissing('pla.reports', [
+            'trx_id' => 'R-1234567890',
+            'bet_amount' => 10,
+            'win_amount' => 10,
+            'created_at' => '2024-01-01 08:00:00',
+            'updated_at' => '2024-01-01 08:00:00',
+            'ref_id' => '27281386'
+        ]);
+    }
+
+    #[DataProvider('walletAndExpectedAmount')]
+    public function test_refund_validDataGiven_expectedData($wallet, $expectedBalance)
+    {
         app()->bind(IWallet::class, $wallet::class);
+
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testPlayer',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.reports')->insert([
+            'trx_id' => '1234567890',
+            'bet_amount' => 10,
+            'win_amount' => 0,
+            'created_at' => '2023-12-31 23:59:59',
+            'updated_at' => null,
+            'ref_id' => '27281386'
+        ]);
+
+        $payload = [
+            'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
+            'username' => 'PLAUC_PLAYER001',
+            'externalToken' => 'PLAUC_TOKEN88888888',
+            'gameRoundCode' => '27281386',
+            'pay' => [
+                'transactionCode' => '8366794157',
+                'transactionDate' => '2024-01-01 00:00:00.000',
+                'amount' => '10',
+                'type' => 'REFUND',
+                'internalFundChanges' => [],
+                'relatedTransactionCode' => '1234567890'
+            ],
+            'jackpot' => [
+                'contributionAmount' => '0.0123456789123456',
+                'winAmount' => '0',
+                'jackpotId' => 'mrj_830_840_850_860_306'
+            ],
+            'gameRoundClose' => [
+                'date' => '2024-01-01 00:00:00.000',
+                'rngGeneratorId' => 'Casino Protego SG100',
+                'rngSoftwareId' => 'Casino CaGS 20.6.2.0'
+            ],
+            'gameCodeName' => 'aogs'
+        ];
 
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
@@ -522,12 +517,13 @@ class PlaRefundTest extends TestCase
         return [
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 123, 'status_code' => 2100];
@@ -536,12 +532,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 123.456789, 'status_code' => 2100];
@@ -550,12 +547,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 123.409987, 'status_code' => 2100];
@@ -564,12 +562,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 123.000, 'status_code' => 2100];
@@ -578,12 +577,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 123.000009, 'status_code' => 2100];
@@ -592,12 +592,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 100.000, 'status_code' => 2100];
@@ -606,12 +607,13 @@ class PlaRefundTest extends TestCase
 
             [new class extends TestWallet {
                 public function Resettle(
-                    IWalletCredentials $credentials, 
-                    string $playID, string $currency, 
-                    string $transactionID, 
-                    float $amount, 
-                    string $betID, 
-                    string $settledTransactionID, 
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $transactionID,
+                    float $amount,
+                    string $betID,
+                    string $settledTransactionID,
                     string $betTime
                 ): array {
                     return ['credit_after' => 100, 'status_code' => 2100];

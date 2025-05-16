@@ -71,7 +71,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -163,7 +164,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -252,7 +254,7 @@ class SabResettleTest extends TestCase
                 'match' => 'Netherlands vs Portugal',
                 'hdp' => 3.4,
                 'odds' => 1.24,
-                'result' => 'lose',
+                'result' => 'win',
                 'flag' => $flag,
                 'status' => 1,
                 'ip_address' => '123.456.7.8'
@@ -267,7 +269,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 0.00,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'lose'
                     ]
                 ]
             ]
@@ -324,7 +327,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -382,7 +386,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -417,7 +422,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -486,7 +492,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -544,7 +551,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -613,7 +621,8 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -663,15 +672,16 @@ class SabResettleTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
         ];
 
-        if ($key === 'key' || $key = 'message')
+        if (isset($request[$key]) === true)
             unset($request[$key]);
-        elseif ($key === 'operationId')
+        elseif (isset($request['message'][$key]) === true)
             unset($request['message'][$key]);
         else
             unset($request['message']['txns'][0][$key]);

@@ -54,7 +54,7 @@ class Gs5ControllerTest extends TestCase
         $controller->balance(request: $request);
     }
 
-    public function test_balance_mockResponse_balance()
+    public function test_balance_mockResponse_successTransaction()
     {
         $request = new Request(['access_token' => 'testToken']);
 
@@ -168,7 +168,7 @@ class Gs5ControllerTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $request[$param] = $value;
@@ -182,7 +182,7 @@ class Gs5ControllerTest extends TestCase
         return [
             ['access_token', 123],
             ['access_token', null],
-            ['txn_id', 'invalid'],
+            ['txn_id', 123],
             ['txn_id', null],
         ];
     }
@@ -191,7 +191,7 @@ class Gs5ControllerTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $mockService = $this->createMock(Gs5Service::class);
@@ -207,7 +207,7 @@ class Gs5ControllerTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubService = $this->createMock(Gs5Service::class);
@@ -229,7 +229,7 @@ class Gs5ControllerTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubResponse = $this->createMock(Gs5Response::class);
@@ -486,7 +486,7 @@ class Gs5ControllerTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -505,7 +505,7 @@ class Gs5ControllerTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -521,7 +521,7 @@ class Gs5ControllerTest extends TestCase
     {
         return [
             ['access_token', 123],
-            ['txn_id', 'test'],
+            ['txn_id', 123],
             ['total_bet', 'test'],
             ['game_id', 123],
             ['ts', 'test']
@@ -532,7 +532,7 @@ class Gs5ControllerTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -551,7 +551,7 @@ class Gs5ControllerTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -576,7 +576,7 @@ class Gs5ControllerTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -590,5 +590,118 @@ class Gs5ControllerTest extends TestCase
         $response = $controller->bet(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);
+    }
+
+    #[DataProvider('resultParams')]
+    public function test_result_missingRequest_InvalidProviderRequestException($parameter)
+    {
+        $this->expectException(InvalidProviderRequestException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 300.00,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        unset($request[$parameter]);
+
+        $controller = $this->makeController();
+        $controller->result(request: $request);
+    }
+
+    #[DataProvider('resultParams')]
+    public function test_result_invalidRequestType_InvalidProviderRequestException($parameter, $data)
+    {
+        $this->expectException(InvalidProviderRequestException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 300.00,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $request[$parameter] = $data;
+
+        $controller = $this->makeController();
+        $controller->result(request: $request);
+    }
+
+    public static function resultParams()
+    {
+        return [
+            ['access_token', 123],
+            ['txn_id', 123],
+            ['total_win', 'test'],
+            ['game_id', 123],
+            ['ts', 'test']
+        ];
+    }
+
+    public function test_result_mockService_settle()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 300.00,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $mockService = $this->createMock(Gs5Service::class);
+        $mockService->expects($this->once())
+            ->method('settle')
+            ->with(request: $request);
+
+        $controller = $this->makeController(service: $mockService);
+        $controller->result(request: $request);
+    }
+
+    public function test_result_mockResponse_successTransaction()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 300.00,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubService = $this->createMock(Gs5Service::class);
+        $stubService->method('settle')
+            ->willReturn(10000.00);
+
+        $mockResponse = $this->createMock(Gs5Response::class);
+        $mockResponse->expects($this->once())
+            ->method('successTransaction')
+            ->with(balance: 10000.00);
+
+        $controller = $this->makeController(service: $stubService, response: $mockResponse);
+        $controller->result(request: $request);
+    }
+
+    public function test_result_stubResponse_expectedData()
+    {
+        $expectedData = new JsonResponse;
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 300.00,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $mockResponse = $this->createMock(Gs5Response::class);
+        $mockResponse->method('successTransaction')
+            ->willReturn(new JsonResponse);
+
+        $controller = $this->makeController(response: $mockResponse);
+        $response = $controller->result(request: $request);
+
+        $this->assertEquals(expected: $expectedData, actual: $response);
     }
 }

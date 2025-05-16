@@ -2,25 +2,23 @@
 
 use Tests\TestCase;
 use Illuminate\Http\Request;
+use Providers\Pla\PlaService;
+use Providers\Pla\PlaResponse;
+use Providers\Pla\PlaController;
 use Illuminate\Http\JsonResponse;
-use App\GameProviders\V2\PLA\PlaResponse;
-use App\GameProviders\V2\PLA\PlaController;
-use App\GameProviders\V2\PLA\PlaCasinoService;
 use PHPUnit\Framework\Attributes\DataProvider;
-use App\GameProviders\V2\PLA\PlaProviderService;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
-use App\GameProviders\V2\PLA\Exceptions\InvalidProviderRequestException;
+use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaControllerTest extends TestCase
 {
-    private function makeController($casinoService = null, $providerService = null, $response = null): PlaController
+    private function makeController($service = null, $response = null): PlaController
     {
-        $casinoService ??= $this->createStub(PlaCasinoService::class);
-        $providerService ??= $this->createStub(PlaProviderService::class);
+        $service ??= $this->createStub(PlaService::class);
         $response ??= $this->createStub(PlaResponse::class);
 
-        return new PlaController(casinoService: $casinoService, providerService: $providerService, response: $response);
+        return new PlaController(service: $service, response: $response);
     }
 
     #[DataProvider('playParams')]
@@ -93,7 +91,7 @@ class PlaControllerTest extends TestCase
         $controller->play(request: $request);
     }
 
-    public function test_play_mockCasinoService_getLaunchUrl()
+    public function test_play_mockService_getLaunchUrl()
     {
         $request = new Request([
             'playId' => 'testPlayID',
@@ -105,12 +103,12 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $mockService = $this->createMock(PlaCasinoService::class);
+        $mockService = $this->createMock(PlaService::class);
         $mockService->expects($this->once())
             ->method('getLaunchUrl')
             ->with($request);
 
-        $controller = $this->makeController(casinoService: $mockService);
+        $controller = $this->makeController(service: $mockService);
         $controller->play(request: $request);
     }
 
@@ -126,7 +124,7 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $stubService = $this->createMock(PlaCasinoService::class);
+        $stubService = $this->createMock(PlaService::class);
         $stubService->method('getLaunchUrl')
             ->willReturn('testUrl.com');
 
@@ -135,7 +133,7 @@ class PlaControllerTest extends TestCase
             ->method('casinoSuccess')
             ->with('testUrl.com');
 
-        $controller = $this->makeController(casinoService: $stubService, response: $mockResponse);
+        $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->play(request: $request);
     }
 
@@ -153,7 +151,7 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $stubService = $this->createMock(PlaCasinoService::class);
+        $stubService = $this->createMock(PlaService::class);
         $stubService->method('getLaunchUrl')
             ->willReturn('testUrl.com');
 
@@ -161,7 +159,7 @@ class PlaControllerTest extends TestCase
         $stubResponse->method('casinoSuccess')
             ->willReturn(new JsonResponse);
 
-        $controller = $this->makeController(casinoService: $stubService, response: $stubResponse);
+        $controller = $this->makeController(service: $stubService, response: $stubResponse);
         $response = $controller->play(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);
@@ -210,7 +208,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_authenticate_mockProviderService_authenticate()
+    public function test_authenticate_mockService_authenticate()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -218,13 +216,13 @@ class PlaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('authenticate')
             ->with($request)
             ->willReturn('IDR');
 
-        $controller = $this->makeController(providerService: $mockProviderService);
+        $controller = $this->makeController(service: $mockProviderService);
         $controller->authenticate(request: $request);
     }
 
@@ -236,7 +234,7 @@ class PlaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('authenticate')
             ->willReturn('IDR');
 
@@ -245,7 +243,7 @@ class PlaControllerTest extends TestCase
             ->method('authenticate')
             ->with($request->requestId, $request->username, 'IDR');
 
-        $controller = $this->makeController(providerService: $stubProviderService, response: $mockResponse);
+        $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
         $controller->authenticate(request: $request);
     }
 
@@ -263,11 +261,11 @@ class PlaControllerTest extends TestCase
         $stubResponse->method('authenticate')
             ->willReturn($expected);
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('authenticate')
             ->willReturn('IDR');
 
-        $controller = $this->makeController(providerService: $stubProviderService, response: $stubResponse);
+        $controller = $this->makeController(service: $stubProviderService, response: $stubResponse);
         $response = $controller->authenticate(request: $request);
 
         $this->assertSame(expected: $expected, actual: $response);
@@ -316,7 +314,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_getBalance_mockProviderService_getBalance()
+    public function test_getBalance_mockService_getBalance()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -324,13 +322,13 @@ class PlaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('getBalance')
             ->with($request)
             ->willReturn(0.00);
 
-        $controller = $this->makeController(providerService: $mockProviderService);
+        $controller = $this->makeController(service: $mockProviderService);
         $controller->getBalance(request: $request);
     }
 
@@ -438,7 +436,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_logout_mockProviderService_logout()
+    public function test_logout_mockService_logout()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -446,12 +444,12 @@ class PlaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('logout')
             ->with($request);
 
-        $controller = $this->makeController(providerService: $mockProviderService);
+        $controller = $this->makeController(service: $mockProviderService);
         $controller->logout(request: $request);
     }
 
@@ -550,7 +548,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_bet_mockProviderService_bet()
+    public function test_bet_mockService_bet()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -563,13 +561,13 @@ class PlaControllerTest extends TestCase
             'gameCodeName' => 'testGameID'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('bet')
             ->with($request)
             ->willReturn(0.00);
 
-        $controller = $this->makeController(providerService: $mockProviderService);
+        $controller = $this->makeController(service: $mockProviderService);
         $controller->bet(request: $request);
     }
 
@@ -586,7 +584,7 @@ class PlaControllerTest extends TestCase
             'gameCodeName' => 'testGameID'
         ]);
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('bet')
             ->willReturn(100.00);
 
@@ -595,7 +593,7 @@ class PlaControllerTest extends TestCase
             ->method('bet')
             ->with($request, 100.00);
 
-        $controller = $this->makeController(response: $mockResponse, providerService: $stubProviderService);
+        $controller = $this->makeController(response: $mockResponse, service: $stubProviderService);
         $controller->bet(request: $request);
     }
 
@@ -618,11 +616,11 @@ class PlaControllerTest extends TestCase
         $stubResponse->method('bet')
             ->willReturn($expected);
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('bet')
             ->willReturn(100.00);
 
-        $controller = $this->makeController(response: $stubResponse, providerService: $stubProviderService);
+        $controller = $this->makeController(response: $stubResponse, service: $stubProviderService);
         $response = $controller->bet(request: $request);
 
         $this->assertSame(expected: $expected, actual: $response);
@@ -750,7 +748,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_gameRoundResult_mockProviderService_settle()
+    public function test_gameRoundResult_mockService_settle()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -766,14 +764,14 @@ class PlaControllerTest extends TestCase
             'gameCodeName' => 'testCodeName'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('settle')
             ->with($request)
             ->willReturn(0.00);
 
-        $controller = $this->makeController(providerService: $mockProviderService);
-        $controller->gameRoundResult($request);
+        $controller = $this->makeController(service: $mockProviderService);
+        $controller->gameRoundResult(request: $request);
     }
 
     #[DataProvider('gameRoundResultRefundParams')]
@@ -855,7 +853,7 @@ class PlaControllerTest extends TestCase
         ];
     }
 
-    public function test_gameRoundResult_mockProviderService_refund()
+    public function test_gameRoundResult_mockService_refund()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -872,14 +870,14 @@ class PlaControllerTest extends TestCase
             'gameCodeName' => 'testCodeName'
         ]);
 
-        $mockProviderService = $this->createMock(PlaProviderService::class);
+        $mockProviderService = $this->createMock(PlaService::class);
         $mockProviderService->expects($this->once())
             ->method('refund')
             ->with($request)
             ->willReturn(0.00);
 
-        $controller = $this->makeController(providerService: $mockProviderService);
-        $controller->gameRoundResult($request);
+        $controller = $this->makeController(service: $mockProviderService);
+        $controller->gameRoundResult(request: $request);
     }
 
     public function test_gameRoundResult_mockResponse_gameRoundResult() 
@@ -898,7 +896,7 @@ class PlaControllerTest extends TestCase
             'gameCodeName' => 'testCodeName'
         ]);
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('settle')
             ->willReturn(0.00);
 
@@ -907,8 +905,8 @@ class PlaControllerTest extends TestCase
             ->method('gameRoundResult')
             ->with($request, 0.00);
 
-        $controller = $this->makeController(providerService: $stubProviderService, response: $mockResponse);
-        $controller->gameRoundResult($request);
+        $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
+        $controller->gameRoundResult(request: $request);
     }
 
     public function test_gameRoundResult_stubResponse_expected() 
@@ -929,7 +927,7 @@ class PlaControllerTest extends TestCase
 
         $expected = new JsonResponse();
 
-        $stubProviderService = $this->createMock(PlaProviderService::class);
+        $stubProviderService = $this->createMock(PlaService::class);
         $stubProviderService->method('settle')
             ->willReturn(0.00);
 
@@ -937,8 +935,8 @@ class PlaControllerTest extends TestCase
         $stubResponse->method('gameRoundResult')
             ->willReturn($expected);
 
-        $controller = $this->makeController(providerService: $stubProviderService, response: $stubResponse);
-        $response = $controller->gameRoundResult($request);
+        $controller = $this->makeController(service: $stubProviderService, response: $stubResponse);
+        $response = $controller->gameRoundResult(request: $request);
 
         $this->assertSame(expected: $expected, actual: $response);
     }
@@ -1010,12 +1008,12 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $mockService = $this->createMock(PlaCasinoService::class);
+        $mockService = $this->createMock(PlaService::class);
         $mockService->expects($this->once())
             ->method('getBetDetail')
             ->with($request);
 
-        $controller = $this->makeController(casinoService: $mockService);
+        $controller = $this->makeController(service: $mockService);
         $controller->visual(request: $request);
     }
 
@@ -1028,7 +1026,7 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $stubService = $this->createMock(PlaCasinoService::class);
+        $stubService = $this->createMock(PlaService::class);
         $stubService->method('getBetDetail')
             ->willReturn('testUrl.com');
 
@@ -1037,7 +1035,7 @@ class PlaControllerTest extends TestCase
             ->method('casinoSuccess')
             ->with('testUrl.com');
 
-        $controller = $this->makeController(casinoService: $stubService, response: $mockResponse);
+        $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->visual(request: $request);
     }
 
@@ -1052,7 +1050,7 @@ class PlaControllerTest extends TestCase
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
-        $stubService = $this->createMock(PlaCasinoService::class);
+        $stubService = $this->createMock(PlaService::class);
         $stubService->method('getBetDetail')
             ->willReturn('testUrl.com');
 
@@ -1060,7 +1058,7 @@ class PlaControllerTest extends TestCase
         $stubResponse->method('casinoSuccess')
             ->willReturn(new JsonResponse);
 
-        $controller = $this->makeController(casinoService: $stubService, response: $stubResponse);
+        $controller = $this->makeController(service: $stubService, response: $stubResponse);
         $response = $controller->visual(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);

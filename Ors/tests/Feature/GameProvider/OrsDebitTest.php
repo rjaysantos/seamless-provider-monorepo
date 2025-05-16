@@ -19,7 +19,8 @@ class OrsDebitTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_debit_validRequest_expectedData()
+    #[DataProvider('gameCodesAndSignature')]
+    public function test_debit_validRequest_expectedData($gameCode, $signature)
     {
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
@@ -58,7 +59,7 @@ class OrsDebitTest extends TestCase
             "timestamp": 1715071526,
             "total_amount": 250,
             "transaction_type": "debit",
-            "game_id": 123,
+            "game_id": '. $gameCode .',
             "round_id": "182xk5xvw5az7j",
             "currency": "IDR",
             "called_at": 1715071526,
@@ -80,7 +81,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "'. $signature .'"
         }';
 
         $response = $this->call(
@@ -139,6 +140,13 @@ class OrsDebitTest extends TestCase
             'created_at' => '2024-05-07 16:45:26',
             'updated_at' => null,
         ]);
+    }
+
+    public static function gameCodesAndSignature() {
+        return [
+            [131, '85da7ac6933df0490ff4c0d3e3bab81e'],
+            [123, 'dac1104daa5906efdf32e16918f553b0']
+        ];
     }
 
     public function test_debit_invalidSignature_expectedData()

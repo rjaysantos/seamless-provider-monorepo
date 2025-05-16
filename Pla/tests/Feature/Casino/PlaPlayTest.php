@@ -6,6 +6,7 @@ use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class PlaPlayTest extends TestCase
 {
@@ -19,6 +20,15 @@ class PlaPlayTest extends TestCase
 
     public function test_play_validData_expectedData()
     {
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         $request = [
             'playId' => 'testPlayID',
             'username' => 'testUsername',
@@ -31,22 +41,11 @@ class PlaPlayTest extends TestCase
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 200,
-                'message' => '',
                 'data' => [
                     'url' => 'testUrl.com'
-                ],
-                'timestamp' => '2024-05-01T03:09:18+00:00'
+                ]
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pla/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -73,7 +72,8 @@ class PlaPlayTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
-                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0d2de2b13cab42ee966a1c') &&
+                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0' .
+                    'd2de2b13cab42ee966a1c') &&
                 $request['serverName'] == 'AGCASTG' &&
                 $request['username'] == 'PLAUCN_TESTPLAYID' &&
                 $request['gameCodeName'] == 'testGameID' &&
@@ -86,6 +86,15 @@ class PlaPlayTest extends TestCase
 
     public function test_play_noPlayerValidData_expectedData()
     {
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
@@ -110,22 +119,11 @@ class PlaPlayTest extends TestCase
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 200,
-                'message' => '',
                 'data' => [
                     'url' => 'testUrl.com'
-                ],
-                'timestamp' => '2024-05-01T03:09:18+00:00'
+                ]
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pla/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -148,7 +146,8 @@ class PlaPlayTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
-                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0d2de2b13cab42ee966a1c') &&
+                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0' .
+                    'd2de2b13cab42ee966a1c') &&
                 $request['serverName'] == 'AGCASTG' &&
                 $request['username'] == 'PLAUCN_TESTPLAYID' &&
                 $request['gameCodeName'] == 'testGameID' &&
@@ -160,9 +159,9 @@ class PlaPlayTest extends TestCase
     }
 
     /**
-     * @dataProvider requestData
+     * @dataProvider playParams
      */
-    public function test_play_invalidRequest_expectedData($requestParams)
+    public function test_play_invalidRequest_expectedData($parameter)
     {
         $request = [
             'playId' => 'testPlayID',
@@ -173,7 +172,7 @@ class PlaPlayTest extends TestCase
             'device' => 1
         ];
 
-        unset($request[$requestParams]);
+        unset($request[$parameter]);
 
         $response = $this->post('pla/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -189,7 +188,7 @@ class PlaPlayTest extends TestCase
         ]);
     }
 
-    public static function requestData()
+    public static function playParams()
     {
         return [
             ['playId'],
@@ -226,8 +225,18 @@ class PlaPlayTest extends TestCase
         ]);
     }
 
-    public function test_play_thirdPartyApiErrorNoCodeField_expectedData()
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_play_thirdPartyApiMissingResponseData_expectedData($parameter)
     {
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         $request = [
             'playId' => 'testPlayID',
             'username' => 'testUsername',
@@ -237,25 +246,21 @@ class PlaPlayTest extends TestCase
             'device' => 1
         ];
 
+        $response = [
+            'code' => 200,
+            'data' => [
+                'url' => 'testUrl.com'
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data'][$parameter]);
+        else
+            unset($response[$parameter]);
+
         Http::fake([
-            '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
-                'message' => 'The request id field is required.',
-                'errors' => (object) [
-                    'requestId' => [
-                        'The request id field is required.'
-                    ]
-                ]
-            ]))
+            '/from-operator/getGameLaunchUrl' => Http::response(json_encode($response))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pla/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -284,7 +289,8 @@ class PlaPlayTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
-                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0d2de2b13cab42ee966a1c') &&
+                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0' .
+                    'd2de2b13cab42ee966a1c') &&
                 $request['serverName'] == 'AGCASTG' &&
                 $request['username'] == 'PLAUCN_TESTPLAYID' &&
                 $request['gameCodeName'] == 'testGameID' &&
@@ -295,8 +301,26 @@ class PlaPlayTest extends TestCase
         });
     }
 
+    public static function getGameLaunchUrlParams()
+    {
+        return [
+            ['code'],
+            ['data'],
+            ['url']
+        ];
+    }
+
     public function test_play_thirdPartyApiErrorCodeNot200_expectedData()
     {
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         $request = [
             'playId' => 'testPlayID',
             'username' => 'testUsername',
@@ -309,22 +333,11 @@ class PlaPlayTest extends TestCase
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 401,
-                'message' => '',
                 'data' => [
                     'url' => 'testUrl.com'
-                ],
-                'timestamp' => '2024-05-01T03:09:18+00:00'
+                ]
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pla/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -353,7 +366,8 @@ class PlaPlayTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
-                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0d2de2b13cab42ee966a1c') &&
+                $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0' .
+                    'd2de2b13cab42ee966a1c') &&
                 $request['serverName'] == 'AGCASTG' &&
                 $request['username'] == 'PLAUCN_TESTPLAYID' &&
                 $request['gameCodeName'] == 'testGameID' &&

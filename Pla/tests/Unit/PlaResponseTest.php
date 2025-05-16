@@ -1,9 +1,10 @@
 <?php
 
 use Tests\TestCase;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\GameProviders\V2\PLA\PlaResponse;
+use Providers\Pla\PlaResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class PlaResponseTest extends TestCase
@@ -28,7 +29,7 @@ class PlaResponseTest extends TestCase
         ], actual: $result->getData(true));
     }
 
-    public function test_authenticate_stubData_expected()
+    public function test_authenticate_stubDataSTG_expected()
     {
         $requestId = 'TEST_requestToken';
         $playID = 'TEST_PLAYERID';
@@ -41,20 +42,41 @@ class PlaResponseTest extends TestCase
         ]);
 
         $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'CNY');
+        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'IDR');
 
         $this->assertEquals(expected: $expected, actual: $result);
     }
 
-    public static function currencies()
+    #[DataProvider('currencyAndCountryCode')]
+    public function test_authenticate_stubDataPROD_expected($currency, $countryCode)
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        $requestId = 'TEST_requestToken';
+        $playID = 'TEST_PLAYERID';
+
+        $expected = response()->json([
+            "requestId" => $requestId,
+            "username" => $playID,
+            "currencyCode" => $currency,
+            "countryCode" => $countryCode
+        ]);
+
+        $response = $this->makeResponse();
+        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: $currency);
+
+        $this->assertEquals(expected: $expected, actual: $result);
+    }
+
+    public static function currencyAndCountryCode()
     {
         return [
             ['IDR', 'ID'],
             ['PHP', 'PH'],
             ['VND', 'VN'],
-            ['BRL', 'BR'],
             ['USD', 'US'],
-            ['THB', 'TH']
+            ['THB', 'TH'],
+            ['MYR', 'MY'],
         ];
     }
 
@@ -77,8 +99,6 @@ class PlaResponseTest extends TestCase
         $result = $response->getBalance(requestId: $requestId, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     #[DataProvider('formattedBalance')]
@@ -100,8 +120,6 @@ class PlaResponseTest extends TestCase
         $result = $response->getBalance(requestId: $requestId, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public function test_healthCheck_stubData_expected()
@@ -121,7 +139,7 @@ class PlaResponseTest extends TestCase
         $expected = response()->json(["requestId" => $requestId]);
 
         $response = $this->makeResponse();
-        $result = $response->logout($requestId);
+        $result = $response->logout(requestId: $requestId);
 
         $this->assertEquals(expected: $expected, actual: $result);
     }
@@ -136,8 +154,7 @@ class PlaResponseTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ]);
 
@@ -170,8 +187,7 @@ class PlaResponseTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ]);
 
@@ -219,8 +235,6 @@ class PlaResponseTest extends TestCase
         $result = $response->gameRoundResult(request: $request, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public function test_gameRoundResult_stubDataWithWin_expected()
@@ -290,8 +304,6 @@ class PlaResponseTest extends TestCase
         $result = $response->gameRoundResult(request: $request, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public static function formattedBalance()

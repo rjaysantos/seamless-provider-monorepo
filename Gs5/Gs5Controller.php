@@ -55,6 +55,21 @@ class Gs5Controller
             throw new InvalidBearerTokenException;
     }
 
+    public function result(Request $request)
+    {
+        $this->validateProviderRequest(request: $request, rules: [
+            'access_token' => 'required|string',
+            'txn_id' => 'required|string',
+            'total_win' => 'required|numeric',
+            'game_id' => 'required|string',
+            'ts' => 'required|numeric'
+        ]);
+
+        $balance = $this->service->settle(request: $request);
+
+        return $this->response->successTransaction(balance: $balance);
+    }
+
     public function play(Request $request)
     {
         $this->validateCasinoRequest(request: $request, rules: [
@@ -74,7 +89,7 @@ class Gs5Controller
     {
         $this->validateProviderRequest(request: $request, rules: [
             'access_token' => 'required|string',
-            'txn_id' => 'required|numeric'
+            'txn_id' => 'required|string'
         ]);
 
         $balance = $this->service->cancel(request: $request);
@@ -99,7 +114,7 @@ class Gs5Controller
     {
         $this->validateProviderRequest(request: $request, rules: [
             'access_token' => 'required|string',
-            'txn_id' => 'required|numeric',
+            'txn_id' => 'required|string',
             'total_bet' => 'required|numeric',
             'game_id' => 'required|string',
             'ts' => 'required|numeric'

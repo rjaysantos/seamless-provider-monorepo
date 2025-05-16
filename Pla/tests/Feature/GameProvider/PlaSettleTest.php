@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
@@ -20,6 +21,20 @@ class PlaSettleTest extends TestCase
 
     public function test_settle_validRequestNoWin_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 1000.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
+        Carbon::setTestNow('2024-01-01 00:00:00');
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -27,12 +42,12 @@ class PlaSettleTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794157',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -53,20 +68,6 @@ class PlaSettleTest extends TestCase
             'gameCodeName' => 'aogs'
         ];
 
-        Carbon::setTestNow('2024-01-01 00:00:00');
-
-        $wallet = new class extends TestWallet {
-            public function balance(IWalletCredentials $credentials, string $playID): array
-            {
-                return [
-                    'credit' => 1000.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
-
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
         $response->assertStatus(200);
@@ -84,17 +85,37 @@ class PlaSettleTest extends TestCase
         Carbon::setTestNow();
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => '27281386',
+            'trx_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653',
             'bet_amount' => 0,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
-            'ref_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653'
+            'ref_id' => '27281386'
         ]);
     }
 
     public function test_settle_validRequestWithWin_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function WagerAndPayout(
+                IWalletCredentials $credentials,
+                string $playID,
+                string $currency,
+                string $wagerTransactionID,
+                float $wagerAmount,
+                string $payoutTransactionID,
+                float $payoutAmount,
+                Report $report
+            ): array {
+                return [
+                    'credit_after' => 1010.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -102,12 +123,12 @@ class PlaSettleTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794150',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -135,26 +156,6 @@ class PlaSettleTest extends TestCase
             'gameCodeName' => 'aogs'
         ];
 
-        $wallet = new class extends TestWallet {
-            public function WagerAndPayout(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $wagerTransactionID,
-                float $wagerAmount,
-                string $payoutTransactionID,
-                float $payoutAmount,
-                Report $report
-            ): array {
-                return [
-                    'credit_after' => 1010.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
-
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
         $response->assertStatus(200);
@@ -170,12 +171,12 @@ class PlaSettleTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => '27281386',
+            'trx_id' => '8366794157',
             'bet_amount' => 0,
             'win_amount' => 10,
             'created_at' => '2024-01-01 08:00:03',
             'updated_at' => '2024-01-01 08:00:03',
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
     }
 
@@ -408,6 +409,18 @@ class PlaSettleTest extends TestCase
 
     public function test_settle_transactionAlreadyExistWithoutWin_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function Balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 900.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -415,22 +428,24 @@ class PlaSettleTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794150',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653',
             'bet_amount' => 0,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:03',
             'updated_at' => '2024-01-01 00:00:03',
-            'ref_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653'
+            'ref_id' => '27281386'
         ]);
+
+        Carbon::setTestNow('2024-01-01 00:00:00.000');
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
@@ -449,20 +464,6 @@ class PlaSettleTest extends TestCase
             ],
             'gameCodeName' => 'aogs'
         ];
-
-        Carbon::setTestNow('2024-01-01 00:00:00.000');
-
-        $wallet = new class extends TestWallet {
-            public function Balance(IWalletCredentials $credentials, string $playID): array
-            {
-                return [
-                    'credit' => 1000.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
@@ -473,7 +474,7 @@ class PlaSettleTest extends TestCase
             'externalTransactionCode' => 'b0f09415-8eec-493d-8e70-c0659b972653',
             'externalTransactionDate' => '2023-12-31 16:00:00.000',
             'balance' => [
-                'real' => '1000.00',
+                'real' => '900.00',
                 'timestamp' => '2023-12-31 16:00:00.000'
             ]
         ]);
@@ -483,6 +484,18 @@ class PlaSettleTest extends TestCase
 
     public function test_settle_transactionAlreadyExistWithWin_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function Balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 900.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -490,21 +503,21 @@ class PlaSettleTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794150',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794157',
             'bet_amount' => 0,
             'win_amount' => 10,
             'created_at' => '2024-01-01 08:00:00',
             'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -531,26 +544,6 @@ class PlaSettleTest extends TestCase
             ],
             'gameCodeName' => 'aogs'
         ];
-
-        $wallet = new class extends TestWallet {
-            public function WagerAndPayout(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $wagerTransactionID,
-                float $wagerAmount,
-                string $payoutTransactionID,
-                float $payoutAmount,
-                Report $report
-            ): array {
-                return [
-                    'credit_after' => 1010.0,
-                    'status_code' => 2102
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('pla/prov/gameroundresult', $payload);
 
@@ -561,7 +554,7 @@ class PlaSettleTest extends TestCase
             'externalTransactionCode' => '8366794157',
             'externalTransactionDate' => '2024-01-01 00:00:00.000',
             'balance' => [
-                'real' => '1010.00',
+                'real' => '900.00',
                 'timestamp' => '2024-01-01 00:00:00.000'
             ]
         ]);
@@ -569,46 +562,6 @@ class PlaSettleTest extends TestCase
 
     public function test_settle_invalidWalletResponse_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
-            'bet_amount' => 10,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null,
-            'ref_id' => '8366794150'
-        ]);
-
-        $payload = [
-            'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
-            'gameRoundCode' => '27281386',
-            'pay' => [
-                'transactionCode' => '8366794157',
-                'transactionDate' => '2024-01-01 00:00:00.000',
-                'amount' => '10',
-                'type' => 'WIN',
-                'internalFundChanges' => []
-            ],
-            'jackpot' => [
-                'contributionAmount' => '0.0123456789123456',
-                'winAmount' => '0',
-                'jackpotId' => 'mrj_830_840_850_860_306'
-            ],
-            'gameRoundClose' => [
-                'date' => '2024-01-01 00:00:00.000',
-                'rngGeneratorId' => 'Casino Protego SG100',
-                'rngSoftwareId' => 'Casino CaGS 20.6.2.0'
-            ],
-            'gameCodeName' => 'aogs'
-        ];
-
         $wallet = new class extends TestWallet {
             public function WagerAndPayout(
                 IWalletCredentials $credentials,
@@ -628,30 +581,6 @@ class PlaSettleTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
-        $response = $this->post('pla/prov/gameroundresult', $payload);
-
-        $response->assertStatus(200);
-
-        $response->assertJson([
-            "requestId" => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            "error" => [
-                "code" => "INTERNAL_ERROR"
-            ]
-        ]);
-
-        $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => '27281386',
-            'bet_amount' => 0,
-            'win_amount' => 10,
-            'created_at' => '2024-01-01 08:00:00',
-            'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => '8366794157'
-        ]);
-    }
-
-    #[DataProvider('walletAndExpectedAmount')]
-    public function test_settle_validDataGiven_expectedData($wallet, $expectedBalance)
-    {
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
@@ -659,12 +588,12 @@ class PlaSettleTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => '27281386',
+            'trx_id' => '8366794150',
             'bet_amount' => 10,
             'win_amount' => 0,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => null,
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
@@ -692,7 +621,71 @@ class PlaSettleTest extends TestCase
             'gameCodeName' => 'aogs'
         ];
 
+        $response = $this->post('pla/prov/gameroundresult', $payload);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            "requestId" => 'b0f09415-8eec-493d-8e70-c0659b972653',
+            "error" => [
+                "code" => "INTERNAL_ERROR"
+            ]
+        ]);
+
+        $this->assertDatabaseMissing('pla.reports', [
+            'trx_id' => '8366794157',
+            'bet_amount' => 0,
+            'win_amount' => 10,
+            'created_at' => '2024-01-01 08:00:00',
+            'updated_at' => '2024-01-01 08:00:00',
+            'ref_id' => '27281386'
+        ]);
+    }
+
+    #[DataProvider('walletAndExpectedAmount')]
+    public function test_settle_validDataGiven_expectedData($wallet, $expectedBalance)
+    {
         app()->bind(IWallet::class, $wallet::class);
+
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testPlayer',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.reports')->insert([
+            'trx_id' => '8366794150',
+            'bet_amount' => 10,
+            'win_amount' => 0,
+            'created_at' => '2024-01-01 00:00:00',
+            'updated_at' => null,
+            'ref_id' => '27281386'
+        ]);
+
+        $payload = [
+            'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
+            'username' => 'PLAUC_PLAYER001',
+            'externalToken' => 'PLAUC_TOKEN88888888',
+            'gameRoundCode' => '27281386',
+            'pay' => [
+                'transactionCode' => '8366794157',
+                'transactionDate' => '2024-01-01 00:00:00.000',
+                'amount' => '10',
+                'type' => 'WIN',
+                'internalFundChanges' => []
+            ],
+            'jackpot' => [
+                'contributionAmount' => '0.0123456789123456',
+                'winAmount' => '0',
+                'jackpotId' => 'mrj_830_840_850_860_306'
+            ],
+            'gameRoundClose' => [
+                'date' => '2024-01-01 00:00:00.000',
+                'rngGeneratorId' => 'Casino Protego SG100',
+                'rngSoftwareId' => 'Casino CaGS 20.6.2.0'
+            ],
+            'gameCodeName' => 'cheaa'
+        ];
 
         $response = $this->post('pla/prov/gameroundresult', $payload);
 

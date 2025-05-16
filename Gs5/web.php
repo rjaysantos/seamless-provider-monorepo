@@ -14,5 +14,6 @@ Route::prefix('gs5')->group(function () {
         Route::get('api/authenticate/', [Gs5Controller::class, 'authenticate']);
         Route::get('api/bet/', [Gs5Controller::class, 'bet']);
         Route::get('api/refund/', [Gs5Controller::class, 'refund']);
+        Route::get('api/result/', [Gs5Controller::class, 'result']);
     });
 });

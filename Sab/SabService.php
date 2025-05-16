@@ -593,7 +593,10 @@ class SabService
         if (in_array(trim($transactionDetails->flag), ['settled', 'resettled']) === false)
             throw new InvalidTransactionStatusException;
 
-        $sportsbookDetails = new SabSettledSportsbookDetails(settledTransactionDetails: $transactionDetails);
+        $sportsbookDetails = new SabSettledSportsbookDetails(
+            settledTransactionDetails: $transactionDetails,
+            newTicketStatus: '-'
+        );
 
         try {
             DB::connection('pgsql_write')->beginTransaction();
@@ -665,7 +668,10 @@ class SabService
             $resettleAmount = $request->message['txns'][0]['payout'] * $credentials->getCurrencyConversion();
             $resettledDate = $this->getSabConvertedDateTime(dateTime: $request->message['txns'][0]['updateTime']);
 
-            $sportsbookDetails = new SabSettledSportsbookDetails(settledTransactionDetails: $transactionDetails);
+            $sportsbookDetails = new SabSettledSportsbookDetails(
+                settledTransactionDetails: $transactionDetails,
+                newTicketStatus: $request->message['txns'][0]['status']
+            );
 
             $this->repository->createTransaction(
                 betID: $betID,

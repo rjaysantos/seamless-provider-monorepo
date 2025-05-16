@@ -2,24 +2,25 @@
 
 use Carbon\Carbon;
 use Tests\TestCase;
+use Providers\Ors\OrsApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
-use Providers\Ors\OrsApi;
-use Wallet\V1\ProvSys\Transfer\Report;
 use Providers\Ors\OrsService;
 use Providers\Ors\OgSignature;
-use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
+use Wallet\V1\ProvSys\Transfer\Report;
+use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
 use Providers\Ors\Exceptions\InvalidTokenException;
 use Providers\Ors\Exceptions\InsufficientFundException;
 use Providers\Ors\Exceptions\InvalidPublicKeyException;
+use Providers\Ors\Exceptions\InvalidSignatureException;
 use Providers\Ors\Exceptions\TransactionAlreadyExistsException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
-use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
+use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class OrsServiceTest extends TestCase
@@ -471,7 +472,55 @@ class OrsServiceTest extends TestCase
             ->with(request: $request, credentials: $stubProviderCredentials)
             ->willReturn(true);
 
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, encryption: $mockEncryption);
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $mockEncryption
+        );
+        $service->authenticate(request: $request);
+    }
+
+    public function test_authenticate_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+        
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'token' => 'testToken',
+                'signature' => 'testSignature'
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
+        );
         $service->authenticate(request: $request);
     }
 
@@ -511,7 +560,11 @@ class OrsServiceTest extends TestCase
         $stubEncryption->method('isSignatureValid')
             ->willReturn(true);
 
-        $service = $this->makeService(repository: $mockRepository, credentials: $stubCredentials, encryption: $stubEncryption);
+        $service = $this->makeService(
+            repository: $mockRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
+        );
         $service->authenticate(request: $request);
     }
 
@@ -551,7 +604,11 @@ class OrsServiceTest extends TestCase
         $stubEncryption->method('isSignatureValid')
             ->willReturn(true);
 
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, encryption: $stubEncryption);
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
+        );
         $service->authenticate(request: $request);
     }
 
@@ -766,6 +823,51 @@ class OrsServiceTest extends TestCase
             credentials: $stubCredentials,
             encryption: $mockEncryption,
             wallet: $stubWallet
+        );
+
+        $service->getBalance(request: $request);
+    }
+
+    public function test_getBalance_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'token' => 'testToken',
+                'signature' => 'testSignature'
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
         );
 
         $service->getBalance(request: $request);
@@ -1228,6 +1330,61 @@ class OrsServiceTest extends TestCase
             encryption: $mockEncryption,
             wallet: $stubWallet,
             report: $stubReport
+        );
+
+        $service->bet(request: $request);
+    }
+
+    public function test_bet_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'test_transacID_1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
         );
 
         $service->bet(request: $request);
@@ -2421,6 +2578,64 @@ class OrsServiceTest extends TestCase
         $service->rollback(request: $request);
     }
 
+    public function test_rollback_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'test_transacID_1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubRepository->method('getBetTransactionByTrxID')
+            ->willReturn((object) []);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
+        );
+
+        $service->rollback(request: $request);
+    }
+
     public function test_rollback_mockRepository_getBetTransactionByTrxID()
     {
         $request = new Request(
@@ -3069,8 +3284,8 @@ class OrsServiceTest extends TestCase
         $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($stubProviderCredentials);
 
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->expects($this->once())
+        $mockEncryption = $this->createMock(OgSignature::class);
+        $mockEncryption->expects($this->once())
             ->method('isSignatureValid')
             ->with(request: $request, credentials: $stubProviderCredentials)
             ->willReturn(true);
@@ -3089,9 +3304,68 @@ class OrsServiceTest extends TestCase
         $service = $this->makeService(
             repository: $stubRepository,
             credentials: $stubCredentials,
-            encryption: $stubEncryption,
+            encryption: $mockEncryption,
             wallet: $stubWallet,
             report: $stubReport
+        );
+
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $request = new Request(
+            query: [
+                "player_id" => "testPlayerID",
+                "amount" => 30,
+                "transaction_id" => "testTransactionID",
+                "transaction_type" => "credit",
+                "round_id" => "testRoundID",
+                "game_id" => 123,
+                "currency" => "IDR",
+                "called_at" => 123456789,
+                "signature" => "testSignature"
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $betTransaction = (object) [
+            'trx_id' => $request->transaction_id,
+            'updated_at' => null
+        ];
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn($betTransaction);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
         );
 
         $service->settle(request: $request);
@@ -4075,6 +4349,54 @@ class OrsServiceTest extends TestCase
             encryption: $mockEncryption,
             wallet: $stubWallet,
             report: $stubReport
+        );
+
+        $service->bonus(request: $request);
+    }
+
+    public function test_bonus_stubEncryptionInvalidSignature_invalidSignatureException()
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'amount' => 100.00,
+                'transaction_id' => 'testTransactionID',
+                'game_code' => 123,
+                'called_at' => 123456789,
+                'signature' => 'testSignature'
+            ],
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
+
+        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+
+        $stubRepository = $this->createMock(OrsRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn((object) []);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubProviderCredentials->method('getPublicKey')
+            ->willReturn('testPublicKey');
+
+        $stubCredentials = $this->createMock(OrsCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubEncryption = $this->createMock(OgSignature::class);
+        $stubEncryption->method('isSignatureValid')
+            ->willReturn(false);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            encryption: $stubEncryption
         );
 
         $service->bonus(request: $request);

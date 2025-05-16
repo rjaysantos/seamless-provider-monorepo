@@ -1,8 +1,8 @@
 <?php
 
-namespace App\GameProviders\V2\PLA\Credentials;
+namespace Providers\Pla\Credentials;
 
-use App\GameProviders\V2\PLA\Contracts\ICredentials;
+use Providers\Pla\Contracts\ICredentials;
 
 class PlaIDR implements ICredentials
 {

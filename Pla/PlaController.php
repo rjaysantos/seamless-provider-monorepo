@@ -1,21 +1,19 @@
 <?php
 
-namespace App\GameProviders\V2\PLA;
+namespace Providers\Pla;
 
 use Illuminate\Http\Request;
-use App\GameProviders\V2\PLA\PlaResponse;
+use Providers\Pla\PlaService;
+use Providers\Pla\PlaResponse;
 use Illuminate\Support\Facades\Validator;
-use App\GameProviders\V2\PLA\PlaCasinoService;
-use App\GameProviders\V2\PLA\PlaProviderService;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
-use App\GameProviders\V2\PLA\Exceptions\InvalidProviderRequestException;
+use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController
 {
     public function __construct(
-        private PlaCasinoService $casinoService,
-        private PlaProviderService $providerService,
+        private PlaService $service,
         private PlaResponse $response
     ) {
     }
@@ -44,13 +42,13 @@ class PlaController
         $this->validateCasinoRequest(request: $request, rules: [
             'playId' => 'required|string',
             'username' => 'required|string',
-            'currency' => 'required|string',
+            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
             'language' => 'required|string',
             'gameId' => 'required|string',
             'device' => 'required|numeric'
         ]);
 
-        $launchUrl = $this->casinoService->getLaunchUrl(request: $request);
+        $launchUrl = $this->service->getLaunchUrl(request: $request);
 
         return $this->response->casinoSuccess(data: $launchUrl);
     }
@@ -63,7 +61,7 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $currency = $this->providerService->authenticate(request: $request);
+        $currency = $this->service->authenticate(request: $request);
 
         return $this->response->authenticate(
             requestId: $request->requestId,
@@ -80,7 +78,7 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $balance = $this->providerService->getBalance(request: $request);
+        $balance = $this->service->getBalance(request: $request);
 
         return $this->response->getBalance(requestId: $request->requestId, balance: $balance);
     }
@@ -98,7 +96,7 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $this->providerService->logout(request: $request);
+        $this->service->logout(request: $request);
 
         return $this->response->logout(requestId: $request->requestId);
     }
@@ -116,7 +114,7 @@ class PlaController
             'gameCodeName' => 'required|string'
         ]);
 
-        $balance = $this->providerService->bet(request: $request);
+        $balance = $this->service->bet(request: $request);
 
         return $this->response->bet(request: $request, balance: $balance);
     }
@@ -137,14 +135,11 @@ class PlaController
         ]);
 
         if (is_null($request->pay) === false && $request->pay['type'] === 'REFUND')
-            $balance = $this->providerService->refund(request: $request);
+            $balance = $this->service->refund(request: $request);
         else
-            $balance = $this->providerService->settle(request: $request);
+            $balance = $this->service->settle(request: $request);
 
-        return $this->response->gameRoundResult(
-            request: $request,
-            balance: $balance
-        );
+        return $this->response->gameRoundResult(request: $request, balance: $balance);
     }
 
     public function visual(Request $request)
@@ -152,10 +147,10 @@ class PlaController
         $this->validateCasinoRequest(request: $request, rules: [
             'play_id' => 'required|string',
             'bet_id' => 'required|string',
-            'currency' => 'required|string'
+            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR'
         ]);
 
-        $visualUrl = $this->casinoService->getBetDetail(request: $request);
+        $visualUrl = $this->service->getBetDetail(request: $request);
 
         return $this->response->casinoSuccess(data: $visualUrl);
     }

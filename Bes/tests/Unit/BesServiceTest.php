@@ -533,7 +533,7 @@ class BesServiceTest extends TestCase
                 'status_code' => 2100
             ]);
 
-        $service = $this->makeService(repository: $stubRepository,credentials: $mockCredentials, wallet: $stubWallet);
+        $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials, wallet: $stubWallet);
         $service->getBalance(request: $request);
     }
 
@@ -549,9 +549,9 @@ class BesServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object)[]);
 
-        $credentials = $this->createMock(ICredentials::class);  
-        $stubCredentials = $this->createMock(BesCredentials::class);  
-        $stubCredentials->method('getCredentialsByCurrency')  
+        $credentials = $this->createMock(ICredentials::class);
+        $stubCredentials = $this->createMock(BesCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($credentials);
 
         $mockWallet = $this->createMock(IWallet::class);
@@ -606,9 +606,9 @@ class BesServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) ['test']);
 
-        $credentials = $this->createMock(ICredentials::class);  
-        $stubCredentials = $this->createMock(BesCredentials::class);  
-        $stubCredentials->method('getCredentialsByCurrency')  
+        $credentials = $this->createMock(ICredentials::class);
+        $stubCredentials = $this->createMock(BesCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($credentials);
 
         $stubWallet = $this->createStub(IWallet::class);
@@ -661,7 +661,7 @@ class BesServiceTest extends TestCase
 
         $service = $this->makeService(
             repository: $mockRepository,
-            wallet: $stubWalletResponse, 
+            wallet: $stubWalletResponse,
             walletReport: $stubReport
         );
 
@@ -699,7 +699,7 @@ class BesServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('getTransactionByTrxID')
             ->with(transactionID: "{$request->roundId}-{$request->transId}");
-        
+
         $mockRepository->method('getPlayerByPlayID')
             ->willReturn((object) [
                 'currency' => 'IDR'
@@ -723,8 +723,8 @@ class BesServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(
-            repository: $mockRepository, 
-            wallet: $stubWalletResponse, 
+            repository: $mockRepository,
+            wallet: $stubWalletResponse,
             walletReport: $stubReport
         );
 
@@ -771,7 +771,7 @@ class BesServiceTest extends TestCase
             ->willReturn((object) [
                 'currency' => 'IDR'
             ]);
-        
+
         $mockCredentials = $this->createMock(BesCredentials::class);
         $mockCredentials->expects($this->once())
             ->method('getCredentialsByCurrency')
@@ -789,15 +789,15 @@ class BesServiceTest extends TestCase
                 'status_code' => 2100,
                 'credit_after' => 1000
             ]);
-        
+
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
             ->willReturn(new Report);
 
         $service = $this->makeService(
-            repository: $stubRepository, 
-            credentials: $mockCredentials, 
-            wallet: $stubWalletResponse, 
+            repository: $stubRepository,
+            credentials: $mockCredentials,
+            wallet: $stubWalletResponse,
             walletReport: $stubReport
         );
 
@@ -820,7 +820,7 @@ class BesServiceTest extends TestCase
             ->willReturn((object) [
                 'currency' => 'IDR'
             ]);
-        
+
         $credentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(BesCredentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
@@ -843,15 +843,15 @@ class BesServiceTest extends TestCase
                 'status_code' => 2100,
                 'credit_after' => 1000
             ]);
-        
+
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
             ->willReturn(new Report);
 
         $service = $this->makeService(
-            repository: $stubRepository, 
-            credentials: $stubCredentials, 
-            wallet: $mockWalletResponse, 
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            wallet: $mockWalletResponse,
             walletReport: $stubReport
         );
 
@@ -946,7 +946,7 @@ class BesServiceTest extends TestCase
             ->willReturn((object) [
                 'currency' => 'IDR'
             ]);
-        
+
         $credentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(BesCredentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
@@ -965,15 +965,15 @@ class BesServiceTest extends TestCase
                 'status_code' => 2100,
                 'credit_after' => 1000
             ]);
-        
+
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
             ->willReturn(new Report);
 
         $service = $this->makeService(
-            repository: $mockRepository, 
-            credentials: $stubCredentials, 
-            wallet: $mockWalletResponse, 
+            repository: $mockRepository,
+            credentials: $stubCredentials,
+            wallet: $mockWalletResponse,
             walletReport: $stubWalletReport
         );
 
@@ -989,7 +989,7 @@ class BesServiceTest extends TestCase
             'gid' => 'testGID',
             'win' => 10.0,
             'transId' => 'testTransId',
-            'ts' => 123465
+            'ts' => 1746720000000
         ]);
 
         $stubRepository = $this->createMock(BesRepository::class);
@@ -998,7 +998,7 @@ class BesServiceTest extends TestCase
                 'play_id' => 'testUid',
                 'currency' => 'IDR'
             ]);
-        
+
         $credentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(BesCredentials::class);
         $stubCredentials->expects($this->once())
@@ -1019,21 +1019,21 @@ class BesServiceTest extends TestCase
                 'status_code' => 2100,
                 'credit_after' => 1000
             ]);
-        
+
         $mockWalletReport = $this->createMock(WalletReport::class);
         $mockWalletReport->expects($this->once())
             ->method('makeSlotReport')
             ->with(
                 transactionID: "{$request->roundId}-{$request->transId}",
                 gameCode: $request->gid,
-                betTime: '1970-01-01 08:02:03'
+                betTime: '2025-05-09 00:00:00'
             )
             ->willReturn(new Report);
 
         $service = $this->makeService(
-            repository: $stubRepository, 
-            credentials: $stubCredentials, 
-            wallet: $stubWalletResponse, 
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            wallet: $stubWalletResponse,
             walletReport: $mockWalletReport
         );
 
@@ -1059,7 +1059,7 @@ class BesServiceTest extends TestCase
                 'play_id' => 'testUid',
                 'currency' => 'IDR'
             ]);
-        
+
         $credentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(BesCredentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
@@ -1089,15 +1089,15 @@ class BesServiceTest extends TestCase
                 'credit' => 1000,
                 'status_code' => 2100
             ]);
-        
+
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
             ->willReturn($report);
 
         $service = $this->makeService(
-            repository: $stubRepository, 
-            credentials: $stubCredentials, 
-            wallet: $mockWalletResponse, 
+            repository: $stubRepository,
+            credentials: $stubCredentials,
+            wallet: $mockWalletResponse,
             walletReport: $stubReport
         );
 
@@ -1174,7 +1174,7 @@ class BesServiceTest extends TestCase
 
         $stubRepository->method('getTransactionByTrxID')
             ->willReturn(null);
-        
+
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('wagerAndPayout')
             ->willReturn([
@@ -1193,8 +1193,8 @@ class BesServiceTest extends TestCase
             ->willReturn(new Report);
 
         $service = $this->makeService(
-            repository: $stubRepository, 
-            wallet: $stubWallet, 
+            repository: $stubRepository,
+            wallet: $stubWallet,
             walletReport: $stubWalletReport
         );
 

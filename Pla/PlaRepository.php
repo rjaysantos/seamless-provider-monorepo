@@ -1,13 +1,11 @@
 <?php
 
-namespace App\GameProviders\V2\PLA;
+namespace Providers\Pla;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\GameProviders\V2\PCA\Contracts\IRepository;
 
-class PlaRepository implements IRepository
+class PlaRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -24,26 +22,10 @@ class PlaRepository implements IRepository
             ->first();
     }
 
-    public function getBetTransactionByTransactionID(string $transactionID): ?object
+    public function getTransactionByTrxID(string $trxID): ?object
     {
         return DB::table('pla.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->first();
-    }
-
-    public function getTransactionByTransactionIDRefID(string $transactionID, string $refID): ?object
-    {
-        return DB::table('pla.reports')
-            ->where('trx_id', $transactionID)
-            ->where('ref_id', $refID)
-            ->first();
-    }
-
-    public function getTransactionByRefID(string $refID): ?object
-    {
-        return DB::table('pla.reports')
-            ->where('ref_id', $refID)
+            ->where('trx_id', $trxID)
             ->first();
     }
 
@@ -80,86 +62,39 @@ class PlaRepository implements IRepository
             ->delete();
     }
 
-    public function createBetTransaction(object $player, Request $request, string $betTime): void
-    {
+    public function createTransaction(
+        string $trxID,
+        float $betAmount,
+        float $winAmount,
+        string $betTime,
+        ?string $settleTime,
+        string $refID
+    ): void {
         DB::connection('pgsql_write')
             ->table('pla.reports')
             ->insert([
-                'trx_id' => $request->gameRoundCode,
-                'bet_amount' => (float) $request->amount,
-                'win_amount' => 0,
+                'trx_id' => $trxID,
+                'bet_amount' => $betAmount,
+                'win_amount' => $winAmount,
                 'created_at' => $betTime,
-                'updated_at' => null,
-                'ref_id' => $request->transactionCode
-            ]);
-    }
-
-    public function createSettleTransaction(object $player, Request $request, string $settleTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('pla.reports')
-            ->insert([
-                'trx_id' => $request->gameRoundCode,
-                'bet_amount' => 0,
-                'win_amount' => (float) $request->pay['amount'],
-                'created_at' => $settleTime,
                 'updated_at' => $settleTime,
-                'ref_id' => $request->pay['transactionCode']
+                'ref_id' => $refID
             ]);
     }
 
-    public function createLoseTransaction(object $player, Request $request): void
-    {
-        $settleTime = Carbon::now()->setTimezone('GMT+8')->format('Y-m-d H:i:s');
-
-        DB::connection('pgsql_write')
-            ->table('pla.reports')
-            ->insert([
-                'trx_id' => $request->gameRoundCode,
-                'bet_amount' => 0,
-                'win_amount' => 0,
-                'created_at' => $settleTime,
-                'updated_at' => $settleTime,
-                'ref_id' => "L-{$request->requestId}"
-            ]);
-    }
-
-    public function createRefundTransaction(object $player, Request $request, string $refundTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('pla.reports')
-            ->insert([
-                'trx_id' => $request->gameRoundCode,
-                'bet_amount' => $request->pay['amount'],
-                'win_amount' => $request->pay['amount'],
-                'created_at' => $refundTime,
-                'updated_at' => $refundTime,
-                'ref_id' => "R-{$request->pay['relatedTransactionCode']}"
-            ]);
-    }
-
-    public function getBetTransactionByTransactionIDRefID(string $transactionID, string $refID): ?object
+    public function getBetTransactionByRefID(string $refID): ?object
     {
         return DB::table('pla.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
             ->where('ref_id', $refID)
+            ->where('updated_at', null)
             ->first();
     }
 
-    public function getRefundTransactionByTransactionIDRefID(string $transactionID, string $refID): ?object
+    public function getBetTransactionByTrxID(string $trxID): ?object
     {
         return DB::table('pla.reports')
-            ->where('trx_id', $transactionID)
-            ->where('ref_id', "R-{$refID}")
+            ->where('trx_id', $trxID)
+            ->where('updated_at', null)
             ->first();
-    }
-
-    public function updatePlayerStatusToJackpotBanned(string $playID): void
-    {
-        DB::connection('pgsql_write')
-            ->table('pla.players')
-            ->where('play_id', $playID)
-            ->update(['limit' => 'jackpot banned']);
     }
 }

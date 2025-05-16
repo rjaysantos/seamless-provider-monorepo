@@ -5113,7 +5113,10 @@ class SabServiceTest extends TestCase
                 betDate: '2021-01-01 12:00:00',
                 ip: '123.456.7.8',
                 flag: 'unsettled',
-                sportsbookDetails: new SabSettledSportsbookDetails(settledTransactionDetails: $transactionDetails)
+                sportsbookDetails: new SabSettledSportsbookDetails(
+                    settledTransactionDetails: $transactionDetails,
+                    newTicketStatus: '-'
+                )
             );
 
         $stubWallet = $this->createMock(IWallet::class);
@@ -5280,7 +5283,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5343,7 +5347,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5368,7 +5373,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5431,7 +5437,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5483,7 +5490,8 @@ class SabServiceTest extends TestCase
                         'refId' => 'testTransactionID',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5546,7 +5554,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5658,7 +5667,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5704,7 +5714,10 @@ class SabServiceTest extends TestCase
                 betDate: '2021-01-01 12:00:00',
                 ip: '123.456.7.8',
                 flag: 'resettled',
-                sportsbookDetails: new SabSettledSportsbookDetails(settledTransactionDetails: $transactionDetails)
+                sportsbookDetails: new SabSettledSportsbookDetails(
+                    settledTransactionDetails: $transactionDetails,
+                    newTicketStatus: 'win'
+                )
             );
 
         $stubWallet = $this->createMock(IWallet::class);
@@ -5735,7 +5748,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -5815,7 +5829,8 @@ class SabServiceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]

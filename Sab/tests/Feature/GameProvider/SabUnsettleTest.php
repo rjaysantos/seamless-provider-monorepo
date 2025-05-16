@@ -101,7 +101,7 @@ class SabUnsettleTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'lose',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -193,7 +193,7 @@ class SabUnsettleTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'lose',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -296,7 +296,7 @@ class SabUnsettleTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'lose',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -668,7 +668,7 @@ class SabUnsettleTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'win',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'

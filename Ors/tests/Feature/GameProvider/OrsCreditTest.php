@@ -18,7 +18,8 @@ class OrsCreditTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_credit_validData_expectedData()
+    #[DataProvider('gameCodesAndSignature')]
+    public function test_credit_validData_expectedData($gameCode, $signature)
     {
         $wallet = new class extends TestWallet {
             public function Payout(
@@ -69,8 +70,8 @@ class OrsCreditTest extends TestCase
             "game_code": "pocketjungle",
             "timestamp": 1715052653,
             "player_id": "player_id",
-            "game_id": 123,
-            "signature": "8e1d0fb0c10064ebdb35f80edb50c624"
+            "game_id": '. $gameCode .',
+            "signature": "'. $signature .'"
         }';
 
         $response = $this->call(
@@ -102,6 +103,13 @@ class OrsCreditTest extends TestCase
             'created_at' => '2021-01-01 00:00:00',
             'updated_at' => '2024-05-07 11:30:53'
         ]);
+    }
+
+    public static function gameCodesAndSignature() {
+        return [
+            [131, 'fa04afb5d6b6bf69cedd87ef3b647676'],
+            [123, '8e1d0fb0c10064ebdb35f80edb50c624']
+        ];
     }
 
     public function test_credit_validData1stCreditTimeout_expectedData()

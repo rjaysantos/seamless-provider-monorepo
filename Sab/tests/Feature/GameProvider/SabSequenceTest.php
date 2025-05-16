@@ -1175,7 +1175,8 @@ class SabSequenceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-02T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -1465,7 +1466,8 @@ class SabSequenceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-02T00:00:00.000-04:00',
                         'payout' => 0,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'lose'
                     ]
                 ]
             ]
@@ -1496,7 +1498,7 @@ class SabSequenceTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'win',
+            'result' => 'lose',
             'flag' => 'resettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -1525,7 +1527,8 @@ class SabSequenceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-03T00:00:00.000-04:00',
                         'payout' => 1,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'draw'
                     ]
                 ]
             ]
@@ -1556,7 +1559,7 @@ class SabSequenceTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'win',
+            'result' => 'draw',
             'flag' => 'resettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -1892,7 +1895,7 @@ class SabSequenceTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'win',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -2276,7 +2279,7 @@ class SabSequenceTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'win',
+            'result' => '-',
             'flag' => 'unsettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -2353,7 +2356,8 @@ class SabSequenceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-02T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -2384,7 +2388,7 @@ class SabSequenceTest extends TestCase
             'match' => 'Netherlands vs Portugal',
             'hdp' => 3.4,
             'odds' => 1.24,
-            'result' => 'lose',
+            'result' => 'win',
             'flag' => 'resettled',
             'status' => 1,
             'ip_address' => '123.456.7.8'
@@ -3233,7 +3237,8 @@ class SabSequenceTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-02T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -3577,54 +3582,6 @@ class SabSequenceTest extends TestCase
             'ip_address' => '123.456.7.8'
         ]);
 
-        // Resettle
-
-        $request = [
-            'key' => '96l542m8kr',
-            'message' => [
-                'operationId' => 'testResettleOperationID',
-                'txns' => [
-                    [
-                        'userId' => 'testUsername',
-                        'updateTime' => '2021-01-02T00:00:00.000-04:00',
-                        'payout' => 3,
-                        'txId' => 12345
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->post('/sab/prov/resettle', $request);
-
-        $response->assertJson([
-            'status' => 0,
-            'msg' => null
-        ]);
-
-        $response->assertStatus(200);
-
-        $this->assertDatabaseHas('sab.reports', [
-            'bet_id' => 'testResettleOperationID-12345',
-            'trx_id' => '12345',
-            'play_id' => 'testPlayID',
-            'web_id' => 0,
-            'currency' => 'IDR',
-            'bet_amount' => 1000,
-            'payout_amount' => 3000,
-            'bet_time' => '2021-01-02 12:00:00',
-            'bet_choice' => 'Netherlands',
-            'game_code' => '1',
-            'sports_type' => 'Soccer',
-            'event' => 'SABA ELITE FRIENDLY Virtual PES 23 - PENALTY SHOOTOUTS',
-            'match' => 'Netherlands vs Portugal',
-            'hdp' => 3.4,
-            'odds' => 1.24,
-            'result' => 'win',
-            'flag' => 'resettled',
-            'status' => 1,
-            'ip_address' => '123.456.7.8'
-        ]);
-
         // AdjustBalance 1
 
         $request = [
@@ -3721,6 +3678,55 @@ class SabSequenceTest extends TestCase
             'flag' => 'bonus',
             'status' => 1,
             'ip_address' => null
+        ]);
+
+        // Resettle
+
+        $request = [
+            'key' => '96l542m8kr',
+            'message' => [
+                'operationId' => 'testResettleOperationID',
+                'txns' => [
+                    [
+                        'userId' => 'testUsername',
+                        'updateTime' => '2021-01-02T00:00:00.000-04:00',
+                        'payout' => 3,
+                        'txId' => 12345,
+                        'status' => 'win'
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->post('/sab/prov/resettle', $request);
+
+        $response->assertJson([
+            'status' => 0,
+            'msg' => null
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('sab.reports', [
+            'bet_id' => 'testResettleOperationID-12345',
+            'trx_id' => '12345',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 1000,
+            'payout_amount' => 3000,
+            'bet_time' => '2021-01-02 12:00:00',
+            'bet_choice' => 'Netherlands',
+            'game_code' => '1',
+            'sports_type' => 'Soccer',
+            'event' => 'SABA ELITE FRIENDLY Virtual PES 23 - PENALTY SHOOTOUTS',
+            'match' => 'Netherlands vs Portugal',
+            'hdp' => 3.4,
+            'odds' => 1.24,
+            'result' => 'win',
+            'flag' => 'resettled',
+            'status' => 1,
+            'ip_address' => '123.456.7.8'
         ]);
     }
 }

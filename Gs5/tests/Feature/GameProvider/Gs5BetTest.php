@@ -53,7 +53,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -82,7 +82,7 @@ class Gs5BetTest extends TestCase
     {
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -124,7 +124,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'invalidToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -161,7 +161,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -201,7 +201,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -242,7 +242,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 100000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -289,7 +289,7 @@ class Gs5BetTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400

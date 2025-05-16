@@ -54,7 +54,7 @@ class Gs5RefundTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -99,7 +99,7 @@ class Gs5RefundTest extends TestCase
 
         $request = [
             'access_token' => 'invalidToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -164,7 +164,7 @@ class Gs5RefundTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -208,7 +208,7 @@ class Gs5RefundTest extends TestCase
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -229,7 +229,7 @@ class Gs5RefundTest extends TestCase
     #[DataProvider('refundParams')]
     public function test_refund_invalidRequest_expectedData($unset)
     {
-        $request = ['access_token' => 'invalidToken', 'txn_id' => 123];
+        $request = ['access_token' => 'invalidToken', 'txn_id' => '123'];
 
         unset($request[$unset]);
 

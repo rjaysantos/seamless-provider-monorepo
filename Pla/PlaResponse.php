@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GameProviders\V2\PLA;
+namespace Providers\Pla;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -56,26 +56,14 @@ class PlaResponse
 
     public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
     {
-        switch ($currency) {
-            case 'IDR':
-                $country = 'ID';
-                break;
-            case 'PHP':
-                $country = 'PH';
-                break;
-            case 'VND':
-                $country = 'VN';
-                break;
-            case 'BRL':
-                $country = 'BR';
-                break;
-            case 'USD':
-                $country = 'US';
-                break;
-            case 'THB':
-                $country = 'TH';
-                break;
-        }
+        $country = match ($currency) {
+            'IDR'=> 'ID',
+            'PHP'=> 'PH',
+            'VND'=> 'VN',
+            'USD'=> 'US',
+            'THB'=> 'TH',
+            'MYR'=> 'MY',
+        };
 
         return response()->json(data: [
             "requestId" => $requestId,

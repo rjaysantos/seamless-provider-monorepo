@@ -53,6 +53,6 @@ class OrsStaging implements ICredentials
 
     public function getArcadeGameList(): array
     {
-        return json_decode(env('ORS_ARCADE_GAMES'), true);
+        return [131,132,151];
     }
 }

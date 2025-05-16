@@ -3,7 +3,9 @@
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class PlaVisualTest extends TestCase
 {
@@ -30,20 +32,23 @@ class PlaVisualTest extends TestCase
             'ref_id' => 'testRefID'
         ]);
 
+        $request = [
+            'play_id' => 'testPlayID',
+            'bet_id' => 'testTransactionID',
+            'currency' => 'IDR'
+        ];
+
         Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
+            '/reports/gameRoundStatus?game_round=testRefID&timezone=Asia%2FKuala_Lumpur'
+            => Http::response(json_encode([
                 'code' => 200,
                 'data' => [
-                    'game_history_url' => 'testUrl.com'
+                    'game_history_url' => [
+                        'testUrl.com'
+                    ]
                 ],
             ]))
         ]);
-
-        $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
-            'currency' => 'IDR'
-        ];
 
         $response = $this->post('pla/in/visual', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -60,25 +65,24 @@ class PlaVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/reports/gameRoundStatus' .
-                '?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' &&
-                $request->hasHeader('x-auth-admin-key', '5d4cf20f73ca4413060d41cf2733c64c7d7b93a03f7f4fdebd9c9a660f8a0dab') &&
-                $request['game_round'] == 'testTransactionID' &&
+                '?game_round=testRefID&timezone=Asia%2FKuala_Lumpur' &&
+                $request->hasHeader('x-auth-admin-key', '5d4cf20f73ca4413060d41cf2733c64c7d7b93a03f7' .
+                    'f4fdebd9c9a660f8a0dab') &&
+                $request['game_round'] == 'testRefID' &&
                 $request['timezone'] == 'Asia/Kuala_Lumpur';
         });
     }
 
-    /**
-     * @dataProvider visualParams
-     */
-    public function test_visual_invalidRequest_expectedData($visualParams)
+    #[DataProvider('visualParams')]
+    public function test_visual_invalidRequest_expectedData($parameter)
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
-        unset($request[$visualParams]);
+        unset($request[$parameter]);
 
         $response = $this->post('pla/in/visual', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -107,7 +111,7 @@ class PlaVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -140,18 +144,9 @@ class PlaVisualTest extends TestCase
             'ref_id' => 'testRefID'
         ]);
 
-        Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
-                'code' => 200,
-                'data' => [
-                    'game_history_url' => 'testUrl.com'
-                ],
-            ]))
-        ]);
-
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -184,15 +179,6 @@ class PlaVisualTest extends TestCase
             'ref_id' => 'testRefID'
         ]);
 
-        Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
-                'code' => 200,
-                'data' => [
-                    'game_history_url' => 'testUrl.com'
-                ],
-            ]))
-        ]);
-
         $request = [
             'play_id' => 'testPlayID',
             'bet_id' => 'invalidTransactionID',
@@ -213,7 +199,8 @@ class PlaVisualTest extends TestCase
         ]);
     }
 
-    public function test_visual_thirdPartyApiError_expectedData()
+    #[DataProvider('gameRoundStatusParams')]
+    public function test_visual_thirdPartyApiErrorMissingResponseParam_expectedData($parameter)
     {
         DB::table('pla.players')->insert([
             'play_id' => 'testPlayID',
@@ -228,18 +215,28 @@ class PlaVisualTest extends TestCase
             'ref_id' => 'testRefID'
         ]);
 
-        Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
-                'code' => 500,
-                'data' => null,
-            ]))
-        ]);
-
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
+
+        $response = [
+            'code' => 200,
+            'data' => [
+                'game_history_url' => 'testUrl.com'
+            ],
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data'][$parameter]);
+        else
+            unset($response[$parameter]);
+
+        Http::fake([
+            '/reports/gameRoundStatus?game_round=testRefID&timezone=Asia%2FKuala_Lumpur'
+            => Http::response(json_encode($response))
+        ]);
 
         $response = $this->post('pla/in/visual', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -256,9 +253,71 @@ class PlaVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/reports/gameRoundStatus' .
-                '?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' &&
-                $request->hasHeader('x-auth-admin-key', '5d4cf20f73ca4413060d41cf2733c64c7d7b93a03f7f4fdebd9c9a660f8a0dab') &&
-                $request['game_round'] == 'testTransactionID' &&
+                '?game_round=testRefID&timezone=Asia%2FKuala_Lumpur' &&
+                $request->hasHeader('x-auth-admin-key', '5d4cf20f73ca4413060d41cf2733c64c7d7b93a03f7' .
+                    'f4fdebd9c9a660f8a0dab') &&
+                $request['game_round'] == 'testRefID' &&
+                $request['timezone'] == 'Asia/Kuala_Lumpur';
+        });
+    }
+
+    public static function gameRoundStatusParams()
+    {
+        return [
+            ['code'],
+            ['data'],
+            ['game_history_url']
+        ];
+    }
+
+    public function test_visual_thirdPartyApiErrorCodeNot200_expectedData()
+    {
+        DB::table('pla.players')->insert([
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.reports')->insert([
+            'trx_id' => 'testTransactionID',
+            'bet_amount' => 100.00,
+            'win_amount' => 500.00,
+            'ref_id' => 'testRefID'
+        ]);
+
+        $request = [
+            'play_id' => 'testPlayID',
+            'bet_id' => 'testTransactionID',
+            'currency' => 'IDR'
+        ];
+
+        Http::fake([
+            '/reports/gameRoundStatus?game_round=testRefID&timezone=Asia%2FKuala_Lumpur'
+            => Http::response(json_encode([
+                'code' => 500,
+                'data' => null,
+            ]))
+        ]);
+
+        $response = $this->post('pla/in/visual', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+        ]);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://api-uat.agmidway.net/reports/gameRoundStatus' .
+                '?game_round=testRefID&timezone=Asia%2FKuala_Lumpur' &&
+                $request->hasHeader('x-auth-admin-key', '5d4cf20f73ca4413060d41cf2733c64c7d7b93a03f7' .
+                    'f4fdebd9c9a660f8a0dab') &&
+                $request['game_round'] == 'testRefID' &&
                 $request['timezone'] == 'Asia/Kuala_Lumpur';
         });
     }

@@ -184,7 +184,7 @@ class Gs5Service
         $balance = $this->getPlayerBalance(credentials: $credentials, playID: $playerData->play_id);
 
         $betAmount = $request->total_bet / self::PROVIDER_CURRENCY_CONVERSION;
-        
+
         if ($balance < $betAmount)
             throw new InsufficientFundException;
 
@@ -218,6 +218,65 @@ class Gs5Service
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
+
+            DB::connection('pgsql_write')->commit();
+        } catch (Exception $e) {
+            DB::connection('pgsql_write')->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
+    }
+
+    public function settle(Request $request): float
+    {
+        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
+
+        if (is_null($playerData) === true)
+            throw new TokenNotFoundException;
+
+        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->txn_id);
+
+        if (is_null($transactionData) === true)
+            throw new ProviderTransactionNotFoundException;
+
+        if (is_null($transactionData->updated_at) === false)
+            throw new TransactionAlreadySettledException;
+
+        try {
+            DB::connection('pgsql_write')->beginTransaction();
+
+            $transactionDate = Carbon::createFromTimestamp($request->ts, self::PROVIDER_API_TIMEZONE)
+                ->setTimezone('GMT+8')
+                ->format('Y-m-d H:i:s');
+
+            $winAmount = $request->total_win / self::PROVIDER_CURRENCY_CONVERSION;
+
+            $this->repository->settleTransaction(
+                trxID: $request->txn_id,
+                winAmount: $winAmount,
+                settleTime: $transactionDate
+            );
+
+            $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+
+            $report = $this->report->makeSlotReport(
+                transactionID: $request->txn_id,
+                gameCode: $request->game_id,
+                betTime: $transactionDate
+            );
+
+            $walletResponse = $this->wallet->payout(
+                credentials: $credentials,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                transactionID: "payout-{$request->txn_id}",
+                amount: $winAmount,
+                report: $report
+            );
+
+            if ($walletResponse['status_code'] != 2100)
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {

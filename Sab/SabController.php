@@ -224,7 +224,8 @@ class SabController
                 'message.txns.*.userId' => 'required|string',
                 'message.txns.*.updateTime' => 'required|string',
                 'message.txns.*.payout' => 'required|regex:/^\d+(\.\d{1,6})?$/',
-                'message.txns.*.txId' => 'required|integer'
+                'message.txns.*.txId' => 'required|integer',
+                'message.txns.*.status' => 'required|string'
             ]
         );
 

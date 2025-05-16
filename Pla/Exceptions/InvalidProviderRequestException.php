@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GameProviders\V2\PLA\Exceptions;
+namespace Providers\Pla\Exceptions;
 
 use Exception;
 use Illuminate\Http\JsonResponse;

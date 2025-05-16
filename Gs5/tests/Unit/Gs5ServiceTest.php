@@ -39,6 +39,7 @@ class Gs5ServiceTest extends TestCase
         $report ??= $this->createStub(WalletReport::class);
         $randomizer ??= $this->createStub(Randomizer::class);
         $api ??= $this->createStub(Gs5Api::class);
+        $report ??= $this->createStub(WalletReport::class);
 
         return new Gs5Service(
             repository: $repository,
@@ -349,7 +350,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $mockRepository = $this->createMock(Gs5Repository::class);
@@ -398,7 +399,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $mockRepository = $this->createMock(Gs5Repository::class);
@@ -432,7 +433,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -456,7 +457,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -486,7 +487,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $mockRepository = $this->createMock(Gs5Repository::class);
@@ -524,7 +525,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -559,7 +560,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -604,7 +605,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -635,7 +636,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 123
+            'txn_id' => '123'
         ]);
 
         $stubRepository = $this->createMock(Gs5Repository::class);
@@ -720,7 +721,7 @@ class Gs5ServiceTest extends TestCase
 
         $mockRepository = $this->createMock(Gs5Repository::class);
         $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object)['test']);
+            ->willReturn((object) ['test']);
 
         $mockRepository->expects($this->exactly(0))
             ->method('createPlayer')
@@ -1019,7 +1020,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1061,7 +1062,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1079,7 +1080,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1124,7 +1125,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1148,7 +1149,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1196,7 +1197,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1251,7 +1252,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 100000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1281,7 +1282,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1306,7 +1307,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1352,7 +1353,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1396,7 +1397,7 @@ class Gs5ServiceTest extends TestCase
     {
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1455,7 +1456,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1492,7 +1493,7 @@ class Gs5ServiceTest extends TestCase
 
         $request = new Request([
             'access_token' => 'testToken',
-            'txn_id' => 12345,
+            'txn_id' => '12345',
             'total_bet' => 10000,
             'game_id' => 'testGameID',
             'ts' => 1704038400
@@ -1524,6 +1525,408 @@ class Gs5ServiceTest extends TestCase
 
         $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
         $response = $service->bet(request: $request);
+
+        $this->assertSame(expected: $expectedData, actual: $response);
+    }
+
+    public function test_settle_mockRepository_getPlayerByToken()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $mockRepository = $this->createMock(Gs5Repository::class);
+        $mockRepository->expects($this->once())
+            ->method('getPlayerByToken')
+            ->with(token: $request->access_token)
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $mockRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubRepositoryNullPlayer_TokenNotFoundException()
+    {
+        $this->expectException(TokenNotFoundException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn(null);
+
+        $service = $this->makeService(repository: $stubRepository);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockRepository_getTransactionByTrxID()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $mockRepository = $this->createMock(Gs5Repository::class);
+        $mockRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $mockRepository->expects($this->once())
+            ->method('getTransactionByTrxID')
+            ->with(trxID: $request->txn_id)
+            ->willReturn((object) ['updated_at' => null]);
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubRepositoryNullTransaction_TransactionNotFoundException()
+    {
+        $this->expectException(ProviderTransactionNotFoundException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn(null);
+
+        $service = $this->makeService(repository: $stubRepository);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubRepositoryTransactionAlreadySettled_TransactionAlreadySettledException()
+    {
+        $this->expectException(TransactionAlreadySettledException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => '2024-01-01 00:00:00']);
+
+        $service = $this->makeService(repository: $stubRepository);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockRepository_settleTransaction()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $mockRepository = $this->createMock(Gs5Repository::class);
+        $mockRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $mockRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $mockRepository->expects($this->once())
+            ->method('settleTransaction')
+            ->with(
+                trxID: $request->txn_id,
+                winAmount: 300,
+                settleTime: '2024-01-01 00:00:00'
+            );
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockCredentials_getCredentialsByCurrency()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $mockCredentials = $this->createMock(Gs5Credentials::class);
+        $mockCredentials->expects($this->once())
+            ->method('getCredentialsByCurrency')
+            ->with(currency: 'IDR');
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            report: $stubReport,
+            wallet: $stubWallet,
+            credentials: $mockCredentials
+        );
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockReport_makeSlotReport()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $mockReport = $this->createMock(WalletReport::class);
+        $mockReport->expects($this->once())
+            ->method('makeSlotReport')
+            ->with(
+                transactionID: $request->txn_id,
+                gameCode: $request->game_id,
+                betTime: '2024-01-01 00:00:00'
+            )
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $stubRepository, report: $mockReport, wallet: $stubWallet);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockWallet_payout()
+    {
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $stubProviderCredentials = $this->createMock(ICredentials::class);
+        $stubCredentials = $this->createMock(Gs5Credentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($stubProviderCredentials);
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $mockWallet = $this->createMock(IWallet::class);
+        $mockWallet->expects($this->once())
+            ->method('payout')
+            ->with(
+                credentials: $stubProviderCredentials,
+                playID: 'testPlayID',
+                currency: 'IDR',
+                transactionID: "payout-{$request->txn_id}",
+                amount: 300.00,
+                report: new Report
+            )
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            report: $stubReport,
+            wallet: $mockWallet,
+            credentials: $stubCredentials
+        );
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubWalletInvalidStatus_WalletErrorException()
+    {
+        $this->expectException(WalletErrorException::class);
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn(['status_code' => 98745312]);
+
+        $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_stubWallet_expectedData()
+    {
+        $expectedData = 130000.00;
+
+        $request = new Request([
+            'access_token' => 'testToken',
+            'txn_id' => '123456',
+            'total_win' => 30000,
+            'game_id' => 'testGameID',
+            'ts' => 1704038400
+        ]);
+
+        $stubRepository = $this->createMock(Gs5Repository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) ['updated_at' => null]);
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSlotReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 1300.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
+        $response = $service->settle(request: $request);
 
         $this->assertSame(expected: $expectedData, actual: $response);
     }

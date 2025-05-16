@@ -19,14 +19,15 @@ use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundExcepti
 
 class BesService
 {
+    private const PROVIDER_API_TIMEZONE = 'GMT+8';
+
     public function __construct(
         private BesRepository $repository,
         private BesCredentials $credentials,
         private BesApi $api,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
     private function convertLang(string $lang)
     {
@@ -160,7 +161,8 @@ class BesService
             $report = $this->walletReport->makeSlotReport(
                 transactionID: "{$request->roundId}-{$request->transId}",
                 gameCode: $request->gid,
-                betTime: Carbon::createFromTimestampMs($request->ts, 'Asia/Manila')
+                betTime: Carbon::createFromTimestampMs($request->ts, self::PROVIDER_API_TIMEZONE)
+                    ->setTimezone('GMT+8')
                     ->format('Y-m-d H:i:s')
             );
 

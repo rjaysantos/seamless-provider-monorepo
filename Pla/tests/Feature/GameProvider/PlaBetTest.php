@@ -21,18 +21,6 @@ class PlaBetTest extends TestCase
 
     public function test_bet_validRequest_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
-        ]);
-
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
@@ -41,7 +29,7 @@ class PlaBetTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            
+
             public function wagerAndPayout(
                 IWalletCredentials $credentials,
                 string $playID,
@@ -61,6 +49,18 @@ class PlaBetTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.playgame')->insert([
+            'play_id' => 'player001',
+            'token' => 'PLAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
+
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PLAUCN_PLAYER001',
@@ -69,8 +69,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -89,39 +88,17 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => 'testRoundCode',
+            'trx_id' => 'testTransactionCode',
             'bet_amount' => 100.00,
             'win_amount' => 0,
             'created_at' => '2021-01-01 08:00:00',
             'updated_at' => null,
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testRoundCode'
         ]);
     }
 
     public function test_bet_validRequestMultipleBet_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
-        ]);
-
-        DB::table('pla.reports')->insert([
-            'trx_id' => 'testRoundCode',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testTransactionCode'
-        ]);
-
-
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
@@ -130,7 +107,7 @@ class PlaBetTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            
+
             public function wagerAndPayout(
                 IWalletCredentials $credentials,
                 string $playID,
@@ -151,6 +128,27 @@ class PlaBetTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.playgame')->insert([
+            'play_id' => 'player001',
+            'token' => 'PLAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
+
+        DB::table('pla.reports')->insert([
+            'trx_id' => 'testTransactionCode',
+            'bet_amount' => 100.00,
+            'win_amount' => 0,
+            'created_at' => '2021-01-01 08:00:00',
+            'updated_at' => null,
+            'ref_id' => 'testRoundCode'
+        ]);
+
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PLAUCN_PLAYER001',
@@ -159,8 +157,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode2',
             'transactionDate' => '2021-01-01 00:00:02.000',
             'amount' => '50',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -179,18 +176,16 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => 'testRoundCode',
+            'trx_id' => 'testTransactionCode2',
             'bet_amount' => 50.00,
             'win_amount' => 0,
             'created_at' => '2021-01-01 08:00:02',
             'updated_at' => null,
-            'ref_id' => 'testTransactionCode2'
+            'ref_id' => 'testRoundCode'
         ]);
     }
 
-    /**
-     * @dataProvider betParams
-     */
+    #[DataProvider('betParams')]
     public function test_bet_invalidRequest_expectedData($parameter, $value)
     {
         $payload = [
@@ -201,8 +196,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -250,8 +244,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -277,8 +270,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -296,6 +288,18 @@ class PlaBetTest extends TestCase
 
     public function test_bet_transactionAlreadyExists_expectedData()
     {
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 850.0,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testUsername',
@@ -303,12 +307,12 @@ class PlaBetTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => 'testRoundCode',
+            'trx_id' => 'testTransactionCode',
             'bet_amount' => 100.00,
             'win_amount' => 0,
             'created_at' => '2021-01-01 08:00:00',
             'updated_at' => null,
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testRoundCode'
         ]);
 
         $payload = [
@@ -319,38 +323,9 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
-
-        $wallet = new class extends TestWallet {
-            public function balance(IWalletCredentials $credentials, string $playID): array
-            {
-                return [
-                    'credit' => 850.0,
-                    'status_code' => 2100
-                ];
-            }
-            
-            public function wagerAndPayout(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $wagerTransactionID,
-                float $wagerAmount,
-                string $payoutTransactionID,
-                float $payoutAmount,
-                Report $report
-            ): array {
-                return [
-                    'credit_after' => 850.0,
-                    'status_code' => 2102
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('pla/prov/bet', $payload);
 
@@ -369,12 +344,6 @@ class PlaBetTest extends TestCase
 
     public function test_bet_insufficientFund_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
@@ -387,6 +356,12 @@ class PlaBetTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PLAUCN_PLAYER001',
@@ -395,8 +370,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -414,18 +388,6 @@ class PlaBetTest extends TestCase
 
     public function test_bet_invalidToken_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
-        ]);
-
         $wallet = new class extends TestWallet {
             public function wagerAndPayout(
                 IWalletCredentials $credentials,
@@ -446,6 +408,18 @@ class PlaBetTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('pla.playgame')->insert([
+            'play_id' => 'player001',
+            'token' => 'PLAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
+
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PLAUCN_PLAYER001',
@@ -454,8 +428,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -471,23 +444,17 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => 'testRoundCode',
+            'trx_id' => 'testTransactionCode',
             'bet_amount' => 100.00,
             'win_amount' => 0,
             'created_at' => '2021-01-01 08:00:00',
             'updated_at' => null,
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testRoundCode'
         ]);
     }
 
     public function test_bet_invalidWalletResponseBalance_expectedData()
     {
-        DB::table('pla.players')->insert([
-            'play_id' => 'player001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
@@ -499,6 +466,12 @@ class PlaBetTest extends TestCase
 
         app()->bind(IWallet::class, $wallet::class);
 
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PLAUCN_PLAYER001',
@@ -507,8 +480,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
         $response = $this->post('pla/prov/bet', $payload);
@@ -572,8 +544,7 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
+            'internalFundChanges' => [],
             'gameCodeName' => 'testGameID'
         ];
 
@@ -589,12 +560,12 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => 'testRoundCode',
+            'trx_id' => 'testTransactionCode',
             'bet_amount' => 100.00,
             'win_amount' => 0,
             'created_at' => '2021-01-01 08:00:00',
             'updated_at' => null,
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testRoundCode'
         ]);
     }
 
@@ -623,9 +594,8 @@ class PlaBetTest extends TestCase
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
-            'internalFundChanges' => [
-            ],
-            'gameCodeName' => 'testGameID'
+            'internalFundChanges' => [],
+            'gameCodeName' => 'cheaa'
         ];
 
         $response = $this->post('pla/prov/bet', $payload);
@@ -647,50 +617,106 @@ class PlaBetTest extends TestCase
     {
         return [
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 123, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 123.456789, 'status_code' => 2100];
                 }
             }, '123.45'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 123.409987, 'status_code' => 2100];
                 }
             }, '123.40'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 123.000, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 123.000009, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 100.000, 'status_code' => 2100];
                 }
             }, '100.00'],
 
             [new class extends TestWallet {
-                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
-                {
+                public function WagerAndPayout(
+                    IWalletCredentials $credentials,
+                    string $playID,
+                    string $currency,
+                    string $wagerTransactionID,
+                    float $wagerAmount,
+                    string $payoutTransactionID,
+                    float $payoutAmount,
+                    Report $report
+                ): array {
                     return ['credit_after' => 100, 'status_code' => 2100];
                 }
             }, '100.00'],

@@ -16,12 +16,13 @@ class PlaAuthenticateTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_authenticate_validRequest_expectedData()
+    #[DataProvider('currencyAndCountryCodes')]
+    public function test_authenticate_validRequestStgSupportedCurrency_expectedData($currency)
     {
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
+            'currency' => $currency
         ]);
 
         DB::table('pla.playgame')->insert([
@@ -46,6 +47,53 @@ class PlaAuthenticateTest extends TestCase
             'currencyCode' => 'CNY',
             'countryCode' => 'CN'
         ]);
+    }
+
+    #[DataProvider('currencyAndCountryCodes')]
+    public function test_authenticate_validRequestProdSupportedCurrencies_expectedData($currency, $countryCode)
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        DB::table('pla.players')->insert([
+            'play_id' => 'player001',
+            'username' => 'testPlayer',
+            'currency' => $currency
+        ]);
+
+        DB::table('pla.playgame')->insert([
+            'play_id' => 'player001',
+            'token' => 'PLAUC_TOKEN123456789',
+            'expired' => 'FALSE'
+        ]);
+
+        $payload = [
+            'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
+            'username' => 'PLAUC_PLAYER001',
+            'externalToken' => 'PLAUC_TOKEN123456789'
+        ];
+
+        $response = $this->post('pla/prov/authenticate', $payload);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
+            'username' => 'PLAUC_PLAYER001',
+            'currencyCode' => $currency,
+            'countryCode' => $countryCode
+        ]);
+    }
+
+    public static function currencyAndCountryCodes()
+    {
+        return [
+            ['IDR', 'ID'],
+            ['PHP', 'PH'],
+            ['VND', 'VN'],
+            ['USD', 'US'],
+            ['THB', 'TH'],
+            ['MYR', 'MY'],
+        ];
     }
 
     #[DataProvider('authenticateParams')]

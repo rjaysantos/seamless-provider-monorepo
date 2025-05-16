@@ -1,10 +1,11 @@
 <?php
 
 use Tests\TestCase;
+use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
-use App\GameProviders\V2\PLA\PlaApi;
 use App\Libraries\LaravelHttpClient;
-use App\GameProviders\V2\PLA\Contracts\ICredentials;
+use Providers\Pla\Contracts\ICredentials;
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class PlaApiTest extends TestCase
@@ -29,7 +30,7 @@ class PlaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $credentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
@@ -41,7 +42,88 @@ class PlaApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getGameLaunchUrl(credentials: $credentials, request: $request, token: 'testToken');
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_getGameLaunchUrl_stubHttpMissingResponse_thirdPartyApiErrorException($parameter)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $request = new Request([
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ]);
+
+        $response = [
+            'code' => 200,
+            'data' => (object) [
+                'url' => 'testUrl.com'
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data']->$parameter);
+        else
+            unset($response[$parameter]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_getGameLaunchUrl_stubHttpInvalidResponseDataType_thirdPartyApiErrorException($parameter, $value)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $request = new Request([
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ]);
+
+        $response = [
+            'code' => 200,
+            'data' => (object) [
+                'url' => 'testUrl.com'
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            $response['data']->$parameter = $value;
+        else
+            $response[$parameter] = $value;
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    public static function getGameLaunchUrlParams()
+    {
+        return [
+            ['code', 'invalid'],
+            ['data', 'invalid'],
+            ['url', 123]
+        ];
     }
 
     public function test_getGameLaunchUrl_stubHttpCodeNot200_thirdPartyApiErrorException()
@@ -57,7 +139,7 @@ class PlaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $credentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
@@ -69,7 +151,7 @@ class PlaApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getGameLaunchUrl(credentials: $credentials, request: $request, token: 'testToken');
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
     }
 
     public function test_getGameLaunchUrl_stubHttp_expectedData()
@@ -85,7 +167,7 @@ class PlaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $stubCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
@@ -97,65 +179,18 @@ class PlaApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $response = $api->getGameLaunchUrl(credentials: $stubCredentials, request: $request, token: 'testToken');
+        $response = $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
 
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    public function test_gameRoundStatus_mockCredentials_getAdminKey()
-    {
-        $mockCredentials = $this->createMock(ICredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getAdminKey')
-            ->willReturn('testAdminKey');
-
-        $mockCredentials->method('getApiUrl')
-            ->willReturn('apiUrl');
-
-        $mockHttp = $this->createMock(LaravelHttpClient::class);
-        $mockHttp->method('get')
-            ->willReturn((object) [
-                'code' => 200,
-                'data' => (object) [
-                    'game_history_url' => 'testUrl.com'
-                ]
-            ]);
-
-        $api = $this->makeApi(http: $mockHttp);
-        $api->gameRoundStatus(credentials: $mockCredentials, transactionID: 'testTransactionID');
-    }
-
-    public function test_gameRoundStatus_mockCredentials_getApiUrl()
-    {
-        $mockCredentials = $this->createMock(ICredentials::class);
-        $mockCredentials->method('getAdminKey')
-            ->willReturn('testAdminKey');
-
-        $mockCredentials->expects($this->once())
-            ->method('getApiUrl')
-            ->willReturn('apiUrl');
-
-        $mockHttp = $this->createMock(LaravelHttpClient::class);
-        $mockHttp->method('get')
-            ->willReturn((object) [
-                'code' => 200,
-                'data' => (object) [
-                    'game_history_url' => 'testUrl.com'
-                ]
-            ]);
-
-        $api = $this->makeApi(http: $mockHttp);
-        $api->gameRoundStatus(credentials: $mockCredentials, transactionID: 'testTransactionID');
-    }
-
     public function test_gameRoundStatus_mockHttp_get()
     {
-        $stubCredentials = $this->createMock(ICredentials::class);
-
-        $stubCredentials->method('getAdminKey')
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getAdminKey')
             ->willReturn('testAdminKey');
 
-        $stubCredentials->method('getApiUrl')
+        $providerCredentials->method('getApiUrl')
             ->willReturn('apiUrl');
 
         $mockHttp = $this->createMock(LaravelHttpClient::class);
@@ -172,19 +207,88 @@ class PlaApiTest extends TestCase
             ->willReturn((object) [
                 'code' => 200,
                 'data' => (object) [
-                    'game_history_url' => 'testUrl.com'
+                    'game_history_url' => [
+                        'testUrl.com'
+                    ]
                 ]
             ]);
 
         $api = $this->makeApi(http: $mockHttp);
-        $api->gameRoundStatus(credentials: $stubCredentials, transactionID: 'testTransactionID');
+        $api->gameRoundStatus(credentials: $providerCredentials, transactionID: 'testTransactionID');
     }
 
-    public function test_gameRoundStatus_stubHttp_thirdPartyApiErrorException()
+    #[DataProvider('gameRoundStatusParams')]
+    public function test_gameRoundStatus_stubHttpMissingResponse_thirdPartyApiErrorException($parameter)
     {
         $this->expectException(ThirdPartyApiErrorException::class);
 
-        $stubCredentials = $this->createMock(ICredentials::class);
+        $response = [
+            'code' => 200,
+            'data' => (object) [
+                'game_history_url' => [
+                    'testUrl.com'
+                ]
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data']->$parameter);
+        else
+            unset($response[$parameter]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('get')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->gameRoundStatus(credentials: $providerCredentials, transactionID: 'testTransactionID');
+    }
+
+    #[DataProvider('gameRoundStatusParams')]
+    public function test_gameRoundStatus_stubHttpInvalidResponseDataType_thirdPartyApiErrorException($parameter, $value)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $response = [
+            'code' => 200,
+            'data' => (object) [
+                'game_history_url' => [
+                    'testUrl.com'
+                ]
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            $response['data']->$parameter = $value;
+        else
+            $response[$parameter] = $value;
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('get')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->gameRoundStatus(credentials: $providerCredentials, transactionID: 'testTransactionID');
+    }
+
+    public static function gameRoundStatusParams()
+    {
+        return [
+            ['code', 'invalid'],
+            ['data', 'invalid'],
+            ['game_history_url', 123]
+        ];
+    }
+
+    public function test_gameRoundStatus_stubHttpErrorCodeNot200_thirdPartyApiErrorException()
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('get')
@@ -194,26 +298,28 @@ class PlaApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->gameRoundStatus(credentials: $stubCredentials, transactionID: 'testTransactionID');
+        $api->gameRoundStatus(credentials: $providerCredentials, transactionID: 'testTransactionID');
     }
 
     public function test_gameRoundStatus_stubHttp_expectedData()
     {
         $expected = 'testUrl.com';
 
-        $stubCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('get')
             ->willReturn((object) [
                 'code' => 200,
                 'data' => (object) [
-                    'game_history_url' => 'testUrl.com'
+                    'game_history_url' => [
+                        'testUrl.com'
+                    ]
                 ]
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $response = $api->gameRoundStatus(credentials: $stubCredentials, transactionID: 'testTransactionID');
+        $response = $api->gameRoundStatus(credentials: $providerCredentials, transactionID: 'testTransactionID');
 
         $this->assertSame(expected: $expected, actual: $response);
     }

@@ -6,7 +6,10 @@ use App\Contracts\V2\ISportsbookDetails;
 
 class SabSettledSportsbookDetails implements ISportsbookDetails
 {
-    public function __construct(private object $settledTransactionDetails) {}
+    public function __construct(
+        private object $settledTransactionDetails,
+        private string $newTicketStatus
+    ) {}
 
     public function getGameCode(): string
     {
@@ -20,7 +23,7 @@ class SabSettledSportsbookDetails implements ISportsbookDetails
 
     public function getResult(): string
     {
-        return $this->settledTransactionDetails->result;
+        return $this->newTicketStatus;
     }
 
     public function getSportsType(): string

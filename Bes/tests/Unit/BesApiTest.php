@@ -43,7 +43,7 @@ class BesApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $mockHttp);
-        $api->getDetailsUrl(credentials: $providerCredentials, trxID: 'testTransID');
+        $api->getDetailsUrl($providerCredentials,  'testTransID');
     }
 
     public function test_getDetailsUrl_stubHttp_expectedData()
@@ -63,7 +63,7 @@ class BesApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $result = $api->getDetailsUrl(credentials: $providerCredentials, trxID: 'testTransID');
+        $result = $api->getDetailsUrl($providerCredentials,  'testTransID');
 
         $this->assertSame(expected: $expected, actual: $result);
     }
@@ -82,7 +82,7 @@ class BesApiTest extends TestCase
             ->willReturn((object) ['status' => 0]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getDetailsUrl(credentials: $providerCredentials, trxID: 'testTransID');
+        $api->getDetailsUrl($providerCredentials,  'testTransID');
     }
 
     #[DataProvider('getDetailUrlResponse')]
@@ -107,7 +107,7 @@ class BesApiTest extends TestCase
             ->willReturn((object) $apiResponse);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getDetailsUrl(credentials: $providerCredentials, trxID: 'testTransID');
+        $api->getDetailsUrl($providerCredentials,  'testTransID');
     }
 
     #[DataProvider('getDetailUrlResponse')]
@@ -132,7 +132,7 @@ class BesApiTest extends TestCase
             ->willReturn((object) $apiResponse);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getDetailsUrl(credentials: $providerCredentials, trxID: 'testTransID');
+        $api->getDetailsUrl($providerCredentials,  'testTransID');
     }
 
     public static function getDetailUrlResponse()
@@ -169,7 +169,7 @@ class BesApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $mockHttp);
-        $api->getKey(credentials: $providerCredentials, playID: 'testPlayID');
+        $api->getKey($providerCredentials,  'testPlayID');
     }
 
     public function test_getKey_stubHttp_expectedData()
@@ -186,7 +186,7 @@ class BesApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $result = $api->getKey(credentials: $providerCredentials, playID: 'testPlayID');
+        $result = $api->getKey($providerCredentials,  'testPlayID');
 
         $this->assertSame(expected: $expected, actual: $result);
     }
@@ -201,8 +201,8 @@ class BesApiTest extends TestCase
         $stubHttp->method('postAsForm')
             ->willReturn((object) ['status' => 0]);
 
-        $api = $this->makeApi(http: $stubHttp);
-        $api->getKey(credentials: $providerCredentials, playID: 'testPlayID');
+        $api = $this->makeApi($stubHttp);
+        $api->getKey($providerCredentials,  'testPlayID');
     }
 
     #[DataProvider('getKeyResponse')]
@@ -224,7 +224,7 @@ class BesApiTest extends TestCase
             ->willReturn((object) $apiResponse);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getKey(credentials: $providerCredentials, playID: 'testPlayID');
+        $api->getKey($providerCredentials,  'testPlayID');
     }
 
     #[DataProvider('getKeyResponse')]
@@ -246,7 +246,7 @@ class BesApiTest extends TestCase
             ->willReturn((object) $apiResponse);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getKey(credentials: $providerCredentials, playID: 'testPlayID');
+        $api->getKey($providerCredentials,  'testPlayID');
     }
 
     public static function getKeyResponse()
@@ -350,7 +350,7 @@ class BesApiTest extends TestCase
             $apiResponse->gamelist = $value;
         else
             $apiResponse->gamelist[0]->$param = $value;
-        
+
         $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);

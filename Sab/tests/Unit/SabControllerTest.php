@@ -1343,7 +1343,8 @@ class SabControllerTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -1376,7 +1377,8 @@ class SabControllerTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -1405,7 +1407,8 @@ class SabControllerTest extends TestCase
             ['userId', 123],
             ['updateTime', 123],
             ['payout', 'test'],
-            ['txId', 'test']
+            ['txId', 'test'],
+            ['status', 123],
         ];
     }
 
@@ -1420,7 +1423,8 @@ class SabControllerTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -1446,7 +1450,8 @@ class SabControllerTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
@@ -1476,7 +1481,8 @@ class SabControllerTest extends TestCase
                         'userId' => 'testUsername',
                         'updateTime' => '2021-01-01T00:00:00.000-04:00',
                         'payout' => 3,
-                        'txId' => 12345
+                        'txId' => 12345,
+                        'status' => 'win'
                     ]
                 ]
             ]
