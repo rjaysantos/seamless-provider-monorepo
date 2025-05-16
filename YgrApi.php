@@ -13,7 +13,7 @@ class YgrApi
     {
     }
 
-    private function responseValidator(object $response): void
+    private function validateResponse(object $response): void
     {
         $validate = Validator::make(data: (array) $response, rules: [
             'ErrorCode' => 'required|integer',
@@ -42,7 +42,7 @@ class YgrApi
             headers: $headers
         );
 
-        $this->responseValidator(response: $response);
+        $this->validateResponse(response: $response);
 
         return $response->Data->Url;
     }
@@ -56,7 +56,7 @@ class YgrApi
             request: $apiRequest
         );
 
-        $this->responseValidator(response: $response);
+        $this->validateResponse(response: $response);
 
         return $response->Data->Url;
     }
