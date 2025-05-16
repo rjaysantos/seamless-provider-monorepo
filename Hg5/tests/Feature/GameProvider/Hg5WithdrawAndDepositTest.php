@@ -750,8 +750,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'round_id' => 'testGameRound',
-            'trx_id' => 'testMtCode',
+            'trx_id' => 'testGameRound',
             'bet_amount' => 100,
             'win_amount' => 300,
             'updated_at' => '2024-01-01 12:00:00',
@@ -810,8 +809,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'round_id' => 'testGameRound',
-            'trx_id' => 'testMtCode',
+            'trx_id' => 'testGameRound',
             'bet_amount' => 100,
             'win_amount' => 300,
             'updated_at' => '2024-01-01 12:00:00',
