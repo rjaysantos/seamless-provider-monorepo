@@ -13,7 +13,6 @@ class AixDebitTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE aix.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE aix.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE aix.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }

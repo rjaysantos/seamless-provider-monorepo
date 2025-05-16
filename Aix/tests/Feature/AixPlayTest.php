@@ -14,7 +14,6 @@ class AixPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE aix.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE aix.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE aix.reports RESTART IDENTITY;');
     }
 
@@ -52,7 +51,7 @@ class AixPlayTest extends TestCase
         ]);
 
         $response = $this->post('aix/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -131,7 +130,7 @@ class AixPlayTest extends TestCase
         unset($request[$parameter]);
 
         $response = $this->post('aix/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -192,7 +191,7 @@ class AixPlayTest extends TestCase
         ]);
 
         $response = $this->post('aix/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -238,7 +237,7 @@ class AixPlayTest extends TestCase
         ]);
 
         $response = $this->post('aix/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -285,7 +284,7 @@ class AixPlayTest extends TestCase
         ]);
 
         $response = $this->post('aix/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([

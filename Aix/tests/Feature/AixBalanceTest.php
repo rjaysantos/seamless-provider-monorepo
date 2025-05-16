@@ -13,11 +13,10 @@ class AixBalanceTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE aix.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE aix.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE aix.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
-    
+
     public function test_balance_validRequest_expectedData()
     {
         DB::table('aix.players')->insert([
@@ -54,7 +53,7 @@ class AixBalanceTest extends TestCase
 
         $response->assertStatus(200);
     }
-    
+
     #[DataProvider('requestParams')]
     public function test_balance_incompleteRequestParameters_expectedData($params)
     {
