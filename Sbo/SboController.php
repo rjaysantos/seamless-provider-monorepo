@@ -80,7 +80,7 @@ class SboController
 
         $balance = $this->service->getBalance(request: $request);
 
-        return $this->response->balance(request: $request, balance: $balance);
+        return $this->response->balance(playID: $request->Username, balance: $balance);
     }
 
     public function deduct(Request $request)
@@ -101,5 +101,25 @@ class SboController
         $balance = $this->service->deduct(request: $request);
 
         return $this->response->deduct(request: $request, balance: $balance);
+    }
+
+    public function settle(Request $request)
+    {
+        $this->validateProviderRequest(
+            request: $request,
+            rules: [
+                'CompanyKey' => 'required|string',
+                'Username' => 'required|string',
+                'TransferCode' => 'required|string',
+                'WinLoss' => 'required|regex:/^\d+(\.\d{1,6})?$/',
+                'ResultTime' => 'required|date',
+                'ProductType' => 'required|integer',
+                'IsCashOut' => 'required|bool'
+            ]
+        );
+
+        $balance = $this->service->settle(request: $request);
+
+        return $this->response->balance(playID: $request->Username, balance: $balance);
     }
 }

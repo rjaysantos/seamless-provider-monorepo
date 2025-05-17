@@ -4,9 +4,13 @@ namespace Providers\Sbo;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Contracts\V2\ISportsbookDetails;
 
 class SboRepository
 {
+    private const ACTIVE = 1;
+    private const INACTIVE = 0;
+
     public function getPlayerByPlayID(string $playID): ?object
     {
         return DB::table('sbo.players')
@@ -83,7 +87,7 @@ class SboRepository
     {
         DB::connection('pgsql_write')->table('sbo.reports')
             ->where('trx_id', $trxID)
-            ->update(['status' => '0']);
+            ->update(['status' => self::INACTIVE]);
     }
 
     public function getRunningCount(string $trxID): int
@@ -92,5 +96,57 @@ class SboRepository
             ->where('trx_id', $trxID)
             ->where('flag', 'running')
             ->count();
+    }
+
+    public function getSettleCount(string $trxID): int
+    {
+        return  DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->where('flag', 'settled')
+            ->count();
+    }
+
+    public function getRollbackCount(string $trxID): int
+    {
+        return  DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->whereIn('flag', ['running', 'rollback'])
+            ->count();
+    }
+
+    public function createSettleTransaction(
+        string $trxID,
+        string $betID,
+        string $playID,
+        string $currency,
+        float $betAmount,
+        float $payoutAmount,
+        string $settleTime,
+        ISportsbookDetails $sportsbookDetails
+    ): void {
+
+        $this->inactiveTransaction(trxID: $trxID);
+
+        DB::connection('pgsql_write')->table('sbo.reports')
+            ->insert([
+                'bet_id' => $betID,
+                'trx_id' => $trxID,
+                'play_id' => $playID,
+                'web_id' => $this->getWebID(playID: $playID),
+                'currency' => $currency,
+                'bet_amount' => $betAmount,
+                'payout_amount' => $payoutAmount,
+                'bet_time' => $settleTime,
+                'bet_choice' => $sportsbookDetails->getBetChoice(),
+                'game_code' => $sportsbookDetails->getGameCode(),
+                'sports_type' => $sportsbookDetails->getSportsType(),
+                'event' => $sportsbookDetails->getEvent(),
+                'match' => $sportsbookDetails->getMatch(),
+                'hdp' => $sportsbookDetails->getHdp(),
+                'odds' => $sportsbookDetails->getOdds(),
+                'result' => $sportsbookDetails->getResult(),
+                'flag' => 'settled',
+                'status' => self::ACTIVE,
+            ]);
     }
 }
