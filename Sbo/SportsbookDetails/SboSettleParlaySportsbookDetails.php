@@ -7,11 +7,9 @@ use Providers\Sbo\Contracts\ISboSportsbookDetails;
 class SboSettleParlaySportsbookDetails implements ISboSportsbookDetails
 {
     public function __construct(
-        protected float $winloss,
+        protected object $request,
         protected float $betAmount,
-        protected bool $isCashOut,
         protected float $odds,
-        protected string $trxID,
         protected string $oddsStyle,
         protected string $ipAddress
     ) {}
@@ -28,14 +26,14 @@ class SboSettleParlaySportsbookDetails implements ISboSportsbookDetails
 
     public function getResult(): string
     {
-        if ($this->winloss > $this->betAmount)
+        if ($this->request->WinLoss > $this->betAmount)
             $result = 'win';
-        elseif ($this->winloss == $this->betAmount)
+        elseif ($this->request->WinLoss == $this->betAmount)
             $result = 'draw';
         else
             $result = 'lose';
 
-        if ($this->isCashOut === true)
+        if ($this->request->IsCashOut === true)
             $result = 'cash out';
 
         return $result;
@@ -73,7 +71,7 @@ class SboSettleParlaySportsbookDetails implements ISboSportsbookDetails
 
     public function getTicketID(): string
     {
-        return $this->trxID;
+        return $this->request->TransferCode;
     }
 
     public function getOddsType(): string

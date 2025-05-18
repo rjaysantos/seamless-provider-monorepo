@@ -383,11 +383,9 @@ class SboService
 
             if ($this->isMixParlay(betDetails: $betDetails) === true) {
                 $sportsbookDetails = new SboSettleParlaySportsbookDetails(
-                    winloss: $request->WinLoss,
+                    request: $request,
                     betAmount: $transactionData->bet_amount,
-                    isCashOut: $request->IsCashOut,
                     odds: $betDetails->odds,
-                    trxID: $request->TransferCode,
                     oddsStyle: $betDetails->oddsStyle,
                     ipAddress: $playerData->ip_address
                 );

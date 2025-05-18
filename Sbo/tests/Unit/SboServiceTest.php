@@ -804,11 +804,9 @@ class SboServiceTest extends TestCase
                 payoutAmount: 1200.0,
                 settleTime: '2020-01-02 12:00:00',
                 sportsbookDetails: new SboSettleParlaySportsbookDetails(
-                    winloss: 1200.0,
+                    request: $request,
                     betAmount: 1000.0,
-                    isCashOut: false,
                     odds: 5.70,
-                    trxID: 'testTransactionID',
                     oddsStyle: 'E',
                     ipAddress: '123.456.7.8',
                 )
