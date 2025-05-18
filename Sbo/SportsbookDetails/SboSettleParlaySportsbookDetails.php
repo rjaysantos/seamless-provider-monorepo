@@ -75,6 +75,7 @@ class SboSettleParlaySportsbookDetails implements ISboSportsbookDetails
     {
         return $this->trxID;
     }
+
     public function getOddsType(): string
     {
         return match ($this->oddsStyle) {
@@ -85,10 +86,12 @@ class SboSettleParlaySportsbookDetails implements ISboSportsbookDetails
             default => $this->oddsStyle
         };
     }
+
     public function getStake(): float
     {
         return 0;
     }
+
     public function getScore(): string
     {
         return '-';
