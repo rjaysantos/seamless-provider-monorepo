@@ -333,7 +333,7 @@ class SboService
         if (is_null($playerData) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency($playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
 
         if ($request->CompanyKey != $credentials->getCompanyKey())
             throw new InvalidCompanyKeyException;
@@ -355,15 +355,15 @@ class SboService
             $settledTransactionID = $transactionData->bet_id;
 
             if (trim($transactionData->flag) === 'running') {
-                $sportsbookDetails = new SboRunningSportsbookDetails(gameCode: 0);
+                $sportsbookDetails = new SboRunningSportsbookDetails(gameCode: $transactionData->game_code);
 
                 $sportsbookReports = $this->walletReport->makeSportsbookReport(
-                    trxID: $transactionData->trx_id,
+                    trxID: $request->TransferCode,
                     betTime: $transactionData->bet_time,
                     sportsbookDetails: $sportsbookDetails
                 );
 
-                $settledTransactionID = "payout-1-{$transactionData->trx_id}";
+                $settledTransactionID = "payout-1-{$request->TransferCode}";
 
                 $balance = $this->wallet->payout(
                     credentials: $credentials,
@@ -391,7 +391,7 @@ class SboService
 
             $this->repository->createTransaction(
                 betID: $betID,
-                trxID: $transactionData->trx_id,
+                trxID: $request->TransferCode,
                 playID: $transactionData->play_id,
                 currency: $transactionData->currency,
                 betAmount: $transactionData->bet_amount,
