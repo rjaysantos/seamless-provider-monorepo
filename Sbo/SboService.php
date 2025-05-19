@@ -353,13 +353,11 @@ class SboService
             throw new InvalidCompanyKeyException;
 
         $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
-
         $transactionDataFlag = $transactionData ? trim($transactionData->flag) : null;
 
-        if (
-            in_array($transactionDataFlag, ['settled', 'void'], true)
-            || $transactionDataFlag === null
-        ) {
+        $transactionHasData = in_array($transactionDataFlag, ['settled', 'void'], true);
+
+        if ($transactionHasData || $transactionDataFlag === null) {
             $balance = $this->getWalletBalance(credentials: $credentials, playID: $playID);
 
             match ($transactionDataFlag) {
