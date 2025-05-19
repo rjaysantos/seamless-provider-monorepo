@@ -36,4 +36,14 @@ class SboResponse
             'ErrorMessage' => 'No Error'
         ]);
     }
+
+    public function cancel(Request $request, float $balance)
+    {
+        return response()->json([
+            'AccountName' => $request->Username,
+            'Balance' => $balance,
+            'ErrorCode' => 0,
+            'ErrorMessage' => 'No Error'
+        ]);
+    }
 }
