@@ -98,7 +98,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -281,7 +280,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -354,136 +352,6 @@ class SboSettleTest extends TestCase
             'match' => 'Mix Parlay',
             'hdp' => '0',
             'odds' => 5.70,
-            'result' => 'win',
-            'flag' => 'settled',
-            'status' => 1
-        ]);
-    }
-
-    public function test_settle_validRequestMiniGame_expectedData()
-    {
-        $wallet = new class extends TestWallet {
-            public function payout(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Report $report): array
-            {
-                return [
-                    'credit_after' => 2200.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
-
-        DB::table('sbo.players')
-            ->insert([
-                'play_id' => 'testPlayID',
-                'username' => 'testUsername',
-                'currency' => 'IDR',
-                'game' => '0',
-                'ip_address' => '123.456.7.8'
-            ]);
-
-        DB::table('sbo.reports')
-            ->insert([
-                'bet_id' => 'wager-1-fkg_200006173045',
-                'trx_id' => 'fkg_200006173045',
-                'play_id' => 'testPlayID',
-                'web_id' => 0,
-                'currency' => 'IDR',
-                'bet_amount' => 100.0,
-                'payout_amount' => 0.0,
-                'bet_time' => '2021-01-01 12:00:00',
-                'bet_choice' => '-',
-                'game_code' => '1',
-                'sports_type' => '-',
-                'event' => '-',
-                'match' => '-',
-                'hdp' => '-',
-                'odds' => 0,
-                'result' => '-',
-                'flag' => 'running',
-                'status' => 1
-            ]);
-
-        $request = [
-            'CompanyKey' => 'F34A561C731843F5A0AD5FA589060FBB',
-            'Username' => 'testPlayID',
-            'TransferCode' => 'fkg_200006173045',
-            'WinLoss' => 1200.0,
-            'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 9,
-            'IsCashOut' => false
-        ];
-
-        $response = $this->post('/sbo/prov/Settle', $request);
-
-        $response->assertJson([
-            'AccountName' => 'testPlayID',
-            'Balance' => 2200.0,
-            'ErrorCode' => 0,
-            'ErrorMessage' => 'No Error'
-        ]);
-
-        $response->assertStatus(200);
-
-        $this->assertDatabaseMissing('sbo.reports', [
-            'bet_id' => 'wager-1-fkg_200006173045',
-            'trx_id' => 'fkg_200006173045',
-            'play_id' => 'testPlayID',
-            'web_id' => 0,
-            'currency' => 'IDR',
-            'bet_amount' => 100.0,
-            'payout_amount' => 0.0,
-            'bet_time' => '2021-01-01 12:00:00',
-            'bet_choice' => '-',
-            'game_code' => '1',
-            'sports_type' => '-',
-            'event' => '-',
-            'match' => '-',
-            'hdp' => '-',
-            'odds' => 0,
-            'result' => '-',
-            'flag' => 'running',
-            'status' => 1
-        ]);
-
-        $this->assertDatabaseHas('sbo.reports', [
-            'bet_id' => 'wager-1-fkg_200006173045',
-            'trx_id' => 'fkg_200006173045',
-            'play_id' => 'testPlayID',
-            'web_id' => 0,
-            'currency' => 'IDR',
-            'bet_amount' => 100.0,
-            'payout_amount' => 0.0,
-            'bet_time' => '2021-01-01 12:00:00',
-            'bet_choice' => '-',
-            'game_code' => '1',
-            'sports_type' => '-',
-            'event' => '-',
-            'match' => '-',
-            'hdp' => '-',
-            'odds' => 0,
-            'result' => '-',
-            'flag' => 'running',
-            'status' => 0
-        ]);
-
-        $this->assertDatabaseHas('sbo.reports', [
-            'bet_id' => 'payout-1-fkg_200006173045',
-            'trx_id' => 'fkg_200006173045',
-            'play_id' => 'testPlayID',
-            'web_id' => 0,
-            'currency' => 'IDR',
-            'bet_amount' => 100,
-            'payout_amount' => 1200.0,
-            'bet_time' => '2020-01-02 12:00:00',
-            'bet_choice' => 'ARCADE',
-            'game_code' => '-',
-            'sports_type' => 'ARCADE',
-            'event' => 'ARCADE',
-            'match' => 'ARCADE',
-            'hdp' => '-',
-            'odds' => 0,
             'result' => 'win',
             'flag' => 'settled',
             'status' => 1
@@ -570,7 +438,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => $payout,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => $isCashOut
         ];
 
@@ -739,7 +606,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -909,7 +775,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -997,7 +862,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1021,7 +885,6 @@ class SboSettleTest extends TestCase
             ['TransferCode'],
             ['WinLoss'],
             ['ResultTime'],
-            ['ProductType'],
             ['IsCashOut']
         ];
     }
@@ -1043,7 +906,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1096,7 +958,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1161,7 +1022,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'invalid_transactionID',
             'WinLoss' => 200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1228,7 +1088,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1295,7 +1154,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1359,7 +1217,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1420,7 +1277,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1489,7 +1345,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1592,7 +1447,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -1705,7 +1559,6 @@ class SboSettleTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 

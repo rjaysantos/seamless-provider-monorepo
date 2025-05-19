@@ -354,49 +354,38 @@ class SboService
 
         $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
 
-        if (is_null($transactionData) === true) {
-            $balance = $this->getWalletBalance(credentials: $credentials, playID: $playID);
-            throw new ProviderTransactionNotFoundException(data: $balance);
-        }
+        $transactionDataFlag = $transactionData ? trim($transactionData->flag) : null;
 
-        $transactionDataFlag = trim($transactionData->flag);
-
-        if (in_array($transactionDataFlag, ['settled', 'void'], true)) {
+        if (
+            in_array($transactionDataFlag, ['settled', 'void'], true)
+            || $transactionDataFlag === null
+        ) {
             $balance = $this->getWalletBalance(credentials: $credentials, playID: $playID);
 
             match ($transactionDataFlag) {
                 'settled' => throw new TransactionAlreadySettledException(data: $balance),
                 'void' => throw new TransactionAlreadyVoidException(data: $balance),
+                null => throw new ProviderTransactionNotFoundException(data: $balance),
             };
         }
 
-        if ($request->ProductType === 9) {
-            $sportsbookDetails = new SboMinigameSportsbookDetails(
-                gameCode: $transactionData->game_code,
-                winloss: $request->WinLoss,
+        $betDetails = $this->sboApi->getBetList(credentials: $credentials, trxID: $request->TransferCode);
+
+        if ($this->isMixParlay(betDetails: $betDetails) === true) {
+            $sportsbookDetails = new SboSettleParlaySportsbookDetails(
+                request: $request,
                 betAmount: $transactionData->bet_amount,
-                isCashOut: $request->IsCashOut,
+                odds: $betDetails->odds,
+                oddsStyle: $betDetails->oddsStyle,
                 ipAddress: $playerData->ip_address
             );
         } else {
-            $betDetails = $this->sboApi->getBetList(credentials: $credentials, trxID: $request->TransferCode);
-
-            if ($this->isMixParlay(betDetails: $betDetails) === true) {
-                $sportsbookDetails = new SboSettleParlaySportsbookDetails(
-                    request: $request,
-                    betAmount: $transactionData->bet_amount,
-                    odds: $betDetails->odds,
-                    oddsStyle: $betDetails->oddsStyle,
-                    ipAddress: $playerData->ip_address
-                );
-            } else {
-                $sportsbookDetails = new SboSettleSportsbookDetails(
-                    betDetails: $betDetails,
-                    request: $request,
-                    betAmount: $transactionData->bet_amount,
-                    ipAddress: $playerData->ip_address
-                );
-            }
+            $sportsbookDetails = new SboSettleSportsbookDetails(
+                betDetails: $betDetails,
+                request: $request,
+                betAmount: $transactionData->bet_amount,
+                ipAddress: $playerData->ip_address
+            );
         }
 
         try {
@@ -406,7 +395,9 @@ class SboService
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
-            if ($this->isRollback(flag: $transactionDataFlag) === true) {
+            $isRollback = $this->isRollback(flag: $transactionDataFlag);
+
+            if ($isRollback === true) {
                 $resettleCount = $this->repository->getRollbackCount(trxID: $request->TransferCode);
                 $betID = "resettle-{$resettleCount}-{$request->TransferCode}";
             } else {
@@ -421,13 +412,11 @@ class SboService
                 currency: $playerData->currency,
                 betAmount: $transactionData->bet_amount,
                 payoutAmount: $request->WinLoss,
-                settleTime: $this->isRollback(flag: $transactionDataFlag) === true
-                    ? $transactionData->bet_time
-                    : $transactionDate,
+                settleTime: $isRollback === true ? $transactionData->bet_time : $transactionDate,
                 sportsbookDetails: $sportsbookDetails
             );
 
-            if ($this->isRollback(flag: $transactionDataFlag) === true) {
+            if ($isRollback === true) {
                 $walletResponse = $this->wallet->resettle(
                     credentials: $credentials,
                     playID: $playerData->play_id,

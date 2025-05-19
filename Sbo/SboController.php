@@ -113,7 +113,6 @@ class SboController
                 'TransferCode' => 'required|string',
                 'WinLoss' => 'required|regex:/^\d+(\.\d{1,6})?$/',
                 'ResultTime' => 'required|date',
-                'ProductType' => 'required|integer',
                 'IsCashOut' => 'required|bool'
             ]
         );

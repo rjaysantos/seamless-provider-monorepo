@@ -52,7 +52,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -123,7 +122,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -143,7 +141,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -214,7 +211,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -246,7 +242,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -315,7 +310,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -395,7 +389,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -443,7 +436,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -492,7 +484,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -547,7 +538,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -592,92 +582,6 @@ class SboServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockRepository_SboMinigameSportsbookDetails()
-    {
-        $request = new Request([
-            'CompanyKey' => 'testCompanyKey',
-            'Username' => 'testPlayID',
-            'TransferCode' => 'testTransactionID',
-            'WinLoss' => 1200.0,
-            'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 9,
-            'IsCashOut' => false
-        ]);
-
-        $mockRepository = $this->createMock(SboRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'ip_address' => '123.456.7.8'
-            ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCompanyKey')
-            ->willReturn('testCompanyKey');
-
-        $stubCredentials = $this->createMock(SboCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) [
-                'game_code' => 0,
-                'bet_amount' => 1000.0,
-                'bet_time' => '2020-01-02 00:00:00',
-                'flag' => 'running',
-                'ip_address' => '123.456.7.8',
-            ]);
-
-        $stubApi = $this->createMock(SboApi::class);
-        $stubApi->method('getBetList')
-            ->willReturn((object) [
-                'subBet' => [],
-                'oddsStyle' => 'E',
-                'odds' => 5.70
-            ]);
-
-        $mockRepository->expects($this->once())
-            ->method('createSettleTransaction')
-            ->with(
-                trxID: 'testTransactionID',
-                betID: "payout-1-testTransactionID",
-                playID: 'testPlayID',
-                currency: 'IDR',
-                betAmount: 1000.0,
-                payoutAmount: 1200.0,
-                settleTime: '2020-01-02 12:00:00',
-                sportsbookDetails: new SboMinigameSportsbookDetails(
-                    gameCode: 0,
-                    winloss: 1200.0,
-                    betAmount: 1000.0,
-                    isCashOut: false,
-                    ipAddress: '123.456.7.8',
-                )
-            );
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSportsbookReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 2000.0,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            wallet: $stubWallet,
-            sboApi: $stubApi,
-            credentials: $stubCredentials,
-            walletReport: $stubReport
-        );
-
-        $service->settle(request: $request);
-    }
-
     public function test_settle_mockApi_getBetList()
     {
         $request = new Request([
@@ -686,7 +590,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -755,7 +658,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -842,7 +744,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -938,7 +839,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1012,7 +912,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1084,7 +983,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1180,7 +1078,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1258,7 +1155,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1347,7 +1243,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1425,7 +1320,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1484,7 +1378,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1543,7 +1436,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -1614,7 +1506,6 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 

@@ -33,7 +33,6 @@ class SboControllerTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -56,7 +55,6 @@ class SboControllerTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ];
 
@@ -76,7 +74,6 @@ class SboControllerTest extends TestCase
             ['TransferCode', 123],
             ['WinLoss', 'test'],
             ['ResultTime', 123],
-            ['ProductType', 'test'],
             ['IsCashOut', 123]
         ];
     }
@@ -89,7 +86,6 @@ class SboControllerTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -110,7 +106,6 @@ class SboControllerTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
@@ -137,7 +132,6 @@ class SboControllerTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'WinLoss' => 1200.0,
             'ResultTime' => '2020-01-02 00:00:00',
-            'ProductType' => 1,
             'IsCashOut' => false
         ]);
 
