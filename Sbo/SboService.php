@@ -23,7 +23,6 @@ use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
 use Providers\Sbo\SportsbookDetails\SboSettleSportsbookDetails;
 use Providers\Sbo\Exceptions\TransactionAlreadySettledException;
-use Providers\Sbo\SportsbookDetails\SboMinigameSportsbookDetails;
 use Providers\Sbo\Exceptions\ProviderTransactionNotFoundException;
 use Providers\Sbo\SportsbookDetails\SboSettleParlaySportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
