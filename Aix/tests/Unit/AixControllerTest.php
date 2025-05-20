@@ -350,4 +350,121 @@ class AixControllerTest extends TestCase
 
         $this->assertEquals(expected: $expectedData, actual: $response);
     }
+
+    #[DataProvider('invalidBonusRequestParams')]
+    public function test_bonus_invalidRequestParams_InvalidProviderRequestException($param, $value)
+    {
+        $this->expectException(InvalidProviderRequestException::class);
+
+        $request = new Request([
+            'user_id' => 'testPlayer',
+            'amount' => 200,
+            'prd_id' => 1,
+            'txn_id' => 'payout-testTransactionID'
+        ]);
+
+        $request[$param] = $value;
+
+        $controller = $this->makeController();
+        $controller->bonus(request: $request);
+    }
+
+    public static function invalidBonusRequestParams()
+    {
+        return [
+            ['user_id', 123],
+            ['amount', 'test'],
+            ['prd_id', 'test'],
+            ['txn_id', 12345],
+        ];
+    }
+
+    #[DataProvider('missingBonusRequestParams')]
+    public function test_bonus_missingRequestParams_InvalidProviderRequestException($param)
+    {
+        $this->expectException(InvalidProviderRequestException::class);
+
+        $request = new Request([
+            'user_id' => 'testPlayer',
+            'amount' => 200,
+            'prd_id' => 1,
+            'txn_id' => 'payout-testTransactionID'
+        ]);
+
+        unset($request[$param]);
+
+        $controller = $this->makeController();
+        $controller->bonus(request: $request);
+    }
+
+    public static function missingBonusRequestParams()
+    {
+        return [
+            ['user_id'],
+            ['amount'],
+            ['prd_id'],
+            ['txn_id']
+        ];
+    }
+
+    public function test_bonus_mockService_bonus()
+    {
+        $request = new Request([
+            'user_id' => 'testPlayer',
+            'amount' => 200,
+            'prd_id' => 1,
+            'txn_id' => 'payout-testTransactionID'
+        ]);
+
+        $mockService = $this->createMock(AixService::class);
+        $mockService->expects($this->once())
+            ->method('bonus')
+            ->with($request);
+
+        $controller = $this->makeController(service: $mockService);
+        $controller->bonus(request: $request);
+    }
+
+    public function test_bonus_mockResponse_successResponse()
+    {
+        $request = new Request([
+            'user_id' => 'testPlayer',
+            'amount' => 200,
+            'prd_id' => 1,
+            'txn_id' => 'payout-testTransactionID'
+        ]);
+
+        $mockResponse = $this->createMock(AixResponse::class);
+        $mockResponse->expects($this->once())
+            ->method('successResponse')
+            ->with(0);
+
+        $controller = $this->makeController(response: $mockResponse);
+        $controller->bonus(request: $request);
+    }
+
+    public function test_bonus_stubResponse_expected()
+    {
+        $request = new Request([
+            'user_id' => 'testPlayer',
+            'amount' => 200,
+            'prd_id' => 1,
+            'txn_id' => 'payout-testTransactionID'
+        ]);
+
+        $expected = new JsonResponse;
+
+        $stubService = $this->createMock(AixService::class);
+        $stubService->method('bonus')
+            ->willReturn(0);
+
+        $stubResponse = $this->createMock(AixResponse::class);
+        $stubResponse->method('successResponse')
+            ->willReturn($expected);
+
+        $controller = $this->makeController(service: $stubService, response: $stubResponse);
+        $result = $controller->bonus(request: $request);
+
+        $this->assertSame(expected: $expected, actual: $result);
+    }
 }
