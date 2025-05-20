@@ -23,7 +23,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         $randomizer = new class extends Randomizer {
@@ -35,7 +36,7 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
-            '/launch?token=testToken&language=en-US' => Http::response(json_encode([
+            '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 0,
                 'Data' => (object) [
                     'Url' => 'testUrl.com'
@@ -69,10 +70,10 @@ class YgrPlayTest extends TestCase
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=en-US' &&
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
                 $request->hasHeader('Supplier', 'AIX') &&
                 $request['token'] == 'testToken' &&
-                $request['language'] == 'en-US';
+                $request['language'] == 'id-ID';
         });
     }
 
@@ -95,7 +96,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         $randomizer = new class extends Randomizer {
@@ -107,7 +109,7 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
-            '/launch?token=testToken&language=en-US' => Http::response(json_encode([
+            '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 0,
                 'Data' => (object) [
                     'Url' => 'testUrl.com'
@@ -141,10 +143,10 @@ class YgrPlayTest extends TestCase
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=en-US' &&
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
                 $request->hasHeader('Supplier', 'AIX') &&
                 $request['token'] == 'testToken' &&
-                $request['language'] == 'en-US';
+                $request['language'] == 'id-ID';
         });
     }
 
@@ -155,7 +157,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         unset($request[$parameter]);
@@ -180,7 +183,8 @@ class YgrPlayTest extends TestCase
             ['playId'],
             ['username'],
             ['currency'],
-            ['gameId']
+            ['gameId'],
+            ['language']
         ];
     }
 
@@ -190,7 +194,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         $response = $this->post('ygr/in/play', $request, [
@@ -226,7 +231,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         $randomizer = new class extends Randomizer {
@@ -238,7 +244,7 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
-            '/launch?token=testToken&language=en-US' => Http::response(json_encode([
+            '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 8001,
                 'Message' => '/token/authorizationConnectToken http request error!!!! ENOTFOUND(9998)',
                 'Data' => null
@@ -271,10 +277,10 @@ class YgrPlayTest extends TestCase
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=en-US' &&
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
                 $request->hasHeader('Supplier', 'AIX') &&
                 $request['token'] == 'testToken' &&
-                $request['language'] == 'en-US';
+                $request['language'] == 'id-ID';
         });
     }
 
@@ -298,7 +304,8 @@ class YgrPlayTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ];
 
         $randomizer = new class extends Randomizer {
@@ -322,7 +329,7 @@ class YgrPlayTest extends TestCase
             unset($apiResponse['Data'][$parameter]);
 
         Http::fake([
-            '/launch?token=testToken&language=en-US' => Http::response(json_encode($apiResponse))
+            '/launch*' => Http::response(json_encode($apiResponse))
         ]);
 
         $response = $this->post('ygr/in/play', $request, [
@@ -351,10 +358,10 @@ class YgrPlayTest extends TestCase
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=en-US' &&
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
                 $request->hasHeader('Supplier', 'AIX') &&
                 $request['token'] == 'testToken' &&
-                $request['language'] == 'en-US';
+                $request['language'] == 'id-ID';
         });
     }
 

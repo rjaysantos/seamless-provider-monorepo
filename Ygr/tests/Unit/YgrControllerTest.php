@@ -35,7 +35,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
 
         unset($request[$parameter]);
@@ -53,7 +54,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
 
         $request[$parameter] = 123;
@@ -68,7 +70,8 @@ class YgrControllerTest extends TestCase
             ['playId'],
             ['username'],
             ['currency'],
-            ['gameId']
+            ['gameId'],
+            ['language']
         ];
     }
 
@@ -80,7 +83,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
 
         $request->headers->set('Authorization', 'Bearer ' . 'invalidBearerToken');
@@ -95,7 +99,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
@@ -114,7 +119,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
@@ -139,7 +145,8 @@ class YgrControllerTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameID'
+            'gameId' => 'testGameID',
+            'language' => 'id'
         ]);
         $request->headers->set('Authorization', 'Bearer ' . env('FEATURE_TEST_TOKEN'));
 
