@@ -25,11 +25,22 @@ class YgrApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function launch(ICredentials $credentials, string $token): string
+    private function getProviderLanguage(string $lang): string
+    {
+        return match ($lang) {
+            'id' => 'id-ID',
+            'th' => 'th-TH',
+            'vn' => 'vi-VN',
+            'br' => 'pt-BR',
+            default => 'en-US'
+        };
+    }
+
+    public function launch(ICredentials $credentials, string $token, string $language): string
     {
         $apiRequest = [
             'token' => $token,
-            'language' => 'en-US'
+            'language' => $this->getProviderLanguage(lang: $language)
         ];
 
         $headers = [

@@ -35,7 +35,8 @@ class YgrController
             'playId' => 'required|string',
             'username' => 'required|string',
             'currency' => 'required|string|in:IDR,PHP,THB,VND,BRL,USD,MYR',
-            'gameId' => 'required|string'
+            'gameId' => 'required|string',
+            'language' => 'required|string'
         ]);
 
         $launchUrl = $this->service->getLaunchUrl(request: $request);
