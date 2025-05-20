@@ -53,7 +53,8 @@ class YgrService
 
         return $this->api->launch(
             credentials: $credentials,
-            token: $token
+            token: $token,
+            language: $request->language
         );
     }
 

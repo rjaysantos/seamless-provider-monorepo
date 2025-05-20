@@ -16,7 +16,8 @@ class YgrApiTest extends TestCase
         return new YgrApi(http: $http);
     }
 
-    public function test_launch_mockHttp_get()
+    #[DataProvider('providerLanguages')]
+    public function test_launch_mockHttp_get($language, $providerLanguage)
     {
         $token = 'testToken';
 
@@ -33,7 +34,7 @@ class YgrApiTest extends TestCase
                 url: $providerCredentials->getApiUrl() . '/launch',
                 request: [
                     'token' => $token,
-                    'language' => 'en-US'
+                    'language' => $providerLanguage
                 ],
                 headers: ['Supplier' => 'testSupplier']
             )
@@ -45,9 +46,23 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $mockHttp);
-        $api->launch(credentials: $providerCredentials, token: $token);
+        $api->launch(credentials: $providerCredentials, token: $token, language: $language);
     }
 
+    public static function providerLanguages()
+    {
+        return [
+            ['id', 'id-ID'],
+            ['ph', 'en-US'],
+            ['th', 'th-TH'],
+            ['vn', 'vi-VN'],
+            ['br', 'pt-BR'],
+            ['en', 'en-US'],
+            ['ms', 'en-US']
+        ];
+
+        // IDR PHP THB VND BRL USD MYR
+    }
     public function test_launch_stubHttp_expectedData()
     {
         $expected = 'testUrl.com';
@@ -68,7 +83,7 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $response = $api->launch(credentials: $providerCredentials, token: $token);
+        $response = $api->launch(credentials: $providerCredentials, token: $token, language: 'id');
 
         $this->assertSame(expected: $expected, actual: $response);
     }
@@ -89,7 +104,7 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->launch(credentials: $providerCredentials, token: $token);
+        $api->launch(credentials: $providerCredentials, token: $token, language: 'id');
     }
 
     #[DataProvider('apiResponse')]
@@ -119,7 +134,7 @@ class YgrApiTest extends TestCase
             ->willReturn((object) $apiResponse);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->launch(credentials: $providerCredentials, token: $token);
+        $api->launch(credentials: $providerCredentials, token: $token, language: 'id');
     }
 
     public function test_getBetDetailUrl_mockHttp_post()
