@@ -50,7 +50,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $mockRepository = $this->createMock(YgrRepository::class);
@@ -72,7 +73,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $mockRepository = $this->createMock(YgrRepository::class);
@@ -101,7 +103,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $mockRepository = $this->createMock(YgrRepository::class);
@@ -130,7 +133,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $mockCredentials = $this->createMock(YgrCredentials::class);
@@ -151,7 +155,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $stubRandomizer = $this->createMock(Randomizer::class);
@@ -167,7 +172,7 @@ class YgrServiceTest extends TestCase
         $mockApi = $this->createMock(YgrApi::class);
         $mockApi->expects($this->once())
             ->method('launch')
-            ->with(credentials: $providerCredentials, token: 'testToken')
+            ->with(credentials: $providerCredentials, token: 'testToken', language: 'id')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $stubCredentials, randomizer: $stubRandomizer, api: $mockApi);
@@ -182,7 +187,8 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId'
+            'gameId' => 'testGameId',
+            'language' => 'id'
         ]);
 
         $stubApi = $this->createMock(YgrApi::class);
