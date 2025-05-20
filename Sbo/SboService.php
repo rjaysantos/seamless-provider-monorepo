@@ -139,7 +139,7 @@ class SboService
         if (is_null($transaction) === false)
             throw new TransactionAlreadyExistException(data: $balance);
 
-        $betTime = Carbon::parse($request->BetTime, self::PROVIDER_TIMEZONE)
+        $transactionDate = Carbon::parse($request->BetTime, self::PROVIDER_TIMEZONE)
             ->setTimezone(8)
             ->format('Y-m-d H:i:s');
 
@@ -173,18 +173,18 @@ class SboService
                 playID: $playID,
                 currency: $playerDetails->currency,
                 betAmount: $request->Amount,
-                betTime: $betTime,
+                betTime: $transactionDate,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
             );
 
             $sportsbookReports = $this->walletReport->makeSportsbookReport(
                 trxID: $request->TransferCode,
-                betTime: $betTime,
+                betTime: $transactionDate,
                 sportsbookDetails: new SboRunningSportsbookDetails(gameCode: $gameCode)
             );
 
-            $wagerResponse = $this->wallet->wager(
+            $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
                 playID: $playID,
                 currency: $playerDetails->currency,
@@ -193,7 +193,7 @@ class SboService
                 report: $sportsbookReports
             );
 
-            if ($wagerResponse['status_code'] != 2100)
+            if ($walletResponse['status_code'] != 2100)
                 throw new WalletException;
 
             DB::connection('pgsql_write')->commit();
@@ -202,6 +202,6 @@ class SboService
             throw $e;
         }
 
-        return $wagerResponse['credit_after'];
+        return $walletResponse['credit_after'];
     }
 }
