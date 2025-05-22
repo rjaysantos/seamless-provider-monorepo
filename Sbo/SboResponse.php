@@ -16,10 +16,10 @@ class SboResponse
         ]);
     }
 
-    public function balance(Request $request, float $balance)
+    public function balance(string $playID, float $balance)
     {
         return response()->json([
-            'AccountName' => $request->Username,
+            'AccountName' => $playID,
             'Balance' => $balance,
             'ErrorCode' => 0,
             'ErrorMessage' => 'No Error'

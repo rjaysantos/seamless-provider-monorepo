@@ -80,7 +80,7 @@ class SboController
 
         $balance = $this->service->getBalance(request: $request);
 
-        return $this->response->balance(request: $request, balance: $balance);
+        return $this->response->balance(playID: $request->Username, balance: $balance);
     }
 
     public function deduct(Request $request)
@@ -101,5 +101,21 @@ class SboController
         $balance = $this->service->deduct(request: $request);
 
         return $this->response->deduct(request: $request, balance: $balance);
+    }
+
+    public function rollback(Request $request)
+    {
+        $this->validateProviderRequest(
+            request: $request,
+            rules: [
+                'CompanyKey' => 'required|string',
+                'Username' => 'required|string',
+                'TransferCode' => 'required|string',
+            ]
+        );
+
+        $balance = $this->service->rollback(request: $request);
+
+        return $this->response->balance(playID: $request->Username, balance: $balance);
     }
 }

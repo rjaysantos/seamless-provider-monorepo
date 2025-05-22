@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class SboRepository
 {
+    private const ACTIVE = 1;
+    private const INACTIVE = 0;
+
     public function getPlayerByPlayID(string $playID): ?object
     {
         return DB::table('sbo.players')
@@ -83,7 +86,7 @@ class SboRepository
     {
         DB::connection('pgsql_write')->table('sbo.reports')
             ->where('trx_id', $trxID)
-            ->update(['status' => '0']);
+            ->update(['status' => self::INACTIVE]);
     }
 
     public function getRunningCount(string $trxID): int
@@ -92,5 +95,44 @@ class SboRepository
             ->where('trx_id', $trxID)
             ->where('flag', 'running')
             ->count();
+    }
+
+    public function getRollbackCount(string $trxID): int
+    {
+        return  DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->whereIn('flag', ['running', 'rollback'])
+            ->count();
+    }
+
+    public function createRollbackTransaction(
+        string $trxID,
+        string $betID,
+        object $transactionData
+    ): void {
+
+        $this->inactiveTransaction(trxID: $trxID);
+
+        DB::connection('pgsql_write')->table('sbo.reports')
+            ->insert([
+                'bet_id' => $betID,
+                'trx_id' => $trxID,
+                'play_id' => $transactionData->play_id,
+                'web_id' => $transactionData->web_id,
+                'currency' => $transactionData->currency,
+                'bet_amount' => $transactionData->bet_amount,
+                'payout_amount' => 0,
+                'bet_time' => $transactionData->bet_time,
+                'bet_choice' => $transactionData->bet_choice,
+                'game_code' => $transactionData->game_code,
+                'sports_type' => $transactionData->sports_type,
+                'event' => $transactionData->event,
+                'match' => $transactionData->match,
+                'hdp' => $transactionData->hdp,
+                'odds' => $transactionData->odds,
+                'result' => '-',
+                'flag' => 'rollback',
+                'status' => self::ACTIVE,
+            ]);
     }
 }
