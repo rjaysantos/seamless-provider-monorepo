@@ -56,26 +56,14 @@ class PcaResponse
 
     public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
     {
-        switch ($currency) {
-            case 'IDR':
-                $country = 'ID';
-                break;
-            case 'PHP':
-                $country = 'PH';
-                break;
-            case 'VND':
-                $country = 'VN';
-                break;
-            case 'BRL':
-                $country = 'BR';
-                break;
-            case 'USD':
-                $country = 'US';
-                break;
-            case 'THB':
-                $country = 'TH';
-                break;
-        }
+        $country = match ($currency) {
+            'IDR' => 'ID',
+            'PHP' => 'PH',
+            'VND' => 'VN',
+            'BRL' => 'BR',
+            'USD' => 'US',
+            'THB' => 'TH',
+        };
 
         return response()->json(data: [
             "requestId" => $requestId,

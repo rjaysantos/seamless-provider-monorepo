@@ -16,20 +16,14 @@ class PcaCredentials
     public function getCredentialsByCurrency(?string $currency): ICredentials
     {
         if (config('app.env') === 'PRODUCTION') {
-            switch ($currency) {
-                case 'IDR':
-                    return new PcaIDR;
-                case 'PHP':
-                    return new PcaPHP;
-                case 'THB':
-                    return new PcaTHB;
-                case 'VND':
-                    return new PcaVND;
-                case 'USD':
-                    return new PcaUSD;
-                case 'MYR':
-                    return new PcaMYR;
-            }
+            return match ($currency) {
+                'IDR' => new PcaIDR,
+                'PHP' => new PcaPHP,
+                'THB' => new PcaTHB,
+                'VND' => new PcaVND,
+                'USD' => new PcaUSD,
+                'MYR' => new PcaMYR,
+            };
         }
 
         return new PcaStaging;

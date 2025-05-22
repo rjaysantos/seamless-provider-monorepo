@@ -29,7 +29,7 @@ class PcaResponseTest extends TestCase
         ], actual: $result->getData(true));
     }
 
-    public function test_authenticate_stubData_expected()
+    public function test_authenticate_stubDataSTG_expected()
     {
         $requestId = 'TEST_requestToken';
         $playID = 'TEST_PLAYERID';
@@ -42,9 +42,42 @@ class PcaResponseTest extends TestCase
         ]);
 
         $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'CNY');
+        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'IDR');
 
         $this->assertEquals(expected: $expected, actual: $result);
+    }
+
+    #[DataProvider('currencyAndCountryCode')]
+    public function test_authenticate_stubDataPROD_expected($currency, $countryCode)
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        $requestId = 'TEST_requestToken';
+        $playID = 'TEST_PLAYERID';
+
+        $expected = response()->json([
+            "requestId" => $requestId,
+            "username" => $playID,
+            "currencyCode" => $currency,
+            "countryCode" => $countryCode
+        ]);
+
+        $response = $this->makeResponse();
+        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: $currency);
+
+        $this->assertEquals(expected: $expected, actual: $result);
+    }
+
+    public static function currencyAndCountryCode()
+    {
+        return [
+            ['IDR', 'ID'],
+            ['PHP', 'PH'],
+            ['BRL', 'BR'],
+            ['VND', 'VN'],
+            ['USD', 'US'],
+            ['THB', 'TH'],
+        ];
     }
 
     public static function currencies()
@@ -78,8 +111,6 @@ class PcaResponseTest extends TestCase
         $result = $response->getBalance(requestId: $requestId, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     #[DataProvider('formattedBalance')]
@@ -101,8 +132,6 @@ class PcaResponseTest extends TestCase
         $result = $response->getBalance(requestId: $requestId, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public function test_healthCheck_stubData_expected()
@@ -220,8 +249,6 @@ class PcaResponseTest extends TestCase
         $result = $response->gameRoundResult(request: $request, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public function test_gameRoundResult_stubDataWithWin_expected()
@@ -291,8 +318,6 @@ class PcaResponseTest extends TestCase
         $result = $response->gameRoundResult(request: $request, balance: $balance);
 
         $this->assertEquals(expected: $expected, actual: $result);
-
-        Carbon::setTestNow();
     }
 
     public static function formattedBalance()
