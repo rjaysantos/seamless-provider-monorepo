@@ -335,16 +335,15 @@ class SboService
             throw new InvalidCompanyKeyException;
 
         $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
-        $transactionDataFlag = $transactionData ? trim($transactionData->flag) : null;
 
-        if ($transactionDataFlag === 'rollback' || $transactionDataFlag === null) {
-            $balance = $this->getWalletBalance(credentials: $credentials, playID: $playID);
+        if (is_null($transactionData) === true)
+            throw new ProviderTransactionNotFoundException(data: $this->getWalletBalance(
+                credentials: $credentials,
+                playID: $playID
+            ));
 
-            match ($transactionDataFlag) {
-                'rollback' => throw new TransactionAlreadyRollbackException(data: $balance),
-                null => throw new ProviderTransactionNotFoundException(data: $balance),
-            };
-        }
+        if (trim($transactionData->flag) === 'rollback')
+            throw new TransactionAlreadyRollbackException;
 
         try {
             DB::connection('pgsql_write')->beginTransaction();

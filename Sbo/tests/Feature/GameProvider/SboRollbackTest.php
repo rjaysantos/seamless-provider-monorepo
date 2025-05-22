@@ -537,9 +537,7 @@ class SboRollbackTest extends TestCase
 
         $response->assertJson([
             'ErrorCode' => 2003,
-            'ErrorMessage' => 'Bet Already Rollback',
-            'Balance' => 2500,
-            'AccountName' => 'testPlayID',
+            'ErrorMessage' => 'Bet Already Rollback'
         ]);
 
         $response->assertStatus(200);
@@ -565,28 +563,6 @@ class SboRollbackTest extends TestCase
                 'currency' => 'IDR',
                 'game' => '0',
                 'ip_address' => '123.456.7.8'
-            ]);
-
-        DB::table('sbo.reports')
-            ->insert([
-                'bet_id' => 'rollback-1-testTransactionID',
-                'trx_id' => 'testTransactionID',
-                'play_id' => 'testPlayID',
-                'web_id' => 0,
-                'currency' => 'IDR',
-                'bet_amount' => 1000,
-                'payout_amount' => 0,
-                'bet_time' => '2020-01-02 12:00:00',
-                'bet_choice' => 'Over',
-                'game_code' => 'Money Line',
-                'sports_type' => 'Football',
-                'event' => 'ITF - Taipei W35 - Womens Singles (Set Handicap)',
-                'match' => 'Denmark-vs-England',
-                'hdp' => '2.5',
-                'odds' => 3.40,
-                'result' => '-',
-                'flag' => 'rollback',
-                'status' => 1
             ]);
 
         $request = [
