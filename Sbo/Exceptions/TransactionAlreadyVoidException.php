@@ -6,15 +6,11 @@ use Illuminate\Http\JsonResponse;
 
 class TransactionAlreadyVoidException extends \Exception
 {
-    public function __construct(protected $data = null) {}
-
-    public function render($request): JsonResponse
+    public function render(): JsonResponse
     {
         return response()->json([
             'ErrorCode' => 2002,
-            'ErrorMessage' => 'Bet Already Cancelled',
-            'Balance' => $this->data,
-            'AccountName' => $request->Username,
+            'ErrorMessage' => 'Bet Already Cancelled'
         ]);
     }
 }

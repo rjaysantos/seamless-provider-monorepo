@@ -352,19 +352,23 @@ class SboService
             throw new InvalidCompanyKeyException;
 
         $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
-        $transactionDataFlag = $transactionData ? trim($transactionData->flag) : null;
 
-        $transactionHasData = in_array($transactionDataFlag, ['settled', 'void'], true);
+        if (is_null($transactionData) === true)
+            throw new ProviderTransactionNotFoundException(data: $this->getWalletBalance(
+                credentials: $credentials,
+                playID: $playID
+            ));
 
-        if ($transactionHasData || $transactionDataFlag === null) {
-            $balance = $this->getWalletBalance(credentials: $credentials, playID: $playID);
+        $transactionDataFlag = trim($transactionData->flag);
 
-            match ($transactionDataFlag) {
-                'settled' => throw new TransactionAlreadySettledException(data: $balance),
-                'void' => throw new TransactionAlreadyVoidException(data: $balance),
-                null => throw new ProviderTransactionNotFoundException(data: $balance),
-            };
-        }
+        if ($transactionDataFlag === 'settled')
+            throw new TransactionAlreadySettledException(data: $this->getWalletBalance(
+                credentials: $credentials,
+                playID: $playID
+            ));
+
+        if ($transactionDataFlag === 'void')
+            throw new TransactionAlreadyVoidException;
 
         $betDetails = $this->sboApi->getBetList(credentials: $credentials, trxID: $request->TransferCode);
 
