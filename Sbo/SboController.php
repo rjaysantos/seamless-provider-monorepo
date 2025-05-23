@@ -61,7 +61,7 @@ class SboController
 
     private function validateProviderRequest(Request $request, array $rules): void
     {
-        $validate = Validator::make($request->all(),  $rules);
+        $validate = Validator::make($request->all(), $rules);
 
         if ($validate->fails())
             throw new ProviderInvalidRequestException;
@@ -101,6 +101,19 @@ class SboController
         $balance = $this->service->deduct(request: $request);
 
         return $this->response->deduct(request: $request, balance: $balance);
+    }
+
+    public function cancel(Request $request)
+    {
+        $this->validateProviderRequest(request: $request, rules: [
+            'CompanyKey' => 'required|string',
+            'Username' => 'required|string',
+            'TransferCode' => 'required|string'
+        ]);
+
+        $balance = $this->service->cancel(request: $request);
+
+        return $this->response->cancel(request: $request, balance: $balance);
     }
 
     public function settle(Request $request)
