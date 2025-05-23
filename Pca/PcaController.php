@@ -42,7 +42,7 @@ class PcaController
         $this->validateCasinoRequest(request: $request, rules: [
             'playId' => 'required|string',
             'username' => 'required|string',
-            'currency' => 'required|string',
+            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
             'language' => 'required|string',
             'gameId' => 'required|string',
             'device' => 'required|numeric'

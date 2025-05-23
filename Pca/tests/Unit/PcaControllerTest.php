@@ -67,6 +67,7 @@ class PcaControllerTest extends TestCase
             ['playId', 123],
             ['username', 123],
             ['currency', 123],
+            ['currency', 'BRL'],
             ['language', 123],
             ['gameId', 123],
             ['device', 'web']
