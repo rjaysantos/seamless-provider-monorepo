@@ -430,7 +430,7 @@ class SboService
 
     public function rollback(Request $request): float
     {
-        $playID = str_replace('sbo_', '', $request->Username);
+        $playID = Str::after($request->Username, 'sbo_');
 
         $playerData = $this->repository->getPlayerByPlayID(playID: $playID);
 
