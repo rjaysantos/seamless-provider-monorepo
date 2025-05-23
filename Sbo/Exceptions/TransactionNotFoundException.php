@@ -2,11 +2,14 @@
 
 namespace Providers\Sbo\Exceptions;
 
+use Exception;
 use Illuminate\Http\JsonResponse;
 
-class TransactionNotFoundException extends \Exception
+class TransactionNotFoundException extends Exception
 {
-    public function __construct(protected $data = null) {}
+    public function __construct(protected $data = null)
+    {
+    }
 
     public function render($request): JsonResponse
     {
@@ -14,7 +17,7 @@ class TransactionNotFoundException extends \Exception
             'ErrorCode' => 6,
             'ErrorMessage' => 'Bet not exists',
             'Balance' => $this->data,
-            'AccountName' => $request->Username,
+            'AccountName' => $request->Username
         ]);
     }
 }

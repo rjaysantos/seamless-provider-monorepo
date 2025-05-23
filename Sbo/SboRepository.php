@@ -4,6 +4,7 @@ namespace Providers\Sbo;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Providers\Sbo\Contracts\ISboSportsbookDetails;
 
 class SboRepository
 {
@@ -20,7 +21,7 @@ class SboRepository
 
     public function createPlayer(string $playID, string $currency, string $ip): void
     {
-        $dateTimeNow =  Carbon::now()->format('Y-m-d H:i:s');
+        $dateTimeNow = Carbon::now()->format('Y-m-d H:i:s');
 
         DB::connection('pgsql_write')->table('sbo.players')
             ->insertOrIgnore([
@@ -57,7 +58,7 @@ class SboRepository
         float $betAmount,
         string $betTime,
         string $flag,
-        object $sportsbookDetails
+        ISboSportsbookDetails $sportsbookDetails
     ): void {
         DB::connection('pgsql_write')->table('sbo.reports')
             ->insert([
@@ -69,14 +70,14 @@ class SboRepository
                 'bet_amount' => $betAmount,
                 'payout_amount' => 0,
                 'bet_time' => $betTime,
-                'bet_choice' => $sportsbookDetails->betChoice,
-                'game_code' => $sportsbookDetails->gameCode,
-                'sports_type' => $sportsbookDetails->sportsType,
-                'event' => $sportsbookDetails->event,
-                'match' => $sportsbookDetails->match,
-                'hdp' => $sportsbookDetails->hdp,
-                'odds' => $sportsbookDetails->odds,
-                'result' => $sportsbookDetails->result,
+                'bet_choice' => $sportsbookDetails->getBetChoice(),
+                'game_code' => $sportsbookDetails->getGameCode(),
+                'sports_type' => $sportsbookDetails->getSportsType(),
+                'event' => $sportsbookDetails->getEvent(),
+                'match' => $sportsbookDetails->getMatch(),
+                'hdp' => $sportsbookDetails->getHdp(),
+                'odds' => $sportsbookDetails->getOdds(),
+                'result' => $sportsbookDetails->getResult(),
                 'flag' => $flag,
                 'status' => '1',
             ]);
@@ -91,9 +92,17 @@ class SboRepository
 
     public function getRunningCount(string $trxID): int
     {
-        return  DB::table('sbo.reports')
+        return DB::table('sbo.reports')
             ->where('trx_id', $trxID)
             ->where('flag', 'running')
+            ->count();
+    }
+
+    public function getVoidedCount(string $trxID): int
+    {
+        return DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->where('flag', 'void')
             ->count();
     }
 
