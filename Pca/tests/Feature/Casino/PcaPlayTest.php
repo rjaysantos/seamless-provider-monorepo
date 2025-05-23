@@ -293,6 +293,91 @@ class PcaPlayTest extends TestCase
         ]);
     }
 
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_play_thirdPartyApiMissingResponseData_expectedData($parameter)
+    {
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
+        $request = [
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ];
+
+        $response = [
+            'code' => 200,
+            'data' => [
+                'url' => 'testUrl.com'
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data'][$parameter]);
+        else
+            unset($response[$parameter]);
+
+        Http::fake([
+            '/from-operator/getGameLaunchUrl' => Http::response(json_encode($response))
+        ]);
+
+        $response = $this->post('pca/in/play', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+        ]);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+
+        $this->assertDatabaseHas('pca.players', [
+            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
+            'username' => 'testUsername'
+        ]);
+
+        $this->assertDatabaseHas('pca.playgame', [
+            'play_id' => 'testPlayID',
+            'token' => 'PCAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
+                $request->hasHeader('x-auth-kiosk-key', '6e7928b51d2790e1b959fafc6a83f93d9eff411fc333' .
+                    '84ac7faa0c8d54ad0774') &&
+                $request['serverName'] == 'AGCASTG' &&
+                $request['username'] == 'PCAUCN_TESTPLAYID' &&
+                $request['gameCodeName'] == 'ubal' &&
+                $request['clientPlatform'] == 'web' &&
+                $request['externalToken'] == 'PCAUCN_testToken' &&
+                $request['language'] == 'en' &&
+                $request['playMode'] == 1;
+        });
+    }
+
+    public static function getGameLaunchUrlParams()
+    {
+        return [
+            ['code'],
+            ['data'],
+            ['url']
+        ];
+    }
+
     public function test_play_thirdPartyApiErrorCodeNot200_expectedData()
     {
         $request = [

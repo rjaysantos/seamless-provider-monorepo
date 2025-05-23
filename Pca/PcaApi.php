@@ -5,6 +5,7 @@ namespace Providers\Pca;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Libraries\LaravelHttpClient;
+use Illuminate\Support\Facades\Validator;
 use Providers\Pca\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
@@ -35,7 +36,13 @@ class PcaApi
             headers: $headers
         );
 
-        if (isset($response->code) === false || $response->code !== 200)
+        $validator = Validator::make(data: json_decode(json_encode($response), true), rules: [
+            'code'=> 'required|integer',
+            'data'=> 'required|array',
+            'data.url'=> 'required|string',
+        ]);
+
+        if ($validator->fails() || $response->code !== 200)
             throw new ThirdPartyApiErrorException;
 
         return $response->data->url;
