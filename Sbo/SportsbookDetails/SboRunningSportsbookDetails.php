@@ -1,0 +1,97 @@
+<?php
+
+namespace Providers\Sbo\SportsbookDetails;
+
+use App\Contracts\V2\ISportsbookDetails;
+
+
+class SboRunningSportsbookDetails implements ISportsbookDetails
+{
+    public function __construct(protected int $gameCode){}
+
+    public function getGameCode(): string
+    {
+        return $this->gameCode;
+    }
+
+    public function getBetChoice(): string
+    {
+        return '-';
+    }
+
+    public function getResult(): string
+    {
+        return '-';
+    }
+
+    public function getSportsType(): string
+    {
+        return match ($this->gameCode) {
+            285 => 'Mini Mines',
+            286 => 'Mini Football Strike',
+            default => '-'
+        };
+    }
+
+    public function getEvent(): string
+    {
+        return '-';
+    }
+
+    public function getMatch(): string
+    {
+        return '-';
+    }
+
+    public function getMarket(): string
+    {
+        return '-';
+    }
+
+    public function getHdp(): string
+    {
+        return '-';
+    }
+
+    public function getOdds(): float
+    {
+        return 0.0;
+    }
+
+    public function getOpt(): string
+    {
+        return '-';
+    }
+
+    public function getTicketID(): string
+    {
+        return '-';
+    }
+    public function getOddsType(): string
+    {
+        return '-';
+    }
+    public function getStake(): float
+    {
+        return 0;
+    }
+    public function getScore(): string
+    {
+        return '-';
+    }
+
+    public function getMixParlayBets(): array
+    {
+        return [];
+    }
+
+    public function getDateTimeSettle(): string
+    {
+        return '-';
+    }
+
+    public function getSingleParleyBets(): array
+    {
+        return [];
+    }
+}
