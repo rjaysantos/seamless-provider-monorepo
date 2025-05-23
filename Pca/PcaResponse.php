@@ -60,9 +60,9 @@ class PcaResponse
             'IDR' => 'ID',
             'PHP' => 'PH',
             'VND' => 'VN',
-            'BRL' => 'BR',
             'USD' => 'US',
             'THB' => 'TH',
+            'MYR' => 'MY',
         };
 
         return response()->json(data: [

@@ -73,10 +73,10 @@ class PcaResponseTest extends TestCase
         return [
             ['IDR', 'ID'],
             ['PHP', 'PH'],
-            ['BRL', 'BR'],
             ['VND', 'VN'],
             ['USD', 'US'],
             ['THB', 'TH'],
+            ['MYR', 'MY'],
         ];
     }
 
