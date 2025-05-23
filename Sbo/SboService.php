@@ -182,6 +182,7 @@ class SboService
                 playID: $transaction->play_id,
                 currency: $transaction->currency,
                 betAmount: $newTotalBetAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running-inc',
                 sportsbookDetails: $sportsbookDetails
@@ -245,6 +246,7 @@ class SboService
                 playID: $playID,
                 currency: $currency,
                 betAmount: $betAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
@@ -397,6 +399,7 @@ class SboService
                 playID: $transactionData->play_id,
                 currency: $transactionData->currency,
                 betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'void',
                 sportsbookDetails: $sportsbookDetails
@@ -508,14 +511,17 @@ class SboService
                 $betID = "payout-{$settleCount}-{$request->TransferCode}";
             }
 
-            $this->repository->createSettleTransaction(
-                trxID: $request->TransferCode,
+            $this->repository->inactiveTransaction(trxID: $request->TransferCode);
+
+            $this->repository->createTransaction(
                 betID: $betID,
+                trxID: $request->TransferCode,
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
                 betAmount: $transactionData->bet_amount,
                 payoutAmount: $request->WinLoss,
-                settleTime: $isRollback === true ? $transactionData->bet_time : $transactionDate,
+                betTime: $isRollback === true ? $transactionData->bet_time : $transactionDate,
+                flag: 'settled',
                 sportsbookDetails: $sportsbookDetails
             );
 

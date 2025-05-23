@@ -56,6 +56,7 @@ class SboRepository
         string $playID,
         string $currency,
         float $betAmount,
+        float $payoutAmount,
         string $betTime,
         string $flag,
         ISboSportsbookDetails $sportsbookDetails
@@ -68,7 +69,7 @@ class SboRepository
                 'web_id' => $this->getWebID($playID),
                 'currency' => $currency,
                 'bet_amount' => $betAmount,
-                'payout_amount' => 0,
+                'payout_amount' => $payoutAmount,
                 'bet_time' => $betTime,
                 'bet_choice' => $sportsbookDetails->getBetChoice(),
                 'game_code' => $sportsbookDetails->getGameCode(),
@@ -79,7 +80,7 @@ class SboRepository
                 'odds' => $sportsbookDetails->getOdds(),
                 'result' => $sportsbookDetails->getResult(),
                 'flag' => $flag,
-                'status' => '1',
+                'status' => self::ACTIVE,
             ]);
     }
 
@@ -120,41 +121,5 @@ class SboRepository
             ->where('trx_id', $trxID)
             ->whereIn('flag', ['running', 'rollback'])
             ->count();
-    }
-
-    public function createSettleTransaction(
-        string $trxID,
-        string $betID,
-        string $playID,
-        string $currency,
-        float $betAmount,
-        float $payoutAmount,
-        string $settleTime,
-        ISboSportsbookDetails $sportsbookDetails
-    ): void {
-
-        $this->inactiveTransaction(trxID: $trxID);
-
-        DB::connection('pgsql_write')->table('sbo.reports')
-            ->insert([
-                'bet_id' => $betID,
-                'trx_id' => $trxID,
-                'play_id' => $playID,
-                'web_id' => $this->getWebID(playID: $playID),
-                'currency' => $currency,
-                'bet_amount' => $betAmount,
-                'payout_amount' => $payoutAmount,
-                'bet_time' => $settleTime,
-                'bet_choice' => $sportsbookDetails->getBetChoice(),
-                'game_code' => $sportsbookDetails->getGameCode(),
-                'sports_type' => $sportsbookDetails->getSportsType(),
-                'event' => $sportsbookDetails->getEvent(),
-                'match' => $sportsbookDetails->getMatch(),
-                'hdp' => $sportsbookDetails->getHdp(),
-                'odds' => $sportsbookDetails->getOdds(),
-                'result' => $sportsbookDetails->getResult(),
-                'flag' => 'settled',
-                'status' => self::ACTIVE,
-            ]);
     }
 }

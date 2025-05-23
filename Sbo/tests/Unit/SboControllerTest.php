@@ -214,7 +214,7 @@ class SboControllerTest extends TestCase
         $mockResponse = $this->createMock(SboResponse::class);
         $mockResponse->expects($this->once())
             ->method('balance')
-            ->with(playID: $request->Username, balance: 1200.00);
+            ->with(request: $request, balance: 1200.00);
 
         $controller = $this->makeController(response: $mockResponse, service: $stubService);
         $controller->settle(request: $request);
