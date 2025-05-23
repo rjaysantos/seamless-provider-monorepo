@@ -1,8 +1,5 @@
 <?php
 
-use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
-use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
-use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Tests\TestCase;
 use Providers\Sbo\SboApi;
 use Illuminate\Http\Request;
@@ -10,14 +7,18 @@ use App\Contracts\V2\IWallet;
 use Providers\Sbo\SboService;
 use Providers\Sbo\SboRepository;
 use Providers\Sbo\SboCredentials;
+use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Sbo\Contracts\ICredentials;
 use Providers\Sbo\Exceptions\WalletException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
+use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
+use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
+use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
+use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
-use Wallet\V1\ProvSys\Transfer\Report;
 
 class SboServiceTest extends TestCase
 {
@@ -645,6 +646,7 @@ class SboServiceTest extends TestCase
                 playID: 'testPlayerIDu027',
                 currency: 'IDR',
                 betAmount: 100.00,
+                payoutAmount: 0,
                 betTime: '2024-01-01 00:00:00',
                 flag: 'void',
                 sportsbookDetails: new SboCancelSportsbookDetails(
@@ -1311,7 +1313,60 @@ class SboServiceTest extends TestCase
         $service->rollback(request: $request);
     }
 
-    public function test_rollback_mockRepository_createRollbackTransaction()
+    public function test_rollback_mockRepository_inactiveTransaction()
+    {
+        $request = new Request([
+            'CompanyKey' => 'testCompanyKey',
+            'Username' => 'testPlayID',
+            'TransferCode' => 'testTransactionID',
+        ]);
+
+        $mockRepository = $this->createMock(SboRepository::class);
+        $mockRepository->expects($this->once())
+            ->method('getPlayerByPlayID')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCompanyKey')
+            ->willReturn('testCompanyKey');
+
+        $stubCredentials = $this->createMock(SboCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $mockRepository->method('getTransactionByTrxID')
+            ->willReturn((object) [
+                'bet_id' => 'payout-1-testTransactionID',
+                'bet_amount' => 1000.0,
+                'payout_amount' => 2000.0,
+                'bet_time' => '2020-01-02 00:00:00',
+                'flag' => 'settled'
+            ]);
+
+        $mockRepository->expects($this->once())
+            ->method('inactiveTransaction')
+            ->with(trxID: $request->TransferCode);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('resettle')
+            ->willReturn([
+                'credit_after' => 2000.0,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $mockRepository,
+            wallet: $stubWallet,
+            credentials: $stubCredentials,
+        );
+
+        $service->rollback(request: $request);
+    }
+
+    public function test_rollback_mockRepository_createTransaction()
     {
         $request = new Request([
             'CompanyKey' => 'testCompanyKey',
@@ -1346,11 +1401,19 @@ class SboServiceTest extends TestCase
             ->willReturn((object) $transactionData);
 
         $mockRepository->expects($this->once())
-            ->method('createRollbackTransaction')
+            ->method('createTransaction')
             ->with(
-                trxID: $request->TransferCode,
-                betID: 'rollback-1-testTransactionID',
-                transactionData: (object) $transactionData
+                betID: "rollback-1-testTransactionID",
+                trxID: 'testTransactionID',
+                playID: 'testPlayID',
+                currency: 'IDR',
+                betAmount: 1000.0,
+                payoutAmount: 0,
+                betTime: '2020-01-02 00:00:00',
+                flag: 'rollback',
+                sportsbookDetails: new SboRollbackSportsbookDetails(
+                    transaction: (object) $transactionData
+                )
             );
 
         $stubWallet = $this->createMock(IWallet::class);

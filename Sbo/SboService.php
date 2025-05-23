@@ -22,9 +22,10 @@ use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
 use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
 use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
-use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
 use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
+use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
+use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
@@ -181,6 +182,7 @@ class SboService
                 playID: $transaction->play_id,
                 currency: $transaction->currency,
                 betAmount: $newTotalBetAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running-inc',
                 sportsbookDetails: $sportsbookDetails
@@ -244,6 +246,7 @@ class SboService
                 playID: $playID,
                 currency: $currency,
                 betAmount: $betAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
@@ -396,6 +399,7 @@ class SboService
                 playID: $transactionData->play_id,
                 currency: $transactionData->currency,
                 betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'void',
                 sportsbookDetails: $sportsbookDetails
@@ -455,10 +459,20 @@ class SboService
             $rollbackCount = $this->repository->getRollbackCount(trxID: $request->TransferCode) + 1;
             $betID = "rollback-{$rollbackCount}-{$request->TransferCode}";
 
-            $this->repository->createRollbackTransaction(
-                trxID: $request->TransferCode,
+            $this->repository->inactiveTransaction(trxID: $request->TransferCode);
+
+            $sportsbookDetails = new SboRollbackSportsbookDetails(transaction: $transactionData);
+
+            $this->repository->createTransaction(
                 betID: $betID,
-                transactionData: $transactionData
+                trxID: $request->TransferCode,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
+                betTime: $transactionData->bet_time,
+                flag: 'rollback',
+                sportsbookDetails: $sportsbookDetails
             );
 
             if (trim($transactionData->flag) === 'settled')

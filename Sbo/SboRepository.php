@@ -56,6 +56,7 @@ class SboRepository
         string $playID,
         string $currency,
         float $betAmount,
+        float $payoutAmount,
         string $betTime,
         string $flag,
         ISboSportsbookDetails $sportsbookDetails
@@ -68,7 +69,7 @@ class SboRepository
                 'web_id' => $this->getWebID($playID),
                 'currency' => $currency,
                 'bet_amount' => $betAmount,
-                'payout_amount' => 0,
+                'payout_amount' => $payoutAmount,
                 'bet_time' => $betTime,
                 'bet_choice' => $sportsbookDetails->getBetChoice(),
                 'game_code' => $sportsbookDetails->getGameCode(),
@@ -79,7 +80,7 @@ class SboRepository
                 'odds' => $sportsbookDetails->getOdds(),
                 'result' => $sportsbookDetails->getResult(),
                 'flag' => $flag,
-                'status' => '1',
+                'status' => self::ACTIVE,
             ]);
     }
 
@@ -112,36 +113,5 @@ class SboRepository
             ->where('trx_id', $trxID)
             ->whereIn('flag', ['running', 'rollback'])
             ->count();
-    }
-
-    public function createRollbackTransaction(
-        string $trxID,
-        string $betID,
-        object $transactionData
-    ): void {
-
-        $this->inactiveTransaction(trxID: $trxID);
-
-        DB::connection('pgsql_write')->table('sbo.reports')
-            ->insert([
-                'bet_id' => $betID,
-                'trx_id' => $trxID,
-                'play_id' => $transactionData->play_id,
-                'web_id' => $transactionData->web_id,
-                'currency' => $transactionData->currency,
-                'bet_amount' => $transactionData->bet_amount,
-                'payout_amount' => 0,
-                'bet_time' => $transactionData->bet_time,
-                'bet_choice' => $transactionData->bet_choice,
-                'game_code' => $transactionData->game_code,
-                'sports_type' => $transactionData->sports_type,
-                'event' => $transactionData->event,
-                'match' => $transactionData->match,
-                'hdp' => $transactionData->hdp,
-                'odds' => $transactionData->odds,
-                'result' => '-',
-                'flag' => 'rollback',
-                'status' => self::ACTIVE,
-            ]);
     }
 }

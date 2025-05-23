@@ -82,7 +82,7 @@ class SboController
 
         $balance = $this->service->getBalance(request: $request);
 
-        return $this->response->balance(playID: $request->Username, balance: $balance);
+        return $this->response->balance(request: $request, balance: $balance);
     }
 
     public function deduct(Request $request)
@@ -131,6 +131,6 @@ class SboController
 
         $balance = $this->service->rollback(request: $request);
 
-        return $this->response->balance(playID: $request->Username, balance: $balance);
+        return $this->response->balance(request: $request, balance: $balance);
     }
 }
