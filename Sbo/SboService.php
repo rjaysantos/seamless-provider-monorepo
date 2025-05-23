@@ -24,6 +24,8 @@ use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
 use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
+use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
+use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
@@ -180,6 +182,7 @@ class SboService
                 playID: $transaction->play_id,
                 currency: $transaction->currency,
                 betAmount: $newTotalBetAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running-inc',
                 sportsbookDetails: $sportsbookDetails
@@ -243,6 +246,7 @@ class SboService
                 playID: $playID,
                 currency: $currency,
                 betAmount: $betAmount,
+                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
@@ -395,6 +399,7 @@ class SboService
                 playID: $transactionData->play_id,
                 currency: $transactionData->currency,
                 betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'void',
                 sportsbookDetails: $sportsbookDetails
@@ -421,5 +426,80 @@ class SboService
         }
 
         return $balance['credit_after'];
+    }
+
+    public function rollback(Request $request): float
+    {
+        $playID = Str::after($request->Username, 'sbo_');
+
+        $playerData = $this->repository->getPlayerByPlayID(playID: $playID);
+
+        if (is_null($playerData) === true)
+            throw new ProviderPlayerNotFoundException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+
+        if ($request->CompanyKey !== $credentials->getCompanyKey())
+            throw new InvalidCompanyKeyException;
+
+        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
+
+        if (is_null($transactionData) === true)
+            throw new ProviderTransactionNotFoundException(data: $this->getWalletBalance(
+                credentials: $credentials,
+                playID: $playID
+            ));
+
+        if (trim($transactionData->flag) === 'rollback')
+            throw new TransactionAlreadyRollbackException;
+
+        try {
+            DB::connection('pgsql_write')->beginTransaction();
+
+            $rollbackCount = $this->repository->getRollbackCount(trxID: $request->TransferCode) + 1;
+            $betID = "rollback-{$rollbackCount}-{$request->TransferCode}";
+
+            $this->repository->inactiveTransaction(trxID: $request->TransferCode);
+
+            $sportsbookDetails = new SboRollbackSportsbookDetails(transaction: $transactionData);
+
+            $this->repository->createTransaction(
+                betID: $betID,
+                trxID: $request->TransferCode,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
+                betTime: $transactionData->bet_time,
+                flag: 'rollback',
+                sportsbookDetails: $sportsbookDetails
+            );
+
+            if (trim($transactionData->flag) === 'settled')
+                $resettleAmount = $transactionData->payout_amount;
+            else
+                $resettleAmount = $transactionData->bet_amount - $transactionData->payout_amount;
+
+            $walletResponse = $this->wallet->resettle(
+                credentials: $credentials,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                transactionID: $betID,
+                amount: -$resettleAmount,
+                betID: $request->TransferCode,
+                settledTransactionID: $transactionData->bet_id,
+                betTime: $transactionData->bet_time
+            );
+
+            if ($walletResponse['status_code'] !== 2100)
+                throw new WalletException;
+
+            DB::connection('pgsql_write')->commit();
+        } catch (Exception $e) {
+            DB::connection('pgsql_write')->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'];
     }
 }
