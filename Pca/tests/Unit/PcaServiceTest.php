@@ -411,17 +411,17 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
@@ -429,7 +429,7 @@ class PcaServiceTest extends TestCase
         $mockRepository = $this->createMock(PcaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
-            ->with('playerid')
+            ->with(playID: 'testplayid')
             ->willReturn($player);
 
         $mockRepository->method('getPlayGameByPlayIDToken')
@@ -445,7 +445,7 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -475,17 +475,17 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
@@ -496,7 +496,7 @@ class PcaServiceTest extends TestCase
 
         $mockRepository->expects($this->once())
             ->method('getPlayGameByPlayIDToken')
-            ->with('playerid', 'TEST_authToken')
+            ->with(playID: 'testplayid', token: 'TEST_authToken')
             ->willReturn($playGame);
 
         $service = $this->makeService(repository: $mockRepository);
@@ -509,12 +509,12 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
@@ -535,17 +535,17 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
