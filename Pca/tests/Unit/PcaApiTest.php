@@ -22,7 +22,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -51,7 +51,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -85,7 +85,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -127,7 +127,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -153,7 +153,7 @@ class PcaApiTest extends TestCase
         $expected = 'testUrl.com';
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',

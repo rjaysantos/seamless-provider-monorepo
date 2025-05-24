@@ -50,7 +50,7 @@ class PcaServiceTest extends TestCase
     public function test_getLaunchUrl_mockRepository_getPlayerByPlayID()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -74,7 +74,7 @@ class PcaServiceTest extends TestCase
     public function test_getLaunchUrl_mockRepository_createPlayer()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -105,7 +105,7 @@ class PcaServiceTest extends TestCase
     public function test_getLaunchUrl_mockCredentials_getCredentialsByCurrency()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -130,7 +130,7 @@ class PcaServiceTest extends TestCase
     public function test_getLaunchUrl_mockRepository_createOrUpdateToken()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -171,7 +171,7 @@ class PcaServiceTest extends TestCase
     public function test_getLaunchUrl_mockApi_getGameLaunchUrl()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -206,7 +206,7 @@ class PcaServiceTest extends TestCase
         $expected = 'testUrl.com';
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',

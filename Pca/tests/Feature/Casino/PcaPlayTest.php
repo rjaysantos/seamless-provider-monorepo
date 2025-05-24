@@ -21,7 +21,7 @@ class PcaPlayTest extends TestCase
     public function test_play_noPlayerValidData_expectedData()
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -74,13 +74,13 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'username' => 'testUsername'
         ]);
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);
@@ -89,19 +89,19 @@ class PcaPlayTest extends TestCase
     public function test_play_HasPlayerValidData_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'oldToken',
             'expired' => 'FALSE'
         ]);
 
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -154,7 +154,7 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);
@@ -164,7 +164,7 @@ class PcaPlayTest extends TestCase
     public function test_play_invalidRequest_expectedData($requestParams)
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -203,7 +203,7 @@ class PcaPlayTest extends TestCase
     public function test_play_invalidBearerToken_expectedData()
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -228,7 +228,7 @@ class PcaPlayTest extends TestCase
     public function test_play_thirdPartyApiErrorNoCodeField_expectedData()
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -281,13 +281,13 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'username' => 'testUsername'
         ]);
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);
@@ -297,7 +297,7 @@ class PcaPlayTest extends TestCase
     public function test_play_thirdPartyApiMissingResponseData_expectedData($parameter)
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -357,13 +357,13 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'username' => 'testUsername'
         ]);
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);
@@ -373,7 +373,7 @@ class PcaPlayTest extends TestCase
     public function test_play_thirdPartyApiInvalidResponseDataType_expectedData($parameter, $value)
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -433,13 +433,13 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'username' => 'testUsername'
         ]);
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);
@@ -457,7 +457,7 @@ class PcaPlayTest extends TestCase
     public function test_play_thirdPartyApiErrorCodeNot200_expectedData()
     {
         $request = [
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -509,13 +509,13 @@ class PcaPlayTest extends TestCase
         });
 
         $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'username' => 'testUsername'
         ]);
 
         $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_testToken',
             'expired' => 'FALSE'
         ]);

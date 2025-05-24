@@ -27,7 +27,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidCasinoRequestException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -47,7 +47,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidCasinoRequestException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -78,7 +78,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidCasinoRequestException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'BRL',
             'language' => 'en',
@@ -95,7 +95,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidBearerTokenException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -111,7 +111,7 @@ class PcaControllerTest extends TestCase
     public function test_play_mockService_getLaunchUrl()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -132,7 +132,7 @@ class PcaControllerTest extends TestCase
     public function test_play_mockResponse_casinoSuccess()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -159,7 +159,7 @@ class PcaControllerTest extends TestCase
         $expected = new JsonResponse;
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
