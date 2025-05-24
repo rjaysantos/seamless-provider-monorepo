@@ -5,6 +5,7 @@ use Providers\Pca\PcaApi;
 use Illuminate\Http\Request;
 use App\Libraries\LaravelHttpClient;
 use Providers\Pca\Contracts\ICredentials;
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class PcaApiTest extends TestCase
@@ -21,7 +22,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -29,7 +30,7 @@ class PcaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $credentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
@@ -41,7 +42,84 @@ class PcaApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getGameLaunchUrl(credentials: $credentials, request: $request, token: 'testToken');
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_getGameLaunchUrl_stubHttpMissingResponse_thirdPartyApiErrorException($parameter)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $request = new Request([
+            'playId' => 'testplayid',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'PCA',
+            'device' => 1
+        ]);
+
+        $response = [
+            'code' => 200,
+            'data' => (object) ['url' => 'testUrl.com']
+        ];
+
+        if (isset($response[$parameter]) === false)
+            unset($response['data']->$parameter);
+        else
+            unset($response[$parameter]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    #[DataProvider('getGameLaunchUrlParams')]
+    public function test_getGameLaunchUrl_stubHttpInvalidResponseDataType_thirdPartyApiErrorException($parameter, $value)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $request = new Request([
+            'playId' => 'testplayid',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'PCA',
+            'device' => 1
+        ]);
+
+        $response = [
+            'code' => 200,
+            'data' => (object) ['url' => 'testUrl.com']
+        ];
+
+        if (isset($response[$parameter]) === false)
+            $response['data']->$parameter = $value;
+        else
+            $response[$parameter] = $value;
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) $response);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
+    }
+
+    public static function getGameLaunchUrlParams()
+    {
+        return [
+            ['code', 'invalid'],
+            ['data', 'invalid'],
+            ['url', 123]
+        ];
     }
 
     public function test_getGameLaunchUrl_stubHttpCodeNot200_thirdPartyApiErrorException()
@@ -49,7 +127,7 @@ class PcaApiTest extends TestCase
         $this->expectException(ThirdPartyApiErrorException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -57,19 +135,17 @@ class PcaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $credentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
             ->willReturn((object) [
                 'code' => 401,
-                'data' => (object) [
-                    'url' => 'testUrl.com'
-                ]
+                'data' => (object) ['url' => 'testUrl.com']
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getGameLaunchUrl(credentials: $credentials, request: $request, token: 'testToken');
+        $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
     }
 
     public function test_getGameLaunchUrl_stubHttp_expectedData()
@@ -77,7 +153,7 @@ class PcaApiTest extends TestCase
         $expected = 'testUrl.com';
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -85,19 +161,17 @@ class PcaApiTest extends TestCase
             'device' => 1
         ]);
 
-        $stubCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
         $stubHttp = $this->createMock(LaravelHttpClient::class);
         $stubHttp->method('post')
             ->willReturn((object) [
                 'code' => 200,
-                'data' => (object) [
-                    'url' => 'testUrl.com'
-                ]
+                'data' => (object) ['url' => 'testUrl.com']
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $response = $api->getGameLaunchUrl(credentials: $stubCredentials, request: $request, token: 'testToken');
+        $response = $api->getGameLaunchUrl(credentials: $providerCredentials, request: $request, token: 'testToken');
 
         $this->assertSame(expected: $expected, actual: $response);
     }
