@@ -1218,8 +1218,8 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByTransactionIDRefID')
+            ->willReturn((object)[]);
 
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeCasinoReport')
@@ -1227,10 +1227,7 @@ class PcaServiceTest extends TestCase
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
-            ->willReturn(['status_code' => 2100, 'credit' => 1000.00]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn(['status_code' => 2100, 'credit_after' => $expected]);
+            ->willReturn(['status_code' => 2100, 'credit' => $expected]);
 
         $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
         $response = $service->bet(request: $request);

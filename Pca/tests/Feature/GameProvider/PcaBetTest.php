@@ -322,14 +322,6 @@ class PcaBetTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-
-            public function wagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
-            {
-                return [
-                    'credit_after' => 850.0,
-                    'status_code' => 2102
-                ];
-            }
         };
 
         app()->bind(IWallet::class, $wallet::class);
