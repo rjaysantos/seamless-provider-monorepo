@@ -67,11 +67,27 @@ class PcaControllerTest extends TestCase
             ['playId', 123],
             ['username', 123],
             ['currency', 123],
-            ['currency', 'BRL'],
             ['language', 123],
             ['gameId', 123],
             ['device', 'web']
         ];
+    }
+
+    public function test_play_invalidCurrency_invalidCasinoRequestException()
+    {
+        $this->expectException(InvalidCasinoRequestException::class);
+
+        $request = new Request([
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'BRL',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ]);
+
+        $controller = $this->makeController();
+        $controller->play(request: $request);
     }
 
     public function test_play_invalidBearerToken_invalidBearerTokenException()

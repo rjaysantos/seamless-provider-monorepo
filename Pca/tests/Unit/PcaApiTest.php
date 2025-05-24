@@ -61,9 +61,7 @@ class PcaApiTest extends TestCase
 
         $response = [
             'code' => 200,
-            'data' => (object) [
-                'url' => 'testUrl.com'
-            ]
+            'data' => (object) ['url' => 'testUrl.com']
         ];
 
         if (isset($response[$parameter]) === false)
@@ -97,9 +95,7 @@ class PcaApiTest extends TestCase
 
         $response = [
             'code' => 200,
-            'data' => (object) [
-                'url' => 'testUrl.com'
-            ]
+            'data' => (object) ['url' => 'testUrl.com']
         ];
 
         if (isset($response[$parameter]) === false)
@@ -145,9 +141,7 @@ class PcaApiTest extends TestCase
         $stubHttp->method('post')
             ->willReturn((object) [
                 'code' => 401,
-                'data' => (object) [
-                    'url' => 'testUrl.com'
-                ]
+                'data' => (object) ['url' => 'testUrl.com']
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
@@ -173,9 +167,7 @@ class PcaApiTest extends TestCase
         $stubHttp->method('post')
             ->willReturn((object) [
                 'code' => 200,
-                'data' => (object) [
-                    'url' => 'testUrl.com'
-                ]
+                'data' => (object) ['url' => 'testUrl.com']
             ]);
 
         $api = $this->makeApi(http: $stubHttp);

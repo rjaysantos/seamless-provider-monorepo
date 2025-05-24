@@ -296,15 +296,6 @@ class PcaPlayTest extends TestCase
     #[DataProvider('getGameLaunchUrlParams')]
     public function test_play_thirdPartyApiMissingResponseData_expectedData($parameter)
     {
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
-
         $request = [
             'playId' => 'testPlayID',
             'username' => 'testUsername',
@@ -330,6 +321,15 @@ class PcaPlayTest extends TestCase
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode($response))
         ]);
 
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         $response = $this->post('pca/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
         ]);
@@ -341,18 +341,6 @@ class PcaPlayTest extends TestCase
             'code' => 422,
             'data' => null,
             'error' => 'Third Party Api error'
-        ]);
-
-        $this->assertDatabaseHas('pca.players', [
-            'play_id' => 'testPlayID',
-            'currency' => 'IDR',
-            'username' => 'testUsername'
-        ]);
-
-        $this->assertDatabaseHas('pca.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'PCAUCN_testToken',
-            'expired' => 'FALSE'
         ]);
 
         Http::assertSent(function ($request) {
@@ -367,6 +355,18 @@ class PcaPlayTest extends TestCase
                 $request['language'] == 'en' &&
                 $request['playMode'] == 1;
         });
+
+        $this->assertDatabaseHas('pca.players', [
+            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
+            'username' => 'testUsername'
+        ]);
+
+        $this->assertDatabaseHas('pca.playgame', [
+            'play_id' => 'testPlayID',
+            'token' => 'PCAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
     }
 
     public static function getGameLaunchUrlParams()
