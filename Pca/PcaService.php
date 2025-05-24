@@ -139,10 +139,17 @@ class PcaService
         $player = $this->getPlayerDetails(request: $request);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-        $balance = $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        $playerBalance = $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
 
-        if ($balance < (float) $request->amount)
+        $transaction = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
+
+        if (is_null($transaction) === false)
+            return $playerBalance;
+
+        if ($playerBalance < (float) $request->amount)
             throw new InsufficientFundException(request: $request);
+
+        $this->validateToken(request: $request, player: $player);
 
         try {
             DB::connection('pgsql_write')->beginTransaction();
@@ -150,21 +157,18 @@ class PcaService
             $betTime = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
-
-            $transaction = $this->repository->getTransactionByTransactionIDRefID(
-                transactionID: $request->gameRoundCode,
-                refID: $request->transactionCode
+                
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                trxID: $request->transactionCode,
+                betAmount: (float) $request->amount,
+                winAmount: 0,
+                betTime: $betTime,
+                status: 'WAGER',
+                refID: $request->gameRoundCode
             );
-
-            if (is_null($transaction) === true) {
-                $this->validateToken(request: $request, player: $player);
-
-                $this->repository->createBetTransaction(
-                    player: $player,
-                    request: $request,
-                    betTime: $betTime
-                );
-            }
 
             $report = $this->report->makeCasinoReport(
                 trxID: $request->transactionCode,

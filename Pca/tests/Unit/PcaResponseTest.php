@@ -160,7 +160,7 @@ class PcaResponseTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'testRequestID',
-            'username' => 'PCAUCN_invalidPlayer',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -194,7 +194,7 @@ class PcaResponseTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'testRequestID',
-            'username' => 'PCAUCN_invalidPlayer',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
