@@ -29,6 +29,15 @@ class PcaPlayTest extends TestCase
             'device' => 1
         ];
 
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 200,
@@ -39,15 +48,6 @@ class PcaPlayTest extends TestCase
                 'timestamp' => '2024-05-01T03:09:18+00:00'
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pca/in/play', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
@@ -109,6 +109,15 @@ class PcaPlayTest extends TestCase
             'device' => 1
         ];
 
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 200,
@@ -119,15 +128,6 @@ class PcaPlayTest extends TestCase
                 'timestamp' => '2024-05-01T03:09:18+00:00'
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pca/in/play', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
@@ -236,6 +236,15 @@ class PcaPlayTest extends TestCase
             'device' => 1
         ];
 
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'message' => 'The request id field is required.',
@@ -246,15 +255,6 @@ class PcaPlayTest extends TestCase
                 ]
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pca/in/play', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
@@ -293,7 +293,7 @@ class PcaPlayTest extends TestCase
         ]);
     }
 
-    #[DataProvider('getGameLaunchUrlParams')]
+    #[DataProvider('getGameLaunchUrlResponseParams')]
     public function test_play_thirdPartyApiMissingResponseData_expectedData($parameter)
     {
         $request = [
@@ -304,6 +304,15 @@ class PcaPlayTest extends TestCase
             'gameId' => 'testGameID',
             'device' => 1
         ];
+
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = [
             'code' => 200,
@@ -320,15 +329,6 @@ class PcaPlayTest extends TestCase
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode($response))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pca/in/play', $request, [
             'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
@@ -369,12 +369,88 @@ class PcaPlayTest extends TestCase
         ]);
     }
 
-    public static function getGameLaunchUrlParams()
+    #[DataProvider('getGameLaunchUrlResponseParams')]
+    public function test_play_thirdPartyApiInvalidResponseDataType_expectedData($parameter, $value)
+    {
+        $request = [
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ];
+
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
+        $response = [
+            'code' => 200,
+            'data' => [
+                'url' => 'testUrl.com'
+            ]
+        ];
+
+        if (isset($response[$parameter]) === false)
+            $response['data'][$parameter] = $value;
+        else
+            $response[$parameter] = $value;
+
+        Http::fake([
+            '/from-operator/getGameLaunchUrl' => Http::response(json_encode($response))
+        ]);
+
+        $response = $this->post('pca/in/play', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+        ]);
+
+        $response->assertStatus(200);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
+                $request->hasHeader('x-auth-kiosk-key', '6e7928b51d2790e1b959fafc6a83f93d9eff411fc333' .
+                    '84ac7faa0c8d54ad0774') &&
+                $request['serverName'] == 'AGCASTG' &&
+                $request['username'] == 'PCAUCN_TESTPLAYID' &&
+                $request['gameCodeName'] == 'ubal' &&
+                $request['clientPlatform'] == 'web' &&
+                $request['externalToken'] == 'PCAUCN_testToken' &&
+                $request['language'] == 'en' &&
+                $request['playMode'] == 1;
+        });
+
+        $this->assertDatabaseHas('pca.players', [
+            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
+            'username' => 'testUsername'
+        ]);
+
+        $this->assertDatabaseHas('pca.playgame', [
+            'play_id' => 'testPlayID',
+            'token' => 'PCAUCN_testToken',
+            'expired' => 'FALSE'
+        ]);
+    }
+
+    public static function getGameLaunchUrlResponseParams()
     {
         return [
-            ['code'],
-            ['data'],
-            ['url']
+            ['code', 'invalid'],
+            ['data', 'invalid'],
+            ['url', 123]
         ];
     }
 
@@ -389,6 +465,15 @@ class PcaPlayTest extends TestCase
             'device' => 1
         ];
 
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+
+        app()->bind(Randomizer::class, $randomizer::class);
+
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
                 'code' => 401,
@@ -399,15 +484,6 @@ class PcaPlayTest extends TestCase
                 'timestamp' => '2024-05-01T03:09:18+00:00'
             ]))
         ]);
-
-        $randomizer = new class extends Randomizer {
-            public function createToken(): string
-            {
-                return 'testToken';
-            }
-        };
-
-        app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('pca/in/play', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
