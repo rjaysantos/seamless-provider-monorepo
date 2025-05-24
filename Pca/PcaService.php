@@ -141,10 +141,7 @@ class PcaService
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
         $playerBalance = $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
 
-        $transaction = $this->repository->getTransactionByTransactionIDRefID(
-            transactionID: $request->gameRoundCode,
-            refID: $request->transactionCode
-        );
+        $transaction = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
 
         if (is_null($transaction) === false)
             return $playerBalance;
@@ -161,10 +158,16 @@ class PcaService
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
                 
-            $this->repository->createBetTransaction(
-                player: $player,
-                request: $request,
-                betTime: $betTime
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                trxID: $request->transactionCode,
+                betAmount: (float) $request->amount,
+                winAmount: 0,
+                betTime: $betTime,
+                status: 'WAGER',
+                refID: $request->gameRoundCode
             );
 
             $report = $this->report->makeCasinoReport(
