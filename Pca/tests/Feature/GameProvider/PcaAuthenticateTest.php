@@ -20,20 +20,20 @@ class PcaAuthenticateTest extends TestCase
     public function test_authenticate_validRequestStgSupportedCurrency_expectedData($currency)
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => $currency
         ]);
 
         DB::table('pca.playgame')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_TOKEN123456789',
             'expired' => 'FALSE'
         ]);
 
         $payload = [
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN123456789'
         ];
 
@@ -43,7 +43,7 @@ class PcaAuthenticateTest extends TestCase
 
         $response->assertJson([
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'currencyCode' => 'CNY',
             'countryCode' => 'CN'
         ]);
@@ -55,20 +55,20 @@ class PcaAuthenticateTest extends TestCase
         config(['app.env' => 'PRODUCTION']);
 
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => $currency
         ]);
 
         DB::table('pca.playgame')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_TOKEN123456789',
             'expired' => 'FALSE'
         ]);
 
         $payload = [
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN123456789'
         ];
 
@@ -78,7 +78,7 @@ class PcaAuthenticateTest extends TestCase
 
         $response->assertJson([
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'currencyCode' => $currency,
             'countryCode' => $countryCode
         ]);
@@ -101,7 +101,7 @@ class PcaAuthenticateTest extends TestCase
     {
         $payload = [
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN123456789'
         ];
 
@@ -132,7 +132,7 @@ class PcaAuthenticateTest extends TestCase
     {
         $payload = [
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN123456789'
         ];
 
@@ -171,20 +171,20 @@ class PcaAuthenticateTest extends TestCase
     public function test_authenticate_invalidToken_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.playgame')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'token' => 'PCAUCN_TOKEN123456789',
             'expired' => 'FALSE'
         ]);
 
         $payload = [
             'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'INVALID_TOKEN'
         ];
 

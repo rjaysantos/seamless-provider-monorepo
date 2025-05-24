@@ -53,7 +53,7 @@ class PcaResponseTest extends TestCase
         config(['app.env' => 'PRODUCTION']);
 
         $requestId = 'TEST_requestToken';
-        $playID = 'TEST_PLAYERID';
+        $playID = 'TEST_TESTPLAYID';
 
         $expected = response()->json([
             "requestId" => $requestId,

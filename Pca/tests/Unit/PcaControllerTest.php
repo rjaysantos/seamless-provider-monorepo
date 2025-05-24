@@ -189,7 +189,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -206,7 +206,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -229,14 +229,14 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $mockProviderService = $this->createMock(PcaService::class);
         $mockProviderService->expects($this->once())
             ->method('authenticate')
-            ->with($request)
+            ->with(request: $request)
             ->willReturn('IDR');
 
         $controller = $this->makeController(service: $mockProviderService);
@@ -247,7 +247,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -258,7 +258,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('authenticate')
-            ->with($request->requestId, $request->username, 'IDR');
+            ->with(requestId: $request->requestId, playID: $request->username, currency: 'IDR');
 
         $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
         $controller->authenticate(request: $request);
@@ -268,7 +268,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
