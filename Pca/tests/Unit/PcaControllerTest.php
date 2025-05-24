@@ -497,7 +497,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -519,7 +519,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -552,7 +552,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -564,7 +564,7 @@ class PcaControllerTest extends TestCase
         $mockProviderService = $this->createMock(PcaService::class);
         $mockProviderService->expects($this->once())
             ->method('bet')
-            ->with($request)
+            ->with(request: $request)
             ->willReturn(0.00);
 
         $controller = $this->makeController(service: $mockProviderService);
@@ -575,7 +575,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -591,7 +591,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('bet')
-            ->with($request, 100.00);
+            ->with(request: $request, balance: 100.00);
 
         $controller = $this->makeController(response: $mockResponse, service: $stubProviderService);
         $controller->bet(request: $request);
@@ -601,7 +601,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
