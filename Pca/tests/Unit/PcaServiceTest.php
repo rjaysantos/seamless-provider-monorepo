@@ -1218,7 +1218,7 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getTransactionByTransactionIDRefID')
+        $stubRepository->method('getTransactionByTrxID')
             ->willReturn((object)[]);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -1235,7 +1235,7 @@ class PcaServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    public function test_bet_mockRepository_getTransactionByTransactionIDRefID()
+    public function test_bet_mockRepository_getTransactionByTrxID()
     {
         $request = new Request([
             'requestId' => 'testRequestID',
@@ -1256,8 +1256,8 @@ class PcaServiceTest extends TestCase
             ->willReturn($player);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTransactionIDRefID')
-            ->with($request->gameRoundCode, $request->transactionCode);
+            ->method('getTransactionByTrxID')
+            ->with(trxID: $request->transactionCode);
 
         $mockRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
@@ -1428,11 +1428,11 @@ class PcaServiceTest extends TestCase
         $service->bet(request: $request);
     }
 
-    public function test_bet_mockRepository_createBetTransaction()
+    public function test_bet_mockRepository_createTransaction()
     {
         $request = new Request([
             'requestId' => 'testRequestID',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_testToken',
             'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -1441,7 +1441,7 @@ class PcaServiceTest extends TestCase
             'gameCodeName' => 'testGameCode'
         ]);
 
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+        $player = (object) ['play_id' => 'testplayid', 'currency' => 'IDR'];
         $playGame = (object) ['token' => 'testToken'];
 
         $mockRepository = $this->createMock(PcaRepository::class);
@@ -1452,11 +1452,17 @@ class PcaServiceTest extends TestCase
             ->willReturn($playGame);
 
         $mockRepository->expects($this->once())
-            ->method('createBetTransaction')
+            ->method('createTransaction')
             ->with(
-                $player,
-                $request,
-                '2024-01-01 08:00:00'
+                playID: 'testplayid',
+                currency: 'IDR',
+                gameCode: 'testGameCode',
+                trxID: 'testTransactionCode',
+                betAmount: 100,
+                winAmount: 0,
+                betTime: '2024-01-01 08:00:00',
+                status: 'WAGER',
+                refID: 'testGameRoundCode'
             );
 
         $stubReport = $this->createMock(WalletReport::class);
