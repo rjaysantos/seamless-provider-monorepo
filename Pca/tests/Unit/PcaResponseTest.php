@@ -53,7 +53,7 @@ class PcaResponseTest extends TestCase
         config(['app.env' => 'PRODUCTION']);
 
         $requestId = 'TEST_requestToken';
-        $playID = 'TEST_PLAYERID';
+        $playID = 'TEST_TESTPLAYID';
 
         $expected = response()->json([
             "requestId" => $requestId,
@@ -73,22 +73,10 @@ class PcaResponseTest extends TestCase
         return [
             ['IDR', 'ID'],
             ['PHP', 'PH'],
-            ['BRL', 'BR'],
             ['VND', 'VN'],
             ['USD', 'US'],
             ['THB', 'TH'],
-        ];
-    }
-
-    public static function currencies()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['BRL', 'BR'],
-            ['USD', 'US'],
-            ['THB', 'TH']
+            ['MYR', 'MY'],
         ];
     }
 
