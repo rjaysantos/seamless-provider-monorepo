@@ -123,7 +123,7 @@ class PcaControllerTest extends TestCase
         $mockService = $this->createMock(PcaService::class);
         $mockService->expects($this->once())
             ->method('getLaunchUrl')
-            ->with($request);
+            ->with(request: $request);
 
         $controller = $this->makeController(service: $mockService);
         $controller->play(request: $request);
@@ -148,7 +148,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('casinoSuccess')
-            ->with('testUrl.com');
+            ->with(data: 'testUrl.com');
 
         $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->play(request: $request);

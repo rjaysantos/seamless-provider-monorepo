@@ -61,7 +61,7 @@ class PcaServiceTest extends TestCase
         $mockRepository = $this->createMock(PcaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
-            ->with($request->playId);
+            ->with(playID: $request->playId);
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('getGameLaunchUrl')
@@ -89,9 +89,9 @@ class PcaServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('createPlayer')
             ->with(
-                $request->playId,
-                $request->currency,
-                $request->username
+                playID: $request->playId,
+                currency: $request->currency,
+                username: $request->username
             );
 
         $stubApi = $this->createMock(PcaApi::class);
@@ -117,7 +117,7 @@ class PcaServiceTest extends TestCase
 
         $mockCredentials->expects($this->once())
             ->method('getCredentialsByCurrency')
-            ->with($request->currency);
+            ->with(currency: $request->currency);
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('getGameLaunchUrl')
@@ -153,7 +153,7 @@ class PcaServiceTest extends TestCase
         $mockRepository = $this->createMock(PcaRepository::class);
         $mockRepository->expects($this->once())
             ->method('createOrUpdateToken')
-            ->with($request->playId, 'testKioskName_testToken');
+            ->with(playID: $request->playId, token: 'testKioskName_testToken');
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('getGameLaunchUrl')
@@ -194,7 +194,7 @@ class PcaServiceTest extends TestCase
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->expects($this->once())
             ->method('getGameLaunchUrl')
-            ->with($providerCredentials, $request, 'testKioskName_testToken')
+            ->with(credentials: $providerCredentials, request: $request, token: 'testKioskName_testToken')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $stubCredentials, api: $stubApi, randomizer: $stubRandomizer);
