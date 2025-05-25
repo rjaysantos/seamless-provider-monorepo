@@ -646,7 +646,6 @@ class SboServiceTest extends TestCase
                 playID: 'testPlayerIDu027',
                 currency: 'IDR',
                 betAmount: 100.00,
-                payoutAmount: 0,
                 betTime: '2024-01-01 00:00:00',
                 flag: 'void',
                 sportsbookDetails: new SboCancelSportsbookDetails(
@@ -1408,7 +1407,6 @@ class SboServiceTest extends TestCase
                 playID: 'testPlayID',
                 currency: 'IDR',
                 betAmount: 1000.0,
-                payoutAmount: 0,
                 betTime: '2020-01-02 00:00:00',
                 flag: 'rollback',
                 sportsbookDetails: new SboRollbackSportsbookDetails(

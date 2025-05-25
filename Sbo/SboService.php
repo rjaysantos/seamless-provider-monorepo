@@ -43,8 +43,7 @@ class SboService
         private SboApi $sboApi,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -182,7 +181,6 @@ class SboService
                 playID: $transaction->play_id,
                 currency: $transaction->currency,
                 betAmount: $newTotalBetAmount,
-                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running-inc',
                 sportsbookDetails: $sportsbookDetails
@@ -246,7 +244,6 @@ class SboService
                 playID: $playID,
                 currency: $currency,
                 betAmount: $betAmount,
-                payoutAmount: 0,
                 betTime: $betTime,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
@@ -399,7 +396,6 @@ class SboService
                 playID: $transactionData->play_id,
                 currency: $transactionData->currency,
                 betAmount: $transactionData->bet_amount,
-                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'void',
                 sportsbookDetails: $sportsbookDetails
@@ -456,12 +452,12 @@ class SboService
         try {
             DB::connection('pgsql_write')->beginTransaction();
 
-            $rollbackCount = $this->repository->getRollbackCount(trxID: $request->TransferCode) + 1;
-            $betID = "rollback-{$rollbackCount}-{$request->TransferCode}";
-
             $this->repository->inactiveTransaction(trxID: $request->TransferCode);
 
             $sportsbookDetails = new SboRollbackSportsbookDetails(transaction: $transactionData);
+
+            $rollbackCount = $this->repository->getRollbackCount(trxID: $request->TransferCode) + 1;
+            $betID = "rollback-{$rollbackCount}-{$request->TransferCode}";
 
             $this->repository->createTransaction(
                 betID: $betID,
@@ -469,7 +465,6 @@ class SboService
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
                 betAmount: $transactionData->bet_amount,
-                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'rollback',
                 sportsbookDetails: $sportsbookDetails

@@ -8,9 +8,6 @@ use Providers\Sbo\Contracts\ISboSportsbookDetails;
 
 class SboRepository
 {
-    private const ACTIVE = 1;
-    private const INACTIVE = 0;
-
     public function getPlayerByPlayID(string $playID): ?object
     {
         return DB::table('sbo.players')
@@ -56,7 +53,6 @@ class SboRepository
         string $playID,
         string $currency,
         float $betAmount,
-        float $payoutAmount,
         string $betTime,
         string $flag,
         ISboSportsbookDetails $sportsbookDetails
@@ -69,7 +65,7 @@ class SboRepository
                 'web_id' => $this->getWebID($playID),
                 'currency' => $currency,
                 'bet_amount' => $betAmount,
-                'payout_amount' => $payoutAmount,
+                'payout_amount' => 0,
                 'bet_time' => $betTime,
                 'bet_choice' => $sportsbookDetails->getBetChoice(),
                 'game_code' => $sportsbookDetails->getGameCode(),
@@ -80,7 +76,7 @@ class SboRepository
                 'odds' => $sportsbookDetails->getOdds(),
                 'result' => $sportsbookDetails->getResult(),
                 'flag' => $flag,
-                'status' => self::ACTIVE,
+                'status' => '1',
             ]);
     }
 
@@ -88,7 +84,7 @@ class SboRepository
     {
         DB::connection('pgsql_write')->table('sbo.reports')
             ->where('trx_id', $trxID)
-            ->update(['status' => self::INACTIVE]);
+            ->update(['status' => '0']);
     }
 
     public function getRunningCount(string $trxID): int
