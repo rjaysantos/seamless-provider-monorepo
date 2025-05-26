@@ -11,6 +11,11 @@ use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class PlaApi
 {
+    private const PLAY_MODE_REAL = 1;
+    private const CASINO_MOBILE = 0;
+    private const PCA_MOBILE = 'mobile';
+    private const PCA_WEB = 'web';
+
     public function __construct(protected LaravelHttpClient $http)
     {
     }
@@ -30,10 +35,10 @@ class PlaApi
             'serverName' => $credentials->getServerName(),
             'username' => strtoupper($credentials->getKioskName() . "_{$request->playId}"),
             'gameCodeName' => $request->gameId,
-            'clientPlatform' => $request->device == 0 ? 'mobile' : 'web',
+            'clientPlatform' => $request->device == self::CASINO_MOBILE ? self::PCA_MOBILE : self::PCA_WEB,
             'externalToken' => $token,
             'language' => $request->language,
-            'playMode' => 1
+            'playMode' => self::PLAY_MODE_REAL
         ];
 
         $headers = ['x-auth-kiosk-key' => $credentials->getKioskKey()];
