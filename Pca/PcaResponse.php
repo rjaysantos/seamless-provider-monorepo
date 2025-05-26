@@ -54,22 +54,13 @@ class PcaResponse
         return $currentDateTime->format('Y-m-d H:i:s') . '.' . $milliseconds;
     }
 
-    public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
+    public function authenticate(string $requestId, string $playID, object $countryData): JsonResponse
     {
-        $country = match ($currency) {
-            'IDR' => 'ID',
-            'PHP' => 'PH',
-            'VND' => 'VN',
-            'USD' => 'US',
-            'THB' => 'TH',
-            'MYR' => 'MY',
-        };
-
         return response()->json(data: [
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => config('app.env') === 'PRODUCTION' ? $currency : 'CNY',
-            "countryCode" => config('app.env') === 'PRODUCTION' ? $country : 'CN'
+            "currencyCode" => config('app.env') === 'PRODUCTION' ? $countryData->currency : 'CNY',
+            "countryCode" => config('app.env') === 'PRODUCTION' ? $countryData->countryCode : 'CN'
         ]);
     }
 

@@ -11,6 +11,7 @@ use Providers\Pca\PcaCredentials;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pca\Contracts\ICredentials;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Providers\Pca\Exceptions\WalletErrorException;
 use Providers\Pca\Exceptions\InvalidTokenException;
 use Providers\Pca\Exceptions\InsufficientFundException;
@@ -529,9 +530,13 @@ class PcaServiceTest extends TestCase
         $service->authenticate(request: $request);
     }
 
-    public function test_authenticate_stubRepository_expected()
+    #[DataProvider('currencyAndCountryCode')]
+    public function test_authenticate_stubRepository_expected($currency, $countryCode)
     {
-        $expected = 'IDR';
+        $expected = (object) [
+            'countryCode' => $countryCode,
+            'currency' => $currency
+        ];
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -541,7 +546,7 @@ class PcaServiceTest extends TestCase
 
         $player = (object) [
             'play_id' => 'testplayid',
-            'currency' => 'IDR'
+            'currency' => $currency
         ];
 
         $playGame = (object) [
@@ -561,6 +566,18 @@ class PcaServiceTest extends TestCase
         $response = $service->authenticate(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);
+    }
+
+    public static function currencyAndCountryCode()
+    {
+        return [
+            ['IDR', 'ID'],
+            ['PHP', 'PH'],
+            ['VND', 'VN'],
+            ['USD', 'US'],
+            ['THB', 'TH'],
+            ['MYR', 'MY'],
+        ];
     }
 
     public function test_getBalance_mockRepository_getPlayerByPlayID()

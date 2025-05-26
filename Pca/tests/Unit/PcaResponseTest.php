@@ -42,13 +42,16 @@ class PcaResponseTest extends TestCase
         ]);
 
         $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'IDR');
+        $result = $response->authenticate(
+            requestId: $requestId,
+            playID: $playID,
+            countryData: (object) ['countryCode' => 'ID', 'currency' => 'IDR']
+        );
 
         $this->assertEquals(expected: $expected, actual: $result);
     }
 
-    #[DataProvider('currencyAndCountryCode')]
-    public function test_authenticate_stubDataPROD_expected($currency, $countryCode)
+    public function test_authenticate_stubDataPROD_expected()
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -58,26 +61,18 @@ class PcaResponseTest extends TestCase
         $expected = response()->json([
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => $currency,
-            "countryCode" => $countryCode
+            "currencyCode" => 'IDR',
+            "countryCode" => 'ID'
         ]);
 
         $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: $currency);
+        $result = $response->authenticate(
+            requestId: $requestId,
+            playID: $playID,
+            countryData: (object) ['countryCode' => 'ID', 'currency' => 'IDR']
+        );
 
         $this->assertEquals(expected: $expected, actual: $result);
-    }
-
-    public static function currencyAndCountryCode()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['USD', 'US'],
-            ['THB', 'TH'],
-            ['MYR', 'MY'],
-        ];
     }
 
     public function test_getBalance_stubData_expected()

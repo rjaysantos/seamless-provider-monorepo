@@ -233,13 +233,13 @@ class PcaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $mockProviderService = $this->createMock(PcaService::class);
-        $mockProviderService->expects($this->once())
+        $mockService = $this->createMock(PcaService::class);
+        $mockService->expects($this->once())
             ->method('authenticate')
             ->with(request: $request)
-            ->willReturn('IDR');
+            ->willReturn((object) []);
 
-        $controller = $this->makeController(service: $mockProviderService);
+        $controller = $this->makeController(service: $mockService);
         $controller->authenticate(request: $request);
     }
 
@@ -251,16 +251,18 @@ class PcaControllerTest extends TestCase
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $stubProviderService = $this->createMock(PcaService::class);
-        $stubProviderService->method('authenticate')
-            ->willReturn('IDR');
+        $countryData = (object) ['country' => 'ID', 'currency' => 'IDR'];
+
+        $stubService = $this->createMock(PcaService::class);
+        $stubService->method('authenticate')
+            ->willReturn($countryData);
 
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('authenticate')
-            ->with(requestId: $request->requestId, playID: $request->username, currency: 'IDR');
+            ->with(requestId: $request->requestId, playID: $request->username, countryData: $countryData);
 
-        $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
+        $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->authenticate(request: $request);
     }
 
@@ -278,11 +280,11 @@ class PcaControllerTest extends TestCase
         $stubResponse->method('authenticate')
             ->willReturn($expected);
 
-        $stubProviderService = $this->createMock(PcaService::class);
-        $stubProviderService->method('authenticate')
-            ->willReturn('IDR');
+        $stubService = $this->createMock(PcaService::class);
+        $stubService->method('authenticate')
+            ->willReturn((object) []);
 
-        $controller = $this->makeController(service: $stubProviderService, response: $stubResponse);
+        $controller = $this->makeController(service: $stubService, response: $stubResponse);
         $response = $controller->authenticate(request: $request);
 
         $this->assertSame(expected: $expected, actual: $response);
