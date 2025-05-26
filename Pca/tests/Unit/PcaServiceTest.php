@@ -1216,7 +1216,7 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByBetID')
             ->willReturn((object)[]);
 
         $stubReport = $this->createMock(WalletReport::class);
