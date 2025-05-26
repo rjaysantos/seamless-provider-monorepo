@@ -7,12 +7,10 @@ use Illuminate\Http\JsonResponse;
 
 class InvalidProviderRequestException extends Exception
 {
-    public function __construct(private ?string $requestId) {}
-
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestId,
+            'requestId' => request()->input('requestId'),
             'error' => [
                 'code' => 'CONSTRAINT_VIOLATION'
             ]

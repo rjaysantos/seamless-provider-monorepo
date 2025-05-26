@@ -79,7 +79,7 @@ class PcaService
         );
 
         if (is_null($playGame) === true)
-            throw new InvalidTokenException(requestId: $request->requestId);
+            throw new InvalidTokenException;
     }
 
     private function getPlayerDetails(Request $request): object
@@ -89,7 +89,7 @@ class PcaService
         $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(requestId: $request->requestId);
+            throw new ProviderPlayerNotFoundException;
 
         return $player;
     }
@@ -99,7 +99,7 @@ class PcaService
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
         if ($walletResponse['status_code'] !== 2100)
-            throw new WalletErrorException(requestId: $requestId);
+            throw new WalletErrorException;
 
         return $walletResponse['credit'];
     }
@@ -155,7 +155,7 @@ class PcaService
             return $playerBalance;
 
         if ($playerBalance < (float) $request->amount)
-            throw new InsufficientFundException(requestId: $request->requestId);
+            throw new InsufficientFundException;
 
         $this->validateToken(request: $request, player: $player);
 
@@ -198,7 +198,7 @@ class PcaService
             );
 
             if ($walletResponse['status_code'] !== 2100)
-                throw new WalletErrorException(requestId: $request->requestId);
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {
@@ -216,7 +216,7 @@ class PcaService
         $betTransaction = $this->repository->getBetTransactionByTransactionID(transactionID: $request->gameRoundCode);
 
         if (is_null($betTransaction) === true)
-            throw new ProviderTransactionNotFoundException(requestId: $request->requestId);
+            throw new ProviderTransactionNotFoundException(request: $request);
 
         $refID = is_null($request->pay) === true ? "L-{$request->requestId}" : $request->pay['transactionCode'];
 
@@ -277,7 +277,7 @@ class PcaService
             );
 
             if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
-                throw new WalletErrorException(requestId: $request->requestId);
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {
@@ -334,7 +334,7 @@ class PcaService
             );
 
             if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
-                throw new WalletErrorException(requestId: $request->requestId);
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {

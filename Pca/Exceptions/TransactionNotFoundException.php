@@ -8,12 +8,12 @@ use Illuminate\Http\JsonResponse;
 
 class TransactionNotFoundException extends Exception
 {
-    public function __construct(private string $requestId) {}
+    public function __construct(private Request $request) {}
 
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestId,
+            'requestId' => $this->request->requestId,
             'error' => [
                 'code' => 'INTERNAL_ERROR'
             ]
