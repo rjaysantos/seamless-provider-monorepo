@@ -72,7 +72,7 @@ class PcaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->trx_id);
     }
 
-    private function validateToken(Request $request, ?object $player): void
+    private function validateToken(Request $request, object $player): void
     {
         $playGame = $this->repository->getPlayGameByPlayIDToken(
             playID: $player->play_id,
