@@ -1459,6 +1459,48 @@ class SboSettleTest extends TestCase
 
         $response->assertStatus(200);
 
+        $this->assertDatabaseHas('sbo.reports', [
+            'bet_id' => 'rollback-1-testTransactionID',
+            'trx_id' => 'testTransactionID',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 100.0,
+            'payout_amount' => 200.0,
+            'bet_time' => '2021-01-01 12:00:00',
+            'bet_choice' => 'Over',
+            'game_code' => 'Money Line',
+            'sports_type' => 'Football',
+            'event' => 'ITF - Taipei W35 - Womens Singles (Set Handicap)',
+            'match' => 'Denmark-vs-England',
+            'hdp' => '2.5',
+            'odds' => 3.40,
+            'result' => 'win',
+            'flag' => 'rollback',
+            'status' => 1
+        ]);
+
+        $this->assertDatabaseMissing('sbo.reports', [
+            'bet_id' => 'rollback-1-testTransactionID',
+            'trx_id' => 'testTransactionID',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 100.0,
+            'payout_amount' => 200.0,
+            'bet_time' => '2021-01-01 12:00:00',
+            'bet_choice' => 'Over',
+            'game_code' => 'Money Line',
+            'sports_type' => 'Football',
+            'event' => 'ITF - Taipei W35 - Womens Singles (Set Handicap)',
+            'match' => 'Denmark-vs-England',
+            'hdp' => '2.5',
+            'odds' => 3.40,
+            'result' => 'win',
+            'flag' => 'rollback',
+            'status' => 0
+        ]);
+
         $this->assertDatabaseMissing('sbo.reports', [
             'bet_id' => 'resettle-1-testTransactionID',
             'trx_id' => 'testTransactionID',
@@ -1570,6 +1612,48 @@ class SboSettleTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+
+        $this->assertDatabaseHas('sbo.reports', [
+            'bet_id' => 'wager-1-testTransactionID',
+            'trx_id' => 'testTransactionID',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 1000.0,
+            'payout_amount' => 0.0,
+            'bet_time' => '2021-01-01 12:00:00',
+            'bet_choice' => '-',
+            'game_code' => '1',
+            'sports_type' => '-',
+            'event' => '-',
+            'match' => '-',
+            'hdp' => '-',
+            'odds' => 0,
+            'result' => '-',
+            'flag' => 'running',
+            'status' => 1
+        ]);
+
+        $this->assertDatabaseMissing('sbo.reports', [
+            'bet_id' => 'wager-1-testTransactionID',
+            'trx_id' => 'testTransactionID',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 1000.0,
+            'payout_amount' => 0.0,
+            'bet_time' => '2021-01-01 12:00:00',
+            'bet_choice' => '-',
+            'game_code' => '1',
+            'sports_type' => '-',
+            'event' => '-',
+            'match' => '-',
+            'hdp' => '-',
+            'odds' => 0,
+            'result' => '-',
+            'flag' => 'running',
+            'status' => 0
+        ]);
 
         $this->assertDatabaseMissing('sbo.reports', [
             'bet_id' => 'payout-1-testTransactionID',
