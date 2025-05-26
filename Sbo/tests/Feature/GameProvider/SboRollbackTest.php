@@ -731,5 +731,26 @@ class SboRollbackTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('sbo.reports', [
+            'bet_id' => 'rollback-1-testTransactionID',
+            'trx_id' => 'testTransactionID',
+            'play_id' => 'testPlayID',
+            'web_id' => 0,
+            'currency' => 'IDR',
+            'bet_amount' => 1000,
+            'payout_amount' => 0,
+            'bet_time' => '2020-01-02 12:00:00',
+            'bet_choice' => 'Over',
+            'game_code' => 'Money Line',
+            'sports_type' => 'Football',
+            'event' => 'ITF - Taipei W35 - Womens Singles (Set Handicap)',
+            'match' => 'Denmark-vs-England',
+            'hdp' => '2.5',
+            'odds' => 3.40,
+            'result' => 'win',
+            'flag' => 'settled',
+            'status' => 1
+        ]);
     }
 }
