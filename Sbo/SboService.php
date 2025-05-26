@@ -428,14 +428,6 @@ class SboService
         return $balance['credit_after'];
     }
 
-    private function isRollback(string $flag): bool
-    {
-        if (trim($flag) === 'rollback')
-            return true;
-
-        return false;
-    }
-
     private function isMixParlay(object $betDetails): bool
     {
         return ($betDetails->sportsType ?? null) === 'Mix Parlay'
@@ -464,16 +456,14 @@ class SboService
                 playID: $playID
             ));
 
-        $transactionDataFlag = trim($transactionData->flag);
-
-        if ($transactionDataFlag === 'settled')
-            throw new TransactionAlreadySettledException(data: $this->getWalletBalance(
+        match (trim($transactionData->flag)) {
+            'settled' => throw new TransactionAlreadySettledException(data: $this->getWalletBalance(
                 credentials: $credentials,
                 playID: $playID
-            ));
-
-        if ($transactionDataFlag === 'void')
-            throw new TransactionAlreadyVoidException;
+            )),
+            'void' => throw new TransactionAlreadyVoidException,
+            default => null,
+        };
 
         $betDetails = $this->sboApi->getBetList(credentials: $credentials, trxID: $request->TransferCode);
 
@@ -501,31 +491,13 @@ class SboService
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
-            $isRollback = $this->isRollback(flag: $transactionDataFlag);
-
-            if ($isRollback === true) {
-                $resettleCount = $this->repository->getRollbackCount(trxID: $request->TransferCode);
-                $betID = "resettle-{$resettleCount}-{$request->TransferCode}";
-            } else {
-                $settleCount = $this->repository->getSettleCount(trxID: $request->TransferCode) + 1;
-                $betID = "payout-{$settleCount}-{$request->TransferCode}";
-            }
-
             $this->repository->inactiveTransaction(trxID: $request->TransferCode);
 
-            $this->repository->createTransaction(
-                betID: $betID,
-                trxID: $request->TransferCode,
-                playID: $playerData->play_id,
-                currency: $playerData->currency,
-                betAmount: $transactionData->bet_amount,
-                payoutAmount: $request->WinLoss,
-                betTime: $isRollback === true ? $transactionData->bet_time : $transactionDate,
-                flag: 'settled',
-                sportsbookDetails: $sportsbookDetails
-            );
+            if (trim($transactionData->flag) === 'rollback') {
+                $resettleCount = $this->repository->getRollbackCount(trxID: $request->TransferCode);
+                $betID = "resettle-{$resettleCount}-{$request->TransferCode}";
+                $betTime = $transactionData->bet_time;
 
-            if ($isRollback === true) {
                 $walletResponse = $this->wallet->resettle(
                     credentials: $credentials,
                     playID: $playerData->play_id,
@@ -537,6 +509,10 @@ class SboService
                     betTime: $transactionDate
                 );
             } else {
+                $settleCount = $this->repository->getSettleCount(trxID: $request->TransferCode) + 1;
+                $betID = "payout-{$settleCount}-{$request->TransferCode}";
+                $betTime = $transactionDate;
+
                 $report = $this->walletReport->makeSportsbookReport(
                     trxID: $request->TransferCode,
                     betTime: $transactionDate,
@@ -552,6 +528,18 @@ class SboService
                     report: $report
                 );
             }
+
+            $this->repository->createTransaction(
+                betID: $betID,
+                trxID: $request->TransferCode,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                betAmount: $transactionData->bet_amount,
+                payoutAmount: $request->WinLoss,
+                betTime: $betTime,
+                flag: 'settled',
+                sportsbookDetails: $sportsbookDetails
+            );
 
             if ($walletResponse['status_code'] !== 2100)
                 throw new WalletException;
