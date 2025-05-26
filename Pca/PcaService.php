@@ -94,7 +94,7 @@ class PcaService
         return $player;
     }
 
-    private function getPlayerBalance(ICredentials $credentials, string $playID, string $requestId): float
+    private function getPlayerBalance(ICredentials $credentials, string $playID): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
@@ -121,11 +121,7 @@ class PcaService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $player->play_id,
-            requestId: $request->requestId
-        );
+        return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
     }
 
     public function logout(Request $request): void
@@ -143,11 +139,7 @@ class PcaService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $playerBalance = $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $player->play_id,
-            requestId: $request->requestId
-        );
+        $playerBalance = $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
 
         $transactionData = $this->repository->getTransactionByBetID(betID: $request->transactionCode);
 
@@ -235,11 +227,7 @@ class PcaService
                 );
             }
 
-            return $this->getPlayerBalance(
-                credentials: $credentials,
-                playID: $player->play_id,
-                requestId: $request->requestId
-            );
+            return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
         }
 
         try {
