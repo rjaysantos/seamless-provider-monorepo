@@ -80,18 +80,6 @@ class PcaResponseTest extends TestCase
         ];
     }
 
-    public static function currencies()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['BRL', 'BR'],
-            ['USD', 'US'],
-            ['THB', 'TH']
-        ];
-    }
-
     public function test_getBalance_stubData_expected()
     {
         $requestId = 'TEST_requestToken';
