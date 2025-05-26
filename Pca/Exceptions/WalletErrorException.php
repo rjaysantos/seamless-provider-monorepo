@@ -8,12 +8,12 @@ use Illuminate\Http\JsonResponse;
 
 class WalletErrorException extends Exception
 {
-    public function __construct(private Request $request) {}
+    public function __construct(private string $requestId) {}
 
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->request->requestId,
+            'requestId' => $this->requestId,
             'error' => [
                 'code' => 'INTERNAL_ERROR'
             ]
