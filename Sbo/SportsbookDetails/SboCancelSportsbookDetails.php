@@ -4,44 +4,43 @@ namespace Providers\Sbo\SportsbookDetails;
 
 use Providers\Sbo\Contracts\ISboSportsbookDetails;
 
-class SboRunningSportsbookDetails implements ISboSportsbookDetails
+class SboCancelSportsbookDetails implements ISboSportsbookDetails
 {
-    public function __construct(protected int $gameCode)
-    {
+    public function __construct(
+        protected string $trxID,
+        protected string $ipAddress,
+        protected object $transaction
+    ) {
     }
 
     public function getGameCode(): string
     {
-        return $this->gameCode;
+        return $this->transaction->game_code;
     }
 
     public function getBetChoice(): string
     {
-        return '-';
+        return $this->transaction->bet_choice;
     }
 
     public function getResult(): string
     {
-        return '-';
+        return 'void';
     }
 
     public function getSportsType(): string
     {
-        return match ($this->gameCode) {
-            '285' => 'Mini Mines',
-            '286' => 'Mini Football Strike',
-            default => '-'
-        };
+        return $this->transaction->sports_type;
     }
 
     public function getEvent(): string
     {
-        return '-';
+        return $this->transaction->event;
     }
 
     public function getMatch(): string
     {
-        return '-';
+        return $this->transaction->match;
     }
 
     public function getMarket(): string
@@ -51,22 +50,35 @@ class SboRunningSportsbookDetails implements ISboSportsbookDetails
 
     public function getHdp(): string
     {
-        return '-';
+        return $this->transaction->hdp;
     }
 
     public function getOdds(): float
     {
-        return 0;
+        return $this->transaction->odds;
     }
 
     public function getOpt(): string
     {
-        return '-';
+        return json_encode([
+            'betId' => $this->getTicketID(),
+            'is_first_half' => strpos($this->getMarket(), 'First Half') !== false ? 1 : 0,
+            'league' => $this->getEvent(),
+            'score' => '-',
+            'running_score' => '-',
+            'halfScore' => '-',
+            'match' => $this->getMatch(),
+            'odds' => $this->getOdds(),
+            'market' => $this->getMarket(),
+            'odds_type' => $this->getOddsType(),
+            'resultType' => $this->getResult(),
+            'ip_address' => $this->ipAddress
+        ]);
     }
 
     public function getTicketID(): string
     {
-        return '-';
+        return $this->trxID;
     }
 
     public function getOddsType(): string

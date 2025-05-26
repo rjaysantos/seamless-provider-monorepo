@@ -4,6 +4,7 @@ namespace Providers\Aix;
 
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use Providers\Aix\AixRepository;
@@ -17,6 +18,7 @@ use Providers\Aix\Exceptions\TransactionAlreadyExistsException;
 use Providers\Aix\Exceptions\TransactionAlreadySettledException;
 use Providers\Aix\Exceptions\ProviderTransactionNotFoundException;
 use Providers\Aix\Exceptions\WalletErrorException as ProviderWalletException;
+use Providers\Aix\Exceptions\TransactionAlreadySettledException as DuplicateBonusException;
 
 
 class AixService
@@ -196,6 +198,73 @@ class AixService
                 credentials: $credentials,
                 playID: $betTransactionData->play_id,
                 currency: $betTransactionData->currency,
+                transactionID: $extID,
+                amount: $request->amount,
+                report: $report
+            );
+
+            if ($walletResponse['status_code'] != 2100)
+                throw new ProviderWalletException;
+
+            DB::connection('pgsql_write')->commit();
+        } catch (Exception $e) {
+            DB::connection('pgsql_write')->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'];
+    }
+
+    public function bonus(Request $request)
+    {
+        $playerData = $this->repository->getPlayerByPlayID(playID: $request->user_id);
+
+        if (is_null($playerData) === true)
+            throw new PlayerNotFoundException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+
+        if ($request->header('secret-key') !== $credentials->getSecretKey())
+            throw new InvalidSecretKeyException;
+
+        $settledTransactionData = $this->repository->getTransactionByExtID(extID: "payout-{$request->txn_id}");
+
+        if (is_null($settledTransactionData) == true)
+            throw new ProviderTransactionNotFoundException;
+
+        $transactionData = $this->repository->getTransactionByExtID(extID: "bonus-{$request->txn_id}");
+
+        if (is_null($transactionData) == false)
+            throw new DuplicateBonusException;
+
+        try {
+            DB::connection('pgsql_write')->beginTransaction();
+
+            $transactionDate = $this->convertProviderDateTime(dateTime: Carbon::now());
+
+            $extID = "bonus-{$request->txn_id}";
+
+            $this->repository->createTransaction(
+                extID: $extID,
+                playID: $settledTransactionData->play_id,
+                username: $settledTransactionData->username,
+                currency: $settledTransactionData->currency,
+                gameCode: $settledTransactionData->game_code,
+                betAmount: 0,
+                betWinlose: $request->amount,
+                transactionDate: $transactionDate
+            );
+
+            $report = $this->walletReport->makeBonusReport(
+                transactionID: $request->txn_id,
+                gameCode: $settledTransactionData->game_code,
+                betTime: $transactionDate
+            );
+
+            $walletResponse = $this->wallet->bonus(
+                credentials: $credentials,
+                playID: $settledTransactionData->play_id,
+                currency: $settledTransactionData->currency,
                 transactionID: $extID,
                 amount: $request->amount,
                 report: $report
