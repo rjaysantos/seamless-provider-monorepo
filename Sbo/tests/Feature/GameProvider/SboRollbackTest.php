@@ -588,18 +588,6 @@ class SboRollbackTest extends TestCase
 
     public function test_rollback_transactionAlreadyRollback_expectedData()
     {
-        $wallet = new class extends TestWallet {
-            public function balance(IWalletCredentials $credentials, string $playID): array
-            {
-                return [
-                    'credit' => 2500.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
-
         DB::table('sbo.players')
             ->insert([
                 'play_id' => 'testPlayID',

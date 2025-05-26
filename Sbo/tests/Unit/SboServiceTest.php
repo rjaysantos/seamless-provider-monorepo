@@ -1243,18 +1243,7 @@ class SboServiceTest extends TestCase
                 'flag' => 'rollback'
             ]);
 
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 2000.0,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            wallet: $stubWallet,
-            credentials: $stubCredentials,
-        );
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
 
         $service->rollback(request: $request);
     }
@@ -1430,7 +1419,7 @@ class SboServiceTest extends TestCase
         $service->rollback(request: $request);
     }
 
-    public function test_rollback_mockWallet_resettle()
+    public function test_rollback_mockWalletFlagSettled_resettle()
     {
         $request = new Request([
             'CompanyKey' => 'testCompanyKey',
@@ -1473,6 +1462,65 @@ class SboServiceTest extends TestCase
                 amount: -2000.0,
                 betID: 'testTransactionID',
                 settledTransactionID: 'payout-1-testTransactionID',
+                betTime: '2020-01-02 00:00:00'
+            )
+            ->willReturn([
+                'credit_after' => 2000.0,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            wallet: $mockWallet,
+            credentials: $stubCredentials,
+        );
+
+        $service->rollback(request: $request);
+    }
+
+    public function test_rollback_mockWalletFlagVoid_resettle()
+    {
+        $request = new Request([
+            'CompanyKey' => 'testCompanyKey',
+            'Username' => 'testPlayID',
+            'TransferCode' => 'testTransactionID'
+        ]);
+
+        $stubRepository = $this->createMock(SboRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCompanyKey')
+            ->willReturn('testCompanyKey');
+
+        $stubCredentials = $this->createMock(SboCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) [
+                'bet_id' => 'cancel-1-testTransactionID',
+                'bet_amount' => 1000.0,
+                'payout_amount' => 0,
+                'bet_time' => '2020-01-02 00:00:00',
+                'flag' => 'void'
+            ]);
+
+        $mockWallet = $this->createMock(IWallet::class);
+        $mockWallet->expects($this->once())
+            ->method('resettle')
+            ->with(
+                credentials: $providerCredentials,
+                playID: 'testPlayID',
+                currency: 'IDR',
+                transactionID: 'rollback-1-testTransactionID',
+                amount: -1000.0,
+                betID: 'testTransactionID',
+                settledTransactionID: 'cancel-1-testTransactionID',
                 betTime: '2020-01-02 00:00:00'
             )
             ->willReturn([
