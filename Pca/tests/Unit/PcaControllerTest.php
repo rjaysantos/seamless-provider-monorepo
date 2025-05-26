@@ -880,7 +880,7 @@ class PcaControllerTest extends TestCase
         $controller->gameRoundResult(request: $request);
     }
 
-    public function test_gameRoundResult_mockResponse_gameRoundResult() 
+    public function test_gameRoundResult_mockResponse_gameRoundResult()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -909,7 +909,7 @@ class PcaControllerTest extends TestCase
         $controller->gameRoundResult(request: $request);
     }
 
-    public function test_gameRoundResult_stubResponse_expected() 
+    public function test_gameRoundResult_stubResponse_expected()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -942,7 +942,7 @@ class PcaControllerTest extends TestCase
     }
 
     #[DataProvider('visualParams')]
-    public function test_visual_missingRequestParameter_invalidCasinoRequestException($unset)
+    public function test_visual_missingRequestParameter_invalidCasinoRequestException($parameter)
     {
         $this->expectException(InvalidCasinoRequestException::class);
 
@@ -952,14 +952,14 @@ class PcaControllerTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        unset($request[$unset]);
+        unset($request[$parameter]);
 
         $controller = $this->makeController();
         $controller->visual(request: $request);
     }
 
     #[DataProvider('visualParams')]
-    public function test_visual_invalidRequestType_invalidCasinoRequestException($parameter, $data)
+    public function test_visual_invalidRequestType_invalidCasinoRequestException($parameter)
     {
         $this->expectException(InvalidCasinoRequestException::class);
 
@@ -969,7 +969,7 @@ class PcaControllerTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        $request[$parameter] = $data;
+        $request[$parameter] = 123;
 
         $controller = $this->makeController();
         $controller->visual(request: $request);
@@ -978,10 +978,24 @@ class PcaControllerTest extends TestCase
     public static function visualParams()
     {
         return [
-            ['play_id', 123],
-            ['bet_id', 123],
-            ['currency', 123]
+            ['play_id'],
+            ['bet_id'],
+            ['currency']
         ];
+    }
+
+    public function test_visual_invalidRequestCurrency_invalidCasinoRequestException()
+    {
+        $this->expectException(InvalidCasinoRequestException::class);
+
+        $request = new Request([
+            'play_id' => 'testPlayID',
+            'bet_id' => 'testTransactionID',
+            'currency' => 'BRL'
+        ]);
+
+        $controller = $this->makeController();
+        $controller->visual(request: $request);
     }
 
     public function test_visual_invalidBearerToken_invalidBearerTokenException()

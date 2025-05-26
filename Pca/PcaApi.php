@@ -5,6 +5,7 @@ namespace Providers\Pca;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Libraries\LaravelHttpClient;
+use Illuminate\Support\Facades\Validator;
 use Providers\Pca\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
@@ -40,7 +41,7 @@ class PcaApi
 
         return $response->data->url;
     }
-    
+
     public function gameRoundStatus(ICredentials $credentials, string $transactionID): string
     {
         $apiRequest = [
@@ -56,7 +57,14 @@ class PcaApi
             headers: $headers
         );
 
-        if ($response->code !== 200)
+        $validator = Validator::make(data: json_decode(json_encode($response), true), rules: [
+            'code' => 'required|integer',
+            'data' => 'required|array',
+            'data.game_history_url' => 'required|array',
+            'data.game_history_url.*' => 'required|string'
+        ]);
+
+        if ($validator->fails() || $response->code !== 200)
             throw new ThirdPartyApiErrorException;
 
         return $response->data->game_history_url[0];

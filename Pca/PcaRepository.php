@@ -39,11 +39,10 @@ class PcaRepository
             );
     }
 
-    public function getTransactionByRefID(string $refID): ?object
+    public function getTransactionByBetID(string $betID): ?object
     {
         return DB::table('pca.reports')
-            ->select('bet_id AS trx_id')
-            ->where('ref_id', $refID)
+            ->where('bet_id', $betID)
             ->first();
     }
 
