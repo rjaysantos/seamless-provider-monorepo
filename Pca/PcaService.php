@@ -80,7 +80,7 @@ class PcaService
         );
 
         if (is_null($playGame) === true)
-            throw new InvalidTokenException(requestId: $request->requestId);
+            throw new InvalidTokenException;
     }
 
     private function getPlayerDetails(Request $request): object
@@ -90,7 +90,7 @@ class PcaService
         $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(requestId: $request->requestId);
+            throw new ProviderPlayerNotFoundException;
 
         return $player;
     }
