@@ -1608,8 +1608,8 @@ class SboServiceTest extends TestCase
             'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
             'CompanyKey' => 'sampleCompanyKey',
             'Username' => 'testPlayID',
-            'GameId' => 3,
-            'ProductType' => 1
+            'GameId' => 1,
+            'ProductType' => 3
         ]);
 
         $service = $this->makeService();

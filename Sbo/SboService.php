@@ -124,7 +124,7 @@ class SboService
 
     public function deduct(Request $request): float
     {
-        if (in_array($request->GameId, self::SBO_RNG_PRODUCTS) === true)
+        if (in_array($request->ProductType, self::SBO_RNG_PRODUCTS) === true)
             throw new RNGProductsNotSupportedException;
 
         $playID = str_replace('sbo_', '', $request->Username);
