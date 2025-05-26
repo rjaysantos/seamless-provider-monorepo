@@ -9,7 +9,7 @@ class AixRepository
 {
     public function createIgnorePlayer(string $playID, string $username, string $currency): void
     {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('aix.players')
             ->insertOrIgnore([
                 'play_id' => $playID,
@@ -20,14 +20,16 @@ class AixRepository
 
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::table('aix.players')
+        return DB::connection('pgsql_report_read')
+            ->table('aix.players')
             ->where('play_id', $playID)
             ->first();
     }
 
     public function getTransactionByExtID(string $extID): ?object
     {
-        return DB::table('aix.reports')
+        return DB::connection('pgsql_report_read')
+            ->table('aix.reports')
             ->where('ext_id', $extID)
             ->first();
     }
@@ -50,7 +52,7 @@ class AixRepository
         float $betWinlose,
         string $transactionDate,
     ): void {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('aix.reports')
             ->insert([
                 'ext_id' => $extID,
@@ -69,7 +71,7 @@ class AixRepository
 
     public function settleTransaction(string $extID, float $winloseAmount, string $settleTime): void
     {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('aix.reports')
             ->where('ext_id', $extID)
             ->update([
