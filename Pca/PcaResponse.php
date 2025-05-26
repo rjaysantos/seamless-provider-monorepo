@@ -59,8 +59,8 @@ class PcaResponse
         return response()->json(data: [
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => config('app.env') === 'PRODUCTION' ? $countryData->currency : 'CNY',
-            "countryCode" => config('app.env') === 'PRODUCTION' ? $countryData->countryCode : 'CN'
+            "currencyCode" => $countryData->currency,
+            "countryCode" => $countryData->countryCode
         ]);
     }
 

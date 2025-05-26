@@ -531,8 +531,48 @@ class PcaServiceTest extends TestCase
     }
 
     #[DataProvider('currencyAndCountryCode')]
-    public function test_authenticate_stubRepository_expected($currency, $countryCode)
+    public function test_authenticate_stubRepositorySTG_expected($currency, $countryCode)
     {
+        $expected = (object) [
+            'countryCode' => 'CN',
+            'currency' => 'CNY'
+        ];
+
+        $request = new Request([
+            'requestId' => 'TEST_requestToken',
+            'username' => 'TEST_TESTPLAYID',
+            'externalToken' => 'TEST_authToken'
+        ]);
+
+        $player = (object) [
+            'play_id' => 'testplayid',
+            'currency' => $currency
+        ];
+
+        $playGame = (object) [
+            'play_id' => 'testplayid',
+            'token' => 'TEST_authToken',
+            'expired' => 'FALSE'
+        ];
+
+        $stubRepository = $this->createMock(PcaRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn($playGame);
+
+        $service = $this->makeService(repository: $stubRepository);
+        $response = $service->authenticate(request: $request);
+
+        $this->assertEquals(expected: $expected, actual: $response);
+    }
+
+    #[DataProvider('currencyAndCountryCode')]
+    public function test_authenticate_stubRepositoryPROD_expected($currency, $countryCode)
+    {
+        config(['app.env' => 'PRODUCTION']);
+
         $expected = (object) [
             'countryCode' => $countryCode,
             'currency' => $currency

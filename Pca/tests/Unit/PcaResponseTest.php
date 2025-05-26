@@ -29,32 +29,8 @@ class PcaResponseTest extends TestCase
         ], actual: $result->getData(true));
     }
 
-    public function test_authenticate_stubDataSTG_expected()
+    public function test_authenticate_stubData_expected()
     {
-        $requestId = 'TEST_requestToken';
-        $playID = 'TEST_PLAYERID';
-
-        $expected = response()->json([
-            "requestId" => $requestId,
-            "username" => $playID,
-            "currencyCode" => 'CNY',
-            "countryCode" => 'CN'
-        ]);
-
-        $response = $this->makeResponse();
-        $result = $response->authenticate(
-            requestId: $requestId,
-            playID: $playID,
-            countryData: (object) ['countryCode' => 'ID', 'currency' => 'IDR']
-        );
-
-        $this->assertEquals(expected: $expected, actual: $result);
-    }
-
-    public function test_authenticate_stubDataPROD_expected()
-    {
-        config(['app.env' => 'PRODUCTION']);
-
         $requestId = 'TEST_requestToken';
         $playID = 'TEST_TESTPLAYID';
 

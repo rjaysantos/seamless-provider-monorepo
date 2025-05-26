@@ -121,8 +121,8 @@ class PcaService
         };
 
         return (object) [
-            'countryCode' => $countryCode,
-            'currency' => $player->currency
+            'countryCode' => config('app.env') === 'PRODUCTION' ? $countryCode : 'CN',
+            'currency' => config('app.env') === 'PRODUCTION' ? $player->currency : 'CNY'
         ];
     }
 
