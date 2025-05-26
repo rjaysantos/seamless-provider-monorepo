@@ -32,8 +32,7 @@ class PcaService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $report,
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -95,7 +94,7 @@ class PcaService
         return $player;
     }
 
-    private function getPlayerBalance(ICredentials $credentials, Request $request, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, string $playID, Request $request): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
@@ -122,7 +121,7 @@ class PcaService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id, request: $request);
     }
 
     public function logout(Request $request): void
@@ -139,7 +138,12 @@ class PcaService
         $player = $this->getPlayerDetails(request: $request);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-        $playerBalance = $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+
+        $playerBalance = $this->getPlayerBalance(
+            credentials: $credentials,
+            playID: $player->play_id,
+            request: $request
+        );
 
         $transaction = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
 
@@ -157,7 +161,7 @@ class PcaService
             $betTime = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
-                
+
             $this->repository->createTransaction(
                 playID: $player->play_id,
                 currency: $player->currency,
@@ -227,7 +231,7 @@ class PcaService
                 );
             }
 
-            return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+            return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id, request: $request);
         }
 
         try {
