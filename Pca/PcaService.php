@@ -149,9 +149,9 @@ class PcaService
             requestId: $request->requestId
         );
 
-        $transaction = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
+        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
 
-        if (is_null($transaction) === false)
+        if (is_null($transactionData) === false)
             return $playerBalance;
 
         if ($playerBalance < (float) $request->amount)
@@ -162,7 +162,7 @@ class PcaService
         try {
             DB::connection('pgsql_write')->beginTransaction();
 
-            $betTime = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
+            $transactionDate = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
@@ -173,7 +173,7 @@ class PcaService
                 trxID: $request->transactionCode,
                 betAmount: (float) $request->amount,
                 winAmount: 0,
-                betTime: $betTime,
+                betTime: $transactionDate,
                 status: 'WAGER',
                 refID: $request->gameRoundCode
             );
@@ -181,7 +181,7 @@ class PcaService
             $report = $this->report->makeCasinoReport(
                 trxID: $request->transactionCode,
                 gameCode: $request->gameCodeName,
-                betTime: $betTime,
+                betTime: $transactionDate,
                 betChoice: '-',
                 result: '-'
             );
@@ -197,7 +197,7 @@ class PcaService
                 report: $report
             );
 
-            if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
+            if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException(requestId: $request->requestId);
 
             DB::connection('pgsql_write')->commit();
@@ -345,3 +345,4 @@ class PcaService
         return $walletResponse['credit_after'];
     }
 }
+
