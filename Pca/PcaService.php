@@ -149,7 +149,7 @@ class PcaService
             requestId: $request->requestId
         );
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->transactionCode);
+        $transactionData = $this->repository->getTransactionByBetID(betID: $request->transactionCode);
 
         if (is_null($transactionData) === false)
             return $playerBalance;
@@ -170,7 +170,7 @@ class PcaService
                 playID: $player->play_id,
                 currency: $player->currency,
                 gameCode: $request->gameCodeName,
-                trxID: $request->transactionCode,
+                betID: $request->transactionCode,
                 betAmount: (float) $request->amount,
                 winAmount: 0,
                 betTime: $transactionDate,

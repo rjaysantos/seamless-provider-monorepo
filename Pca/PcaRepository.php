@@ -72,10 +72,10 @@ class PcaRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByBetID(string $betID): ?object
     {
         return DB::table('pca.reports')
-            ->where('bet_id', $trxID)
+            ->where('bet_id', $betID)
             ->first();
     }
 
@@ -110,7 +110,7 @@ class PcaRepository
         string $playID, 
         string $currency,
         string $gameCode,
-        string $trxID,
+        string $betID,
         string $betAmount, 
         string $winAmount,
         string $betTime,
@@ -124,7 +124,7 @@ class PcaRepository
                 'currency' => $currency,
                 'game_code' => $gameCode,
                 'bet_choice' => '-',
-                'bet_id' => $trxID,
+                'bet_id' => $betID,
                 'wager_amount' => $betAmount,
                 'payout_amount' => $winAmount,
                 'bet_time' => $betTime,

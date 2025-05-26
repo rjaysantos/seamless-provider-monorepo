@@ -1233,7 +1233,7 @@ class PcaServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    public function test_bet_mockRepository_getTransactionByTrxID()
+    public function test_bet_mockRepository_getTransactionByBetID()
     {
         $request = new Request([
             'requestId' => 'testRequestID',
@@ -1254,8 +1254,8 @@ class PcaServiceTest extends TestCase
             ->willReturn($player);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(trxID: $request->transactionCode);
+            ->method('getTransactionByBetID')
+            ->with(betID: $request->transactionCode);
 
         $mockRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
@@ -1454,7 +1454,7 @@ class PcaServiceTest extends TestCase
                 playID: 'testplayid',
                 currency: 'IDR',
                 gameCode: 'testGameCode',
-                trxID: 'testTransactionCode',
+                betID: 'testTransactionCode',
                 betAmount: 100,
                 winAmount: 0,
                 betTime: '2024-01-01 08:00:00',
