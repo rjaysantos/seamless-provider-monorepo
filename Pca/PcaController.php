@@ -34,7 +34,7 @@ class PcaController
         $validate = Validator::make(data: $request->all(), rules: $rules);
 
         if ($validate->fails())
-            throw new InvalidProviderRequestException(request: $request);
+            throw new InvalidProviderRequestException(requestId: $request->requestId);
     }
 
     public function play(Request $request)
