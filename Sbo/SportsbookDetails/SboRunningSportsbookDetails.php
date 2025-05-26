@@ -26,10 +26,10 @@ class SboRunningSportsbookDetails implements ISboSportsbookDetails
     }
 
     public function getSportsType(): string
-    {
+    {   
         return match ($this->gameCode) {
-            '285' => 'Mini Mines',
-            '286' => 'Mini Football Strike',
+            285 => 'Mini Mines',
+            286 => 'Mini Football Strike',
             default => '-'
         };
     }

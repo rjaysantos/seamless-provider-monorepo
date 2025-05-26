@@ -1,8 +1,5 @@
 <?php
 
-use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
-use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
-use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Tests\TestCase;
 use Providers\Sbo\SboApi;
 use Illuminate\Http\Request;
@@ -10,13 +7,20 @@ use App\Contracts\V2\IWallet;
 use Providers\Sbo\SboService;
 use Providers\Sbo\SboRepository;
 use Providers\Sbo\SboCredentials;
+use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Sbo\Contracts\ICredentials;
 use Providers\Sbo\Exceptions\WalletException;
+use Providers\Sbo\Exceptions\InsufficientFundException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
+use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
+use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
+use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
+use Providers\Sbo\Exceptions\RNGProductsNotSupportedException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
-use Wallet\V1\ProvSys\Transfer\Report;
 
 class SboServiceTest extends TestCase
 {
@@ -1314,18 +1318,7 @@ class SboServiceTest extends TestCase
                 $request->Amount,
                 '2021-06-01 12:23:25',
                 'running',
-                (object) [
-                    'gameCode' => 0,
-                    'betChoice' => '-',
-                    'result' => '-',
-                    'event' => '-',
-                    'match' => '-',
-                    'market' => '-',
-                    'hdp' => '-',
-                    'odds' => '0',
-                    'opt' => '-',
-                    'sportsType' => '-' 
-                ]
+                new SboRunningSportsbookDetails(gameCode: 0)
             );
 
         $mockRepository->method('getPlayerByPlayID')
@@ -1603,5 +1596,23 @@ class SboServiceTest extends TestCase
         $result = $service->deduct(request: $request);
 
         $this->assertSame(expected: $expected, actual: $result);
+    }
+
+    public function test_deduct_RngProductsGameID_expected()
+    {
+        $this->expectException(RNGProductsNotSupportedException::class);
+
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 3,
+            'ProductType' => 1
+        ]);
+
+        $service = $this->makeService();
+        $service->deduct(request: $request);
     }
 }

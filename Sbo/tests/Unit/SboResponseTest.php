@@ -35,20 +35,19 @@ class SboResponseTest extends TestCase
             'Username' => 'testUsername',
             'Amount' => 100.0
         ]);
-        
-        $balance = 1000.0;
-
-        $expected = new JsonResponse([
-            'AccountName' => 'testUsername',
-            'Balance' => $balance,
-            'BetAmount' => 100.0,
-            'ErrorCode' => 0,
-            'ErrorMessage' => 'No Error'
-        ]);
 
         $response = $this->makeResponse();
-        $result = $response->deduct(request: $request, balance: $balance);
+        $result = $response->deduct(request: $request, balance: 1000.0);
 
-        $this->assertEquals(expected: $expected, actual: $result);
+        $this->assertSame(
+            expected: [
+                'AccountName' => 'testUsername',
+                'Balance' => 1000,
+                'BetAmount' => 100,
+                'ErrorCode' => 0,
+                'ErrorMessage' => 'No Error'
+            ],
+            actual: $result->getData(true)
+        );
     }
 }

@@ -47,7 +47,7 @@ class SboDeductTest extends TestCase
 
         $request = [
             'Amount' => 100.00,
-            'TransferCode' => 'testTransactionID',
+            'TransferCode' => 'testTransactionID-1',
             'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
             'CompanyKey' => 'F34A561C731843F5A0AD5FA589060FBB',
             'Username' => 'testPlayID',
@@ -68,8 +68,8 @@ class SboDeductTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('sbo.reports', [
-            'bet_id' => 'wager-1-testTransactionID',
-            'trx_id' => 'testTransactionID',
+            'bet_id' => 'wager-1-testTransactionID-1',
+            'trx_id' => 'testTransactionID-1',
             'play_id' => 'testPlayID',
             'web_id' => 0,
             'currency' => 'IDR',
@@ -506,5 +506,27 @@ class SboDeductTest extends TestCase
             'flag' => 'running',
             'status' => '1'
         ]);
+    }
+
+    public function test_deduct_RngProductsGameID_expectedData()
+    {
+        $request = [
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'F34A561C731843F5A0AD5FA589060FBB',
+            'Username' => 'testPlayID',
+            'GameId' => 3,
+            'ProductType' => 1
+        ];
+
+        $response = $this->post('/sbo/prov/Deduct', $request);
+
+        $response->assertJson([
+            'ErrorCode' => 404,
+            'ErrorMessage' => 'RNG products not supported'
+        ]);
+
+        $response->assertStatus(200);
     }
 }

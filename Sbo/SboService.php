@@ -20,6 +20,7 @@ use Providers\Sbo\Exceptions\InsufficientFundException;
 use Providers\Sbo\Exceptions\InvalidBetAmountException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
 use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
+use Providers\Sbo\Exceptions\RNGProductsNotSupportedException;
 use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
@@ -123,6 +124,9 @@ class SboService
 
     public function deduct(Request $request): float
     {
+        if (in_array($request->GameId, self::SBO_RNG_PRODUCTS) === true)
+            throw new RNGProductsNotSupportedException;
+
         $playID = str_replace('sbo_', '', $request->Username);
 
         $playerDetails = $this->repository->getPlayerByPlayID(playID: $playID);
@@ -154,23 +158,6 @@ class SboService
             
             $gameCode = $request->GameId;
 
-            $sportsbookDetails = (object)[
-                'gameCode' => $gameCode,
-                'betChoice' => '-',
-                'result' => '-',
-                'event' => '-',
-                'match' => '-',
-                'market' => '-',
-                'hdp' => '-',
-                'odds' => '0',
-                'opt' => '-',
-                'sportsType' => match ($gameCode) {
-                    285 => 'Mini Mines',
-                    286 => 'Mini Football Strike',
-                    default => '-'
-                },
-            ];
-
             $betID = "wager-1-{$request->TransferCode}";
 
             $this->repository->createTransaction(
@@ -181,7 +168,7 @@ class SboService
                 betAmount: $request->Amount,
                 betTime: $transactionDate,
                 flag: 'running',
-                sportsbookDetails: $sportsbookDetails
+                sportsbookDetails: new SboRunningSportsbookDetails(gameCode: $gameCode)
             );
 
             $sportsbookReports = $this->walletReport->makeSportsbookReport(
