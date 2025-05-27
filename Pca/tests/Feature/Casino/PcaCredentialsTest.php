@@ -12,7 +12,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaStaging_expected($field)
+    public function test_getCredentialsByCurrency_PcaStaging_expected($field)
     {
         $expected = [
             'grpcHost' => '12.0.129.253',
@@ -39,7 +39,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaIDR_expected($field)
+    public function test_getCredentialsByCurrency_PcaIDR_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -68,7 +68,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaPHP_expected($field)
+    public function test_getCredentialsByCurrency_PcaPHP_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -97,7 +97,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaTHB_expected($field)
+    public function test_getCredentialsByCurrency_PcaTHB_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -126,7 +126,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaVND_expected($field)
+    public function test_getCredentialsByCurrency_PcaVND_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -155,7 +155,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaUSD_expected($field)
+    public function test_getCredentialsByCurrency_PcaUSD_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -184,7 +184,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaMYR_expected($field)
+    public function test_getCredentialsByCurrency_PcaMYR_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
