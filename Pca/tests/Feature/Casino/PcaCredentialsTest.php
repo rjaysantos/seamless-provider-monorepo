@@ -12,7 +12,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaStaging_expected($field)
+    public function test_getCredentialsByCurrency_PcaStaging_expected($field)
     {
         $expected = [
             'grpcHost' => '12.0.129.253',
@@ -24,7 +24,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => '6e7928b51d2790e1b959fafc6a83f93d9eff411fc33384ac7faa0c8d54ad0774',
             'getKioskName' => 'PCAUCN',
             'getServerName' => 'AGCASTG',
-            'getAdminKey' => '3bd7228891fb21391c355dda69a27548044ebf2bfc7d7c3e39c3f3a08e72e4e0'
+            'getAdminKey' => '3bd7228891fb21391c355dda69a27548044ebf2bfc7d7c3e39c3f3a08e72e4e0',
+            'getCurrency' => 'CNY',
+            'getCountryCode' => 'CN',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -37,7 +39,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaIDR_expected($field)
+    public function test_getCredentialsByCurrency_PcaIDR_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -51,7 +53,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => '2288009e93a79952d6810c4ff771bdd4ae5cee010dbb074a7dd22aba05bf92af',
             'getKioskName' => 'PCAID',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'IDR',
+            'getCountryCode' => 'ID',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -64,7 +68,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaPHP_expected($field)
+    public function test_getCredentialsByCurrency_PcaPHP_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -78,7 +82,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => '396d3495aa7eaace9e54691acb5e9b30b65bb5fda6785c9f7ca1637701c7a465',
             'getKioskName' => 'PCAPH',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'PHP',
+            'getCountryCode' => 'PH',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -91,7 +97,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaTHB_expected($field)
+    public function test_getCredentialsByCurrency_PcaTHB_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -105,7 +111,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => '69ed769d1d4f5e38f71df67ac3261e3ebe4f348373b8c8782832b7c8b68a9734',
             'getKioskName' => 'PCATH',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'THB',
+            'getCountryCode' => 'TH',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -118,7 +126,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaVND_expected($field)
+    public function test_getCredentialsByCurrency_PcaVND_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -132,7 +140,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => 'd34eed85085e4bb2aff689cebb3e35fa79a779b56055705ef171474c18996553',
             'getKioskName' => 'PCAVN',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'VND',
+            'getCountryCode' => 'VN',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -145,7 +155,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaUSD_expected($field)
+    public function test_getCredentialsByCurrency_PcaUSD_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -159,7 +169,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => 'bb052bd9a863bcefe0b5571e4e95788e8dc643b51331d5525624011c260b614c',
             'getKioskName' => 'PCAUS',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'USD',
+            'getCountryCode' => 'US',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -172,7 +184,7 @@ class PcaCredentialsTest extends TestCase
     }
 
     #[DataProvider('credentialParams')]
-    public function test_getCredentialsByCurrency_PlaMYR_expected($field)
+    public function test_getCredentialsByCurrency_PcaMYR_expected($field)
     {
         config(['app.env' => 'PRODUCTION']);
 
@@ -186,7 +198,9 @@ class PcaCredentialsTest extends TestCase
             'getKioskKey' => 'fe41146776deeb7d980646773bc7950607d85ffbaf9cd98b3cbccc8cd58ba4c7',
             'getKioskName' => 'PCAMY',
             'getServerName' => 'AGCASINO',
-            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9'
+            'getAdminKey' => '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9',
+            'getCurrency' => 'MYR',
+            'getCountryCode' => 'MY',
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
@@ -210,7 +224,9 @@ class PcaCredentialsTest extends TestCase
             ['getKioskKey'],
             ['getKioskName'],
             ['getServerName'],
-            ['getAdminKey']
+            ['getAdminKey'],
+            ['getCurrency'],
+            ['getCountryCode'],
         ];
     }
 
@@ -237,6 +253,10 @@ class PcaCredentialsTest extends TestCase
                 return $credentials->getServerName();
             case 'getAdminKey':
                 return $credentials->getAdminKey();
+            case 'getCurrency':
+                return $credentials->getCurrency();
+            case 'getCountryCode':
+                return $credentials->getCountryCode();
             default:
                 return null;
         }

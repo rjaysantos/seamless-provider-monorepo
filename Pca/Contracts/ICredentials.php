@@ -11,4 +11,6 @@ interface ICredentials extends IWalletCredentials
     public function getKioskName(): string;
     public function getServerName(): string;
     public function getAdminKey(): string;
+    public function getCurrency(): string;
+    public function getCountryCode(): string;
 }

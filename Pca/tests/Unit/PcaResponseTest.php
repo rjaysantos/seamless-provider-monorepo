@@ -5,6 +5,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Providers\Pca\PcaResponse;
+use Providers\Pca\Contracts\ICredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class PcaResponseTest extends TestCase
@@ -29,55 +30,30 @@ class PcaResponseTest extends TestCase
         ], actual: $result->getData(true));
     }
 
-    public function test_authenticate_stubDataSTG_expected()
+    public function test_authenticate_stubData_expected()
     {
         $requestId = 'TEST_requestToken';
-        $playID = 'TEST_PLAYERID';
+        $playID = 'TEST_TESTPLAYID';
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCurrency')->willReturn('IDR');
+        $providerCredentials->method('getCountryCode')->willReturn('ID');
 
         $expected = response()->json([
-            "requestId" => $requestId,
-            "username" => $playID,
-            "currencyCode" => 'CNY',
-            "countryCode" => 'CN'
+            'requestId' => $requestId,
+            'username' => $playID,
+            'currencyCode' => 'IDR',
+            'countryCode' => 'ID'
         ]);
 
         $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: 'IDR');
+        $result = $response->authenticate(
+            requestId: $requestId,
+            playID: $playID,
+            playerCredentials: $providerCredentials
+        );
 
         $this->assertEquals(expected: $expected, actual: $result);
-    }
-
-    #[DataProvider('currencyAndCountryCode')]
-    public function test_authenticate_stubDataPROD_expected($currency, $countryCode)
-    {
-        config(['app.env' => 'PRODUCTION']);
-
-        $requestId = 'TEST_requestToken';
-        $playID = 'TEST_PLAYERID';
-
-        $expected = response()->json([
-            "requestId" => $requestId,
-            "username" => $playID,
-            "currencyCode" => $currency,
-            "countryCode" => $countryCode
-        ]);
-
-        $response = $this->makeResponse();
-        $result = $response->authenticate(requestId: $requestId, playID: $playID, currency: $currency);
-
-        $this->assertEquals(expected: $expected, actual: $result);
-    }
-
-    public static function currencyAndCountryCode()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['BRL', 'BR'],
-            ['VND', 'VN'],
-            ['USD', 'US'],
-            ['THB', 'TH'],
-        ];
     }
 
     public function test_getBalance_stubData_expected()
