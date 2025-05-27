@@ -37,7 +37,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -84,12 +84,12 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode',
             'wager_amount' => 100,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testGameRoundCode'
         ]);
     }
 
@@ -112,19 +112,19 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode',
             'wager_amount' => 100,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testGameRoundCode'
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode2',
             'transactionDate' => '2021-01-01 00:00:02.000',
             'amount' => '50',
@@ -171,12 +171,12 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode2',
             'wager_amount' => 50,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:02',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode2'
+            'ref_id' => 'testGameRoundCode'
         ]);
     }
 
@@ -187,7 +187,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -235,7 +235,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_invalidPlayer',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -261,7 +261,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'invalidUsername',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -294,19 +294,19 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode',
             'wager_amount' => 100,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testGameRoundCode'
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -320,14 +320,6 @@ class PcaBetTest extends TestCase
                 return [
                     'credit' => 850.0,
                     'status_code' => 2100
-                ];
-            }
-
-            public function wagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
-            {
-                return [
-                    'credit_after' => 850.0,
-                    'status_code' => 2102
                 ];
             }
         };
@@ -361,7 +353,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -411,7 +403,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_invalidToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -447,12 +439,12 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode',
             'wager_amount' => 100,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testGameRoundCode'
         ]);
     }
 
@@ -468,7 +460,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -517,7 +509,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
@@ -560,12 +552,12 @@ class PcaBetTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 'testGameID',
             'bet_choice' => '-',
-            'bet_id' => 'testRoundCode',
+            'bet_id' => 'testTransactionCode',
             'wager_amount' => 100,
             'payout_amount' => 0,
             'bet_time' => '2021-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => 'testTransactionCode'
+            'ref_id' => 'testGameRoundCode'
         ]);
     }
 
@@ -588,7 +580,7 @@ class PcaBetTest extends TestCase
             'requestId' => 'testRequestID',
             'username' => 'PCAUCN_PLAYER001',
             'externalToken' => 'PCAUCN_testToken',
-            'gameRoundCode' => 'testRoundCode',
+            'gameRoundCode' => 'testGameRoundCode',
             'transactionCode' => 'testTransactionCode',
             'transactionDate' => '2021-01-01 00:00:00.000',
             'amount' => '100',
