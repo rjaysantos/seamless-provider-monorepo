@@ -471,6 +471,7 @@ class SboService
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
                 betAmount: $transactionData->bet_amount,
+                payoutAmount: 0,
                 betTime: $transactionData->bet_time,
                 flag: 'rollback',
                 sportsbookDetails: $sportsbookDetails

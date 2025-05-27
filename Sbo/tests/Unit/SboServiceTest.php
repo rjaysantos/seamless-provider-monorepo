@@ -14,9 +14,12 @@ use Providers\Sbo\Exceptions\WalletException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
 use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
+use Providers\Sbo\SportsbookDetails\SboSettleSportsbookDetails;
+use Providers\Sbo\Exceptions\TransactionAlreadySettledException;
 use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
 use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
+use Providers\Sbo\SportsbookDetails\SboSettleParlaySportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
@@ -646,6 +649,7 @@ class SboServiceTest extends TestCase
                 playID: 'testPlayerIDu027',
                 currency: 'IDR',
                 betAmount: 100.00,
+                payoutAmount: 0,
                 betTime: '2024-01-01 00:00:00',
                 flag: 'void',
                 sportsbookDetails: new SboCancelSportsbookDetails(
@@ -1396,6 +1400,7 @@ class SboServiceTest extends TestCase
                 playID: 'testPlayID',
                 currency: 'IDR',
                 betAmount: 1000.0,
+                payoutAmount: 0,
                 betTime: '2020-01-02 00:00:00',
                 flag: 'rollback',
                 sportsbookDetails: new SboRollbackSportsbookDetails(
