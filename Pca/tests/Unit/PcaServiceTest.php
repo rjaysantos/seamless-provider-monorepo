@@ -436,7 +436,13 @@ class PcaServiceTest extends TestCase
         $mockRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $mockRepository);
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $mockRepository, credentials: $stubCredentials);
         $service->authenticate(request: $request);
     }
 
@@ -500,7 +506,13 @@ class PcaServiceTest extends TestCase
             ->with(playID: 'testplayid', token: 'TEST_authToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $mockRepository);
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $mockRepository, credentials: $stubCredentials);
         $service->authenticate(request: $request);
     }
 
@@ -530,14 +542,8 @@ class PcaServiceTest extends TestCase
         $service->authenticate(request: $request);
     }
 
-    #[DataProvider('currencyAndCountryCode')]
-    public function test_authenticate_stubRepositorySTG_expected($currency, $countryCode)
+    public function test_authenticate_mockCredentials_getCredentialsByCurrency()
     {
-        $expected = (object) [
-            'countryCode' => 'CN',
-            'currency' => 'CNY'
-        ];
-
         $request = new Request([
             'requestId' => 'TEST_requestToken',
             'username' => 'TEST_TESTPLAYID',
@@ -546,7 +552,7 @@ class PcaServiceTest extends TestCase
 
         $player = (object) [
             'play_id' => 'testplayid',
-            'currency' => $currency
+            'currency' => 'IDR'
         ];
 
         $playGame = (object) [
@@ -562,21 +568,21 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $stubRepository);
-        $response = $service->authenticate(request: $request);
+        $providerCredentials = $this->createMock(ICredentials::class);
 
-        $this->assertEquals(expected: $expected, actual: $response);
+        $mockCredentials = $this->createMock(PcaCredentials::class);
+        $mockCredentials->expects($this->once())
+            ->method('getCredentialsByCurrency')
+            ->with(currency: 'IDR')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials);
+        $service->authenticate(request: $request);
     }
 
-    #[DataProvider('currencyAndCountryCode')]
-    public function test_authenticate_stubRepositoryPROD_expected($currency, $countryCode)
+    public function test_authenticate_stubCredentials_expected()
     {
-        config(['app.env' => 'PRODUCTION']);
-
-        $expected = (object) [
-            'countryCode' => $countryCode,
-            'currency' => $currency
-        ];
+        $expected = $this->createMock(ICredentials::class);
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -586,7 +592,7 @@ class PcaServiceTest extends TestCase
 
         $player = (object) [
             'play_id' => 'testplayid',
-            'currency' => $currency
+            'currency' => 'IDR'
         ];
 
         $playGame = (object) [
@@ -602,22 +608,14 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $stubRepository);
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($expected);
+
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
         $response = $service->authenticate(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);
-    }
-
-    public static function currencyAndCountryCode()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['USD', 'US'],
-            ['THB', 'TH'],
-            ['MYR', 'MY'],
-        ];
     }
 
     public function test_getBalance_mockRepository_getPlayerByPlayID()

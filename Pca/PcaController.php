@@ -61,12 +61,13 @@ class PcaController
             'externalToken' => 'required|string'
         ]);
 
-        $countryData = $this->service->authenticate(request: $request);
+        $playerCredentials = $this->service->authenticate(request: $request);
 
         return $this->response->authenticate(
             requestId: $request->requestId,
             playID: $request->username,
-            countryData: $countryData
+            currency: $playerCredentials->getCurrency(),
+            countryCode: $playerCredentials->getCountryCode()
         );
     }
 

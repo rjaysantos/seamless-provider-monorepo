@@ -33,19 +33,22 @@ class PcaResponseTest extends TestCase
     {
         $requestId = 'TEST_requestToken';
         $playID = 'TEST_TESTPLAYID';
+        $currency = 'IDR';
+        $countryCode = 'ID';
 
         $expected = response()->json([
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => 'IDR',
-            "countryCode" => 'ID'
+            "currencyCode" => $currency,
+            "countryCode" => $countryCode
         ]);
 
         $response = $this->makeResponse();
         $result = $response->authenticate(
             requestId: $requestId,
             playID: $playID,
-            countryData: (object) ['countryCode' => 'ID', 'currency' => 'IDR']
+            currency: $currency,
+            countryCode: $countryCode
         );
 
         $this->assertEquals(expected: $expected, actual: $result);

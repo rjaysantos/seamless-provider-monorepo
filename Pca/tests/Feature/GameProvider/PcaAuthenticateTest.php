@@ -16,13 +16,12 @@ class PcaAuthenticateTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    #[DataProvider('currencyAndCountryCodes')]
-    public function test_authenticate_validRequestStgSupportedCurrency_expectedData($currency)
+    public function test_authenticate_validRequest_expectedData()
     {
         DB::table('pca.players')->insert([
             'play_id' => 'testplayid',
             'username' => 'testPlayer',
-            'currency' => $currency
+            'currency' => 'IDR'
         ]);
 
         DB::table('pca.playgame')->insert([
@@ -47,53 +46,6 @@ class PcaAuthenticateTest extends TestCase
             'currencyCode' => 'CNY',
             'countryCode' => 'CN'
         ]);
-    }
-
-    #[DataProvider('currencyAndCountryCodes')]
-    public function test_authenticate_validRequestProdSupportedCurrencies_expectedData($currency, $countryCode)
-    {
-        config(['app.env' => 'PRODUCTION']);
-
-        DB::table('pca.players')->insert([
-            'play_id' => 'testplayid',
-            'username' => 'testPlayer',
-            'currency' => $currency
-        ]);
-
-        DB::table('pca.playgame')->insert([
-            'play_id' => 'testplayid',
-            'token' => 'PCAUCN_TOKEN123456789',
-            'expired' => 'FALSE'
-        ]);
-
-        $payload = [
-            'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_TESTPLAYID',
-            'externalToken' => 'PCAUCN_TOKEN123456789'
-        ];
-
-        $response = $this->post('pca/prov/authenticate', $payload);
-
-        $response->assertStatus(200);
-
-        $response->assertJson([
-            'requestId' => 'e9ccd456-4c6a-47b3-922f-66a5e5e13513',
-            'username' => 'PCAUCN_TESTPLAYID',
-            'currencyCode' => $currency,
-            'countryCode' => $countryCode
-        ]);
-    }
-
-    public static function currencyAndCountryCodes()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['USD', 'US'],
-            ['THB', 'TH'],
-            ['MYR', 'MY'],
-        ];
     }
 
     #[DataProvider('authenticateParams')]

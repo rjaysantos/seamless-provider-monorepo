@@ -55,4 +55,14 @@ class PcaUSD implements ICredentials
     {
         return '69223691b94cacefca8bd2ac2a0f2d519fe78d326a52da29d6928d7d7aa325f9';
     }
+
+    public function getCurrency(): string
+    {
+        return 'USD';
+    }
+
+    public function getCountryCode(): string
+    {
+        return 'US';
+    }
 }

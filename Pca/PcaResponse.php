@@ -54,13 +54,13 @@ class PcaResponse
         return $currentDateTime->format('Y-m-d H:i:s') . '.' . $milliseconds;
     }
 
-    public function authenticate(string $requestId, string $playID, object $countryData): JsonResponse
+    public function authenticate(string $requestId, string $playID, string $currency, string $countryCode): JsonResponse
     {
         return response()->json(data: [
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => $countryData->currency,
-            "countryCode" => $countryData->countryCode
+            "currencyCode" => $currency,
+            "countryCode" => $countryCode
         ]);
     }
 

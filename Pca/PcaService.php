@@ -104,25 +104,13 @@ class PcaService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): object
+    public function authenticate(Request $request): ICredentials
     {
         $player = $this->getPlayerDetails(request: $request);
 
         $this->validateToken(request: $request, player: $player);
 
-        $countryCode = match ($player->currency) {
-            'IDR' => 'ID',
-            'PHP' => 'PH',
-            'VND' => 'VN',
-            'USD' => 'US',
-            'THB' => 'TH',
-            'MYR' => 'MY'
-        };
-
-        return (object) [
-            'countryCode' => config('app.env') === 'PRODUCTION' ? $countryCode : 'CN',
-            'currency' => config('app.env') === 'PRODUCTION' ? $player->currency : 'CNY'
-        ];
+        return $this->credentials->getCredentialsByCurrency(currency: $player->currency);
     }
 
     public function getBalance(Request $request): float
@@ -345,4 +333,3 @@ class PcaService
         return $walletResponse['credit_after'];
     }
 }
-
