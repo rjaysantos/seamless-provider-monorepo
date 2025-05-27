@@ -11,6 +11,8 @@ use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class PcaApi
 {
+    const PROVIDER_GMT8_TIMEZONE = 'Asia/Kuala_Lumpur';
+
     public function __construct(protected LaravelHttpClient $http)
     {
     }
@@ -46,7 +48,7 @@ class PcaApi
     {
         $apiRequest = [
             'game_round' => $transactionID,
-            'timezone' => 'Asia/Kuala_Lumpur'
+            'timezone' => self::PROVIDER_GMT8_TIMEZONE
         ];
 
         $headers = ['x-auth-admin-key' => $credentials->getAdminKey()];
