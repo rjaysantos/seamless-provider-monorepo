@@ -24,6 +24,8 @@ use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
 use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
+use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
+use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\SportsbookDetails\SboSettleSportsbookDetails;
 use Providers\Sbo\Exceptions\TransactionAlreadySettledException;
 use Providers\Sbo\SportsbookDetails\SboSettleParlaySportsbookDetails;
@@ -426,6 +428,80 @@ class SboService
         }
 
         return $balance['credit_after'];
+    }
+
+    public function rollback(Request $request): float
+    {
+        $playID = Str::after($request->Username, 'sbo_');
+
+        $playerData = $this->repository->getPlayerByPlayID(playID: $playID);
+
+        if (is_null($playerData) === true)
+            throw new ProviderPlayerNotFoundException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+
+        if ($request->CompanyKey !== $credentials->getCompanyKey())
+            throw new InvalidCompanyKeyException;
+
+        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
+
+        if (is_null($transactionData) === true)
+            throw new ProviderTransactionNotFoundException(data: $this->getWalletBalance(
+                credentials: $credentials,
+                playID: $playID
+            ));
+
+        if (trim($transactionData->flag) === 'rollback')
+            throw new TransactionAlreadyRollbackException;
+
+        try {
+            DB::connection('pgsql_write')->beginTransaction();
+
+            $this->repository->inactiveTransaction(trxID: $request->TransferCode);
+
+            $sportsbookDetails = new SboRollbackSportsbookDetails(transaction: $transactionData);
+
+            $rollbackCount = $this->repository->getRollbackCount(trxID: $request->TransferCode) + 1;
+            $betID = "rollback-{$rollbackCount}-{$request->TransferCode}";
+
+            $this->repository->createTransaction(
+                betID: $betID,
+                trxID: $request->TransferCode,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                betAmount: $transactionData->bet_amount,
+                betTime: $transactionData->bet_time,
+                flag: 'rollback',
+                sportsbookDetails: $sportsbookDetails
+            );
+
+            if (trim($transactionData->flag) === 'settled')
+                $resettleAmount = $transactionData->payout_amount;
+            else
+                $resettleAmount = $transactionData->bet_amount - $transactionData->payout_amount;
+
+            $walletResponse = $this->wallet->resettle(
+                credentials: $credentials,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                transactionID: $betID,
+                amount: -$resettleAmount,
+                betID: $request->TransferCode,
+                settledTransactionID: $transactionData->bet_id,
+                betTime: $transactionData->bet_time
+            );
+
+            if ($walletResponse['status_code'] !== 2100)
+                throw new WalletException;
+
+            DB::connection('pgsql_write')->commit();
+        } catch (Exception $e) {
+            DB::connection('pgsql_write')->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'];
     }
 
     private function isMixParlay(object $betDetails): bool

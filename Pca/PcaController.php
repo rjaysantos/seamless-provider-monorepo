@@ -34,7 +34,7 @@ class PcaController
         $validate = Validator::make(data: $request->all(), rules: $rules);
 
         if ($validate->fails())
-            throw new InvalidProviderRequestException(request: $request);
+            throw new InvalidProviderRequestException;
     }
 
     public function play(Request $request)
@@ -42,7 +42,7 @@ class PcaController
         $this->validateCasinoRequest(request: $request, rules: [
             'playId' => 'required|string',
             'username' => 'required|string',
-            'currency' => 'required|string',
+            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
             'language' => 'required|string',
             'gameId' => 'required|string',
             'device' => 'required|numeric'

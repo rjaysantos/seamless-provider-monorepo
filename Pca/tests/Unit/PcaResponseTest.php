@@ -80,18 +80,6 @@ class PcaResponseTest extends TestCase
         ];
     }
 
-    public static function currencies()
-    {
-        return [
-            ['IDR', 'ID'],
-            ['PHP', 'PH'],
-            ['VND', 'VN'],
-            ['BRL', 'BR'],
-            ['USD', 'US'],
-            ['THB', 'TH']
-        ];
-    }
-
     public function test_getBalance_stubData_expected()
     {
         $requestId = 'TEST_requestToken';
@@ -160,7 +148,7 @@ class PcaResponseTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'testRequestID',
-            'username' => 'PCAUCN_invalidPlayer',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -194,7 +182,7 @@ class PcaResponseTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'testRequestID',
-            'username' => 'PCAUCN_invalidPlayer',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',

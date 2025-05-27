@@ -107,19 +107,19 @@ class SboRepository
             ->count();
     }
 
-    public function getSettleCount(string $trxID): int
-    {
-        return  DB::table('sbo.reports')
-            ->where('trx_id', $trxID)
-            ->where('flag', 'settled')
-            ->count();
-    }
-
     public function getRollbackCount(string $trxID): int
     {
         return  DB::table('sbo.reports')
             ->where('trx_id', $trxID)
             ->whereIn('flag', ['running', 'rollback'])
+            ->count();
+    }
+
+    public function getSettleCount(string $trxID): int
+    {
+        return  DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->where('flag', 'settled')
             ->count();
     }
 }
