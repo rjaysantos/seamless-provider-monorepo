@@ -21,6 +21,7 @@ use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
 use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class SboServiceTest extends TestCase
 {
@@ -2362,7 +2363,8 @@ class SboServiceTest extends TestCase
 
     public function test_deduct_nonSportsProducts_expected()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(NotFoundHttpException::class);
+        $this->expectExceptionMessage('Game not supported');
 
         $request = new Request([
             'Amount' => 100.00,

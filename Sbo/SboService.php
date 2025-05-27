@@ -125,7 +125,7 @@ class SboService
     public function deduct(Request $request): float
     {
         if (in_array($request->ProductType, self::SBO_SPORTS_PRODUCTS) === false)
-            abort(404);
+            abort(404, 'Game not supported');
 
         $playID = Str::after($request->Username, 'sbo_');
 
