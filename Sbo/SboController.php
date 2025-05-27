@@ -11,9 +11,7 @@ use Providers\Sbo\Exceptions\InvalidRequestException as ProviderInvalidRequestEx
 
 class SboController
 {
-    public function __construct(private SboService $service, private SboResponse $response)
-    {
-    }
+    public function __construct(private SboService $service, private SboResponse $response) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -130,6 +128,25 @@ class SboController
         );
 
         $balance = $this->service->rollback(request: $request);
+
+        return $this->response->balance(request: $request, balance: $balance);
+    }
+
+    public function settle(Request $request)
+    {
+        $this->validateProviderRequest(
+            request: $request,
+            rules: [
+                'CompanyKey' => 'required|string',
+                'Username' => 'required|string',
+                'TransferCode' => 'required|string',
+                'WinLoss' => 'required|regex:/^\d+(\.\d{1,6})?$/',
+                'ResultTime' => 'required|date',
+                'IsCashOut' => 'required|bool'
+            ]
+        );
+
+        $balance = $this->service->settle(request: $request);
 
         return $this->response->balance(request: $request, balance: $balance);
     }
