@@ -2247,7 +2247,7 @@ class SboServiceTest extends TestCase
         $service->deduct(request: $request);
     }
 
-    public function test_deduct_walletWagerResponseCodeNot2100_WalletException()
+    public function test_deduct_stubWalletWagerNot2100_WalletException()
     {
         $this->expectException(WalletException::class);
         
@@ -2360,7 +2360,7 @@ class SboServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $result);
     }
 
-    public function test_deduct_NonSportsProducts_expected()
+    public function test_deduct_nonSportsProducts_expected()
     {
         $this->expectException(Exception::class);
 

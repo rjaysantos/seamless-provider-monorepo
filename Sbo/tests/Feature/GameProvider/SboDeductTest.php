@@ -210,7 +210,7 @@ class SboDeductTest extends TestCase
         ]);
     }
 
-    public function test_deduct_walletBalanceResponseCodeNot2100_expecteData()
+    public function test_deduct_walletBalanceStatusNot2100_expecteData()
     {
         DB::table('sbo.players')->insert([
             'play_id' => 'testPlayID',
@@ -353,7 +353,7 @@ class SboDeductTest extends TestCase
         ]);
     }
 
-    public function test_deduct_walletWagerResponseCodeNot2100_expectedData()
+    public function test_deduct_walletWagerStatusNot2100_expectedData()
     {
         DB::table('sbo.players')->insert([
             'play_id' => 'testPlayID',
