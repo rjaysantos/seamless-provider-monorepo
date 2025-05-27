@@ -225,7 +225,7 @@ class SboControllerTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    #[DataProvider('deductInvalidParams')]
+    #[DataProvider('deductParams')]
     public function test_deduct_invalidRequestParams_ProviderInvalidRequestException($param, $value)
     {
         $this->expectException(InvalidRequestException::class);
@@ -246,20 +246,7 @@ class SboControllerTest extends TestCase
         $controller->deduct(request: $request);
     }
 
-    public static function deductInvalidParams()
-    {
-        return [
-            ['Amount', 'test'],
-            ['TransferCode', 123],
-            ['BetTime', 123],
-            ['CompanyKey', 123],
-            ['Username', 123],
-            ['GameId', 'test'],
-            ['ProductType', 'test']
-        ];
-    }
-
-    #[DataProvider('deductMissingParams')]
+    #[DataProvider('deductParams')]
     public function test_deduct_missingRequestParams_ProviderInvalidRequestException($param)
     {
         $this->expectException(InvalidRequestException::class);
@@ -280,16 +267,16 @@ class SboControllerTest extends TestCase
         $controller->deduct(request: $request);
     }
 
-    public static function deductMissingParams()
+    public static function deductParams()
     {
         return [
-            ['Amount'],
-            ['TransferCode'],
-            ['BetTime'],
-            ['CompanyKey'],
-            ['Username'],
-            ['GameId'],
-            ['ProductType']
+            ['Amount', 'test'],
+            ['TransferCode', 123],
+            ['BetTime', 123],
+            ['CompanyKey', 123],
+            ['Username', 123],
+            ['GameId', 'test'],
+            ['ProductType', 'test']
         ];
     }
 
