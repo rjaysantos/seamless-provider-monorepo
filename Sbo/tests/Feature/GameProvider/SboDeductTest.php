@@ -89,7 +89,7 @@ class SboDeductTest extends TestCase
         ]);
     }
 
-    #[DataProvider('requestParams')]
+    #[DataProvider('deductParams')]
     public function test_deduct_invalidRequestParameter_expectedData($param, $value)
     {
         $request = [
@@ -114,7 +114,7 @@ class SboDeductTest extends TestCase
         ]);
     }
 
-    #[DataProvider('requestParams')]
+    #[DataProvider('deductParams')]
     public function test_deduct_missingRequestParameter_expectedData($param)
     {
         $request = [
@@ -139,7 +139,7 @@ class SboDeductTest extends TestCase
         ]);
     }
 
-    public static function requestParams(): array
+    public static function deductParams(): array
     {
         return [
             ['Amount', 'test'],
