@@ -47,4 +47,26 @@ class SboResponseTest extends TestCase
             actual: $result->getData(true)
         );
     }
+
+    public function test_deduct_stubResponse_expected()
+    {
+        $request = new Request([
+            'Username' => 'testUsername',
+            'Amount' => 100.0
+        ]);
+
+        $response = $this->makeResponse();
+        $result = $response->deduct(request: $request, balance: 1000.0);
+
+        $this->assertSame(
+            expected: [
+                'AccountName' => 'testUsername',
+                'Balance' => 1000,
+                'BetAmount' => 100,
+                'ErrorCode' => 0,
+                'ErrorMessage' => 'No Error'
+            ],
+            actual: $result->getData(true)
+        );
+    }
 }
