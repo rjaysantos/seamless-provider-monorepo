@@ -235,8 +235,6 @@ class PcaControllerTest extends TestCase
         ]);
 
         $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrency')->willReturn('IDR');
-        $providerCredentials->method('getCountryCode')->willReturn('ID');
 
         $mockService = $this->createMock(PcaService::class);
         $mockService->expects($this->once())
@@ -257,8 +255,6 @@ class PcaControllerTest extends TestCase
         ]);
 
         $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrency')->willReturn('IDR');
-        $providerCredentials->method('getCountryCode')->willReturn('ID');
 
         $stubService = $this->createMock(PcaService::class);
         $stubService->method('authenticate')
@@ -267,7 +263,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('authenticate')
-            ->with(requestId: $request->requestId, playID: $request->username, currency: 'IDR', country: 'ID');
+            ->with(requestId: $request->requestId, playID: $request->username, playerCredentials: $providerCredentials);
 
         $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->authenticate(request: $request);
@@ -288,8 +284,6 @@ class PcaControllerTest extends TestCase
             ->willReturn($expected);
 
         $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrency')->willReturn('IDR');
-        $providerCredentials->method('getCountryCode')->willReturn('ID');
 
         $stubService = $this->createMock(PcaService::class);
         $stubService->method('authenticate')

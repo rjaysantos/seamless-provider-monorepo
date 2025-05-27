@@ -5,6 +5,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Providers\Pca\PcaResponse;
+use Providers\Pca\Contracts\ICredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class PcaResponseTest extends TestCase
@@ -33,22 +34,23 @@ class PcaResponseTest extends TestCase
     {
         $requestId = 'TEST_requestToken';
         $playID = 'TEST_TESTPLAYID';
-        $currency = 'IDR';
-        $countryCode = 'ID';
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCurrency')->willReturn('IDR');
+        $providerCredentials->method('getCountryCode')->willReturn('ID');
 
         $expected = response()->json([
-            "requestId" => $requestId,
-            "username" => $playID,
-            "currencyCode" => $currency,
-            "countryCode" => $countryCode
+            'requestId' => $requestId,
+            'username' => $playID,
+            'currencyCode' => 'IDR',
+            'countryCode' => 'ID'
         ]);
 
         $response = $this->makeResponse();
         $result = $response->authenticate(
             requestId: $requestId,
             playID: $playID,
-            currency: $currency,
-            countryCode: $countryCode
+            playerCredentials: $providerCredentials
         );
 
         $this->assertEquals(expected: $expected, actual: $result);

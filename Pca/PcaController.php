@@ -66,8 +66,7 @@ class PcaController
         return $this->response->authenticate(
             requestId: $request->requestId,
             playID: $request->username,
-            currency: $playerCredentials->getCurrency(),
-            countryCode: $playerCredentials->getCountryCode()
+            playerCredentials: $playerCredentials
         );
     }
 

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Pca\Contracts\ICredentials;
 
 class PcaResponse
 {
@@ -54,13 +55,13 @@ class PcaResponse
         return $currentDateTime->format('Y-m-d H:i:s') . '.' . $milliseconds;
     }
 
-    public function authenticate(string $requestId, string $playID, string $currency, string $countryCode): JsonResponse
+    public function authenticate(string $requestId, string $playID, ICredentials $playerCredentials): JsonResponse
     {
         return response()->json(data: [
             "requestId" => $requestId,
             "username" => $playID,
-            "currencyCode" => $currency,
-            "countryCode" => $countryCode
+            "currencyCode" => $playerCredentials->getCurrency(),
+            "countryCode" => $playerCredentials->getCountryCode()
         ]);
     }
 
