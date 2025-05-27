@@ -14,12 +14,12 @@ use Providers\Sbo\Exceptions\WalletException;
 use Providers\Sbo\Exceptions\InsufficientFundException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
 use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
+use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
 use Providers\Sbo\SportsbookDetails\SboRunningSportsbookDetails;
 use Providers\Sbo\Exceptions\TransactionAlreadyRollbackException;
 use Providers\Sbo\SportsbookDetails\SboRollbackSportsbookDetails;
 use Providers\Sbo\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
-use Providers\Sbo\Exceptions\RNGProductsNotSupportedException;
 use Providers\Sbo\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class SboServiceTest extends TestCase
@@ -1807,7 +1807,7 @@ class SboServiceTest extends TestCase
         $service->deduct(request: $request);
     }
 
-    public function test_deduct_mockWalletBalance_balance()
+    public function test_deduct_mockWallet_balance()
     {
         $request = new Request([
             'Amount' => 100.00,
@@ -1862,7 +1862,7 @@ class SboServiceTest extends TestCase
         $service->deduct(request: $request);
     }
 
-    public function test_deduct_walletBalanceResponseCodeNot2100_WalletException()
+    public function test_deduct_stubWalletBalanceStatusNot2100_WalletException()
     {
         $this->expectException(WalletException::class);
 
@@ -2360,9 +2360,9 @@ class SboServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $result);
     }
 
-    public function test_deduct_RngProductsGameID_expected()
+    public function test_deduct_NonSportsProducts_expected()
     {
-        $this->expectException(RNGProductsNotSupportedException::class);
+        $this->expectException(Exception::class);
 
         $request = new Request([
             'Amount' => 100.00,

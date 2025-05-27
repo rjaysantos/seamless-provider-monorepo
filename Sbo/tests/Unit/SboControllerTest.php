@@ -259,6 +259,40 @@ class SboControllerTest extends TestCase
         ];
     }
 
+    #[DataProvider('deductMissingParams')]
+    public function test_deduct_missingRequestParams_ProviderInvalidRequestException($param)
+    {
+        $this->expectException(InvalidRequestException::class);
+
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        unset($request[$param]);
+
+        $controller = $this->makeController();
+        $controller->deduct(request: $request);
+    }
+
+    public static function deductMissingParams()
+    {
+        return [
+            ['Amount'],
+            ['TransferCode'],
+            ['BetTime'],
+            ['CompanyKey'],
+            ['Username'],
+            ['GameId'],
+            ['ProductType']
+        ];
+    }
+
     public function test_deduct_mockService_deduct()
     {
         $request = new Request([
@@ -295,7 +329,10 @@ class SboControllerTest extends TestCase
         $mockResponse = $this->createMock(SboResponse::class);
         $mockResponse->expects($this->once())
             ->method('deduct')
-            ->with($request);
+            ->with(
+                $request,
+                    0.0
+            );
 
         $controller = $this->makeController(response: $mockResponse);
         $controller->deduct(request: $request);

@@ -20,7 +20,6 @@ use Providers\Sbo\Exceptions\InsufficientFundException;
 use Providers\Sbo\Exceptions\InvalidBetAmountException;
 use Providers\Sbo\Exceptions\InvalidCompanyKeyException;
 use Providers\Sbo\Exceptions\TransactionAlreadyVoidException;
-use Providers\Sbo\Exceptions\RNGProductsNotSupportedException;
 use Providers\Sbo\Exceptions\TransactionAlreadyExistException;
 use Providers\Sbo\Exceptions\InvalidTransactionStatusException;
 use Providers\Sbo\SportsbookDetails\SboCancelSportsbookDetails;
@@ -36,7 +35,7 @@ class SboService
     const CASINO_MOBILE = 0;
     const SBO_MOBILE = 'm';
     const SBO_DESKTOP = 'd';
-    const SBO_RNG_PRODUCTS = [3, 7];
+    const SBO_SPORTS_PRODUCTS = [1, 5];
 
     public function __construct(
         private SboRepository $repository,
@@ -125,10 +124,10 @@ class SboService
 
     public function deduct(Request $request): float
     {
-        if (in_array($request->ProductType, self::SBO_RNG_PRODUCTS) === true)
-            throw new RNGProductsNotSupportedException;
+        if (in_array($request->ProductType, self::SBO_SPORTS_PRODUCTS) === false)
+            abort(404);
 
-        $playID = str_replace('sbo_', '', $request->Username);
+        $playID = Str::after($request->Username, 'sbo_');
 
         $playerDetails = $this->repository->getPlayerByPlayID(playID: $playID);
 
@@ -156,10 +155,10 @@ class SboService
 
         try {
             DB::connection('pgsql_write')->beginTransaction();
-            
-            $gameCode = $request->GameId;
 
             $betID = "wager-1-{$request->TransferCode}";
+
+            $sportsbookDetails = new SboRunningSportsbookDetails(gameCode: $request->GameId);
 
             $this->repository->createTransaction(
                 betID: $betID,
@@ -169,13 +168,13 @@ class SboService
                 betAmount: $request->Amount,
                 betTime: $transactionDate,
                 flag: 'running',
-                sportsbookDetails: new SboRunningSportsbookDetails(gameCode: $gameCode)
+                sportsbookDetails: $sportsbookDetails
             );
 
             $sportsbookReports = $this->walletReport->makeSportsbookReport(
                 trxID: $request->TransferCode,
                 betTime: $transactionDate,
-                sportsbookDetails: new SboRunningSportsbookDetails(gameCode: $gameCode)
+                sportsbookDetails: $sportsbookDetails
             );
 
             $walletResponse = $this->wallet->wager(
