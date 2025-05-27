@@ -28,4 +28,23 @@ class SboResponseTest extends TestCase
             actual: $result->getData(true)
         );
     }
+
+    public function test_balance_stubData_expectedData()
+    {
+        $request = new Request(['Username' => 'sbo_testPlayID']);
+        $balance = 2200;
+
+        $response = $this->makeResponse();
+        $result = $response->balance(request: $request, balance: $balance);
+
+        $this->assertSame(
+            expected: [
+                'AccountName' => $request->Username,
+                'Balance' => $balance,
+                'ErrorCode' => 0,
+                'ErrorMessage' => 'No Error'
+            ],
+            actual: $result->getData(true)
+        );
+    }
 }

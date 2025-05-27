@@ -32,8 +32,7 @@ class PcaService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $report,
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -95,12 +94,12 @@ class PcaService
         return $player;
     }
 
-    private function getPlayerBalance(ICredentials $credentials, Request $request, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, string $playID): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
         if ($walletResponse['status_code'] !== 2100)
-            throw new WalletErrorException($request);
+            throw new WalletErrorException;
 
         return $walletResponse['credit'];
     }
@@ -134,7 +133,7 @@ class PcaService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
     }
 
     public function logout(Request $request): void
@@ -151,37 +150,42 @@ class PcaService
         $player = $this->getPlayerDetails(request: $request);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-        $balance = $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
 
-        if ($balance < (float) $request->amount)
-            throw new InsufficientFundException(request: $request);
+        $playerBalance = $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
+
+        $transactionData = $this->repository->getTransactionByBetID(betID: $request->transactionCode);
+
+        if (is_null($transactionData) === false)
+            return $playerBalance;
+
+        if ($playerBalance < (float) $request->amount)
+            throw new InsufficientFundException;
+
+        $this->validateToken(request: $request, player: $player);
 
         try {
             DB::connection('pgsql_write')->beginTransaction();
 
-            $betTime = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
+            $transactionDate = Carbon::parse($request->transactionDate, self::PROVIDER_TIMEZONE)
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
-            $transaction = $this->repository->getTransactionByTransactionIDRefID(
-                transactionID: $request->gameRoundCode,
-                refID: $request->transactionCode
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                betID: $request->transactionCode,
+                betAmount: (float) $request->amount,
+                winAmount: 0,
+                betTime: $transactionDate,
+                status: 'WAGER',
+                refID: $request->gameRoundCode
             );
-
-            if (is_null($transaction) === true) {
-                $this->validateToken(request: $request, player: $player);
-
-                $this->repository->createBetTransaction(
-                    player: $player,
-                    request: $request,
-                    betTime: $betTime
-                );
-            }
 
             $report = $this->report->makeCasinoReport(
                 trxID: $request->transactionCode,
                 gameCode: $request->gameCodeName,
-                betTime: $betTime,
+                betTime: $transactionDate,
                 betChoice: '-',
                 result: '-'
             );
@@ -197,8 +201,8 @@ class PcaService
                 report: $report
             );
 
-            if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
-                throw new WalletErrorException($request);
+            if ($walletResponse['status_code'] !== 2100)
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {
@@ -235,7 +239,7 @@ class PcaService
                 );
             }
 
-            return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+            return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
         }
 
         try {
@@ -273,7 +277,7 @@ class PcaService
             );
 
             if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
-                throw new WalletErrorException($request);
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {
@@ -330,7 +334,7 @@ class PcaService
             );
 
             if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
-                throw new WalletErrorException($request);
+                throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
         } catch (Exception $e) {
@@ -341,3 +345,4 @@ class PcaService
         return $walletResponse['credit_after'];
     }
 }
+
