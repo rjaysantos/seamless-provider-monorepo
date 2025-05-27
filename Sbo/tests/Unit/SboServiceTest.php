@@ -1705,7 +1705,7 @@ class SboServiceTest extends TestCase
             'TransferCode' => 'testTransactionID',
             'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
             'CompanyKey' => 'sampleCompanyKey',
-            'Username' => 'testPlayID',
+            'Username' => 'invalidPlayID',
             'GameId' => 0,
             'ProductType' => 1
         ]);
