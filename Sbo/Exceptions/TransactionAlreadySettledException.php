@@ -8,13 +8,13 @@ class TransactionAlreadySettledException extends \Exception
 {
     public function __construct(protected $data = null) {}
 
-    public function render($request): JsonResponse
+    public function render(): JsonResponse
     {
         return response()->json([
             'ErrorCode' => 2001,
             'ErrorMessage' => 'Bet Already Settled',
             'Balance' => $this->data,
-            'AccountName' => $request->Username,
+            'AccountName' => request()->input('Username'),
         ]);
     }
 }

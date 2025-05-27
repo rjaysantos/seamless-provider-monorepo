@@ -1400,18 +1400,7 @@ class SboServiceTest extends TestCase
                 'ip_address' => '123.456.7.8',
             ]);
 
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1200.0,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            wallet: $stubWallet,
-            credentials: $stubCredentials,
-        );
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
 
         $service->settle(request: $request);
     }
@@ -1477,93 +1466,6 @@ class SboServiceTest extends TestCase
             repository: $stubRepository,
             wallet: $stubWallet,
             api: $mockApi,
-            credentials: $stubCredentials,
-            walletReport: $stubReport
-        );
-
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_mockRepository_SboSettleParlaySportsbookDetails()
-    {
-        $request = new Request([
-            'CompanyKey' => 'testCompanyKey',
-            'Username' => 'testPlayID',
-            'TransferCode' => 'testTransactionID',
-            'WinLoss' => 1200.0,
-            'ResultTime' => '2020-01-02 00:00:00',
-            'IsCashOut' => false
-        ]);
-
-        $mockRepository = $this->createMock(SboRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'ip_address' => '123.456.7.8'
-            ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCompanyKey')
-            ->willReturn('testCompanyKey');
-
-        $stubCredentials = $this->createMock(SboCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) [
-                'game_code' => 0,
-                'bet_amount' => 1000.0,
-                'bet_time' => '2020-01-02 00:00:00',
-                'flag' => 'running',
-                'ip_address' => '123.456.7.8',
-            ]);
-
-        $stubApi = $this->createMock(SboApi::class);
-        $stubApi->method('getBetList')
-            ->willReturn((object) [
-                'subBet' => [],
-                'sportsType' => 'Mix Parlay',
-                'oddsStyle' => 'E',
-                'odds' => 5.70
-            ]);
-
-        $mockRepository->expects($this->once())
-            ->method('createTransaction')
-            ->with(
-                betID: "payout-1-testTransactionID",
-                trxID: 'testTransactionID',
-                playID: 'testPlayID',
-                currency: 'IDR',
-                betAmount: 1000.0,
-                payoutAmount: 1200.0,
-                betTime: '2020-01-02 12:00:00',
-                flag: 'settled',
-                sportsbookDetails: new SboSettleParlaySportsbookDetails(
-                    request: $request,
-                    betAmount: 1000.0,
-                    odds: 5.70,
-                    oddsStyle: 'E',
-                    ipAddress: '123.456.7.8',
-                )
-            );
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSportsbookReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 2000.0,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            wallet: $stubWallet,
-            api: $stubApi,
             credentials: $stubCredentials,
             walletReport: $stubReport
         );
@@ -1959,7 +1861,86 @@ class SboServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockReport_makeSportsbookReport()
+    public function test_settle_mockReportParlayBet_makeSportsbookReport()
+    {
+        $request = new Request([
+            'CompanyKey' => 'testCompanyKey',
+            'Username' => 'testPlayID',
+            'TransferCode' => 'testTransactionID',
+            'WinLoss' => 1200.0,
+            'ResultTime' => '2020-01-02 00:00:00',
+            'IsCashOut' => false
+        ]);
+
+        $stubRepository = $this->createMock(SboRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR',
+                'ip_address' => '123.456.7.8'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCompanyKey')
+            ->willReturn('testCompanyKey');
+
+        $stubCredentials = $this->createMock(SboCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $stubRepository->method('getTransactionByTrxID')
+            ->willReturn((object) [
+                'game_code' => 0,
+                'bet_amount' => 1000.0,
+                'bet_time' => '2020-01-02 00:00:00',
+                'flag' => 'running',
+                'ip_address' => '123.456.7.8',
+            ]);
+
+        $stubApi = $this->createMock(SboApi::class);
+        $stubApi->method('getBetList')
+            ->willReturn((object) [
+                'subBet' => [],
+                'sportsType' => 'Mix Parlay',
+                'oddsStyle' => 'E',
+                'odds' => 5.70
+            ]);
+
+        $mockReport = $this->createMock(WalletReport::class);
+        $mockReport->expects($this->once())
+            ->method('makeSportsbookReport')
+            ->with(
+                trxID: 'testTransactionID',
+                betTime: '2020-01-02 12:00:00',
+                sportsbookDetails: new SboSettleParlaySportsbookDetails(
+                    request: $request,
+                    betAmount: 1000.0,
+                    odds: 5.70,
+                    oddsStyle: 'E',
+                    ipAddress: '123.456.7.8',
+                )
+            )
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 2000.0,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            wallet: $stubWallet,
+            api: $stubApi,
+            credentials: $stubCredentials,
+            walletReport: $mockReport
+        );
+
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockReportRegularBet_makeSportsbookReport()
     {
         $request = new Request([
             'CompanyKey' => 'testCompanyKey',
@@ -2122,7 +2103,94 @@ class SboServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockRepository_createTransaction()
+    public function test_settle_mockRepositoryParlayBet_createTransaction()
+    {
+        $request = new Request([
+            'CompanyKey' => 'testCompanyKey',
+            'Username' => 'testPlayID',
+            'TransferCode' => 'testTransactionID',
+            'WinLoss' => 1200.0,
+            'ResultTime' => '2020-01-02 00:00:00',
+            'IsCashOut' => false
+        ]);
+
+        $mockRepository = $this->createMock(SboRepository::class);
+        $mockRepository->method('getPlayerByPlayID')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR',
+                'ip_address' => '123.456.7.8'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getCompanyKey')
+            ->willReturn('testCompanyKey');
+
+        $stubCredentials = $this->createMock(SboCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $mockRepository->method('getTransactionByTrxID')
+            ->willReturn((object) [
+                'game_code' => 0,
+                'bet_amount' => 1000.0,
+                'bet_time' => '2020-01-02 00:00:00',
+                'flag' => 'running',
+                'ip_address' => '123.456.7.8',
+            ]);
+
+        $stubApi = $this->createMock(SboApi::class);
+        $stubApi->method('getBetList')
+            ->willReturn((object) [
+                'subBet' => [],
+                'sportsType' => 'Mix Parlay',
+                'oddsStyle' => 'E',
+                'odds' => 5.70
+            ]);
+
+        $mockRepository->expects($this->once())
+            ->method('createTransaction')
+            ->with(
+                betID: "payout-1-testTransactionID",
+                trxID: 'testTransactionID',
+                playID: 'testPlayID',
+                currency: 'IDR',
+                betAmount: 1000.0,
+                payoutAmount: 1200.0,
+                betTime: '2020-01-02 12:00:00',
+                flag: 'settled',
+                sportsbookDetails: new SboSettleParlaySportsbookDetails(
+                    request: $request,
+                    betAmount: 1000.0,
+                    odds: 5.70,
+                    oddsStyle: 'E',
+                    ipAddress: '123.456.7.8',
+                )
+            );
+
+        $stubReport = $this->createMock(WalletReport::class);
+        $stubReport->method('makeSportsbookReport')
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('payout')
+            ->willReturn([
+                'credit_after' => 2000.0,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $mockRepository,
+            wallet: $stubWallet,
+            api: $stubApi,
+            credentials: $stubCredentials,
+            walletReport: $stubReport
+        );
+
+        $service->settle(request: $request);
+    }
+
+    public function test_settle_mockRepositoryRegularBet_createTransaction()
     {
         $request = new Request([
             'CompanyKey' => 'testCompanyKey',

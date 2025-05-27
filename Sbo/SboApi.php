@@ -129,6 +129,7 @@ class SboApi
 
         $this->validateResponse(response: $response, rules: [
             'result' => 'required|array',
+            'error' => 'required|array',
             'error.id' => 'required|integer'
         ]);
 

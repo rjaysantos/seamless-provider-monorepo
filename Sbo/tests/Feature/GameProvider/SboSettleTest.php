@@ -930,28 +930,6 @@ class SboSettleTest extends TestCase
                 'ip_address' => '123.456.7.8'
             ]);
 
-        DB::table('sbo.reports')
-            ->insert([
-                'bet_id' => 'wager-1-testTransactionID',
-                'trx_id' => 'testTransactionID',
-                'play_id' => 'testPlayID',
-                'web_id' => 0,
-                'currency' => 'IDR',
-                'bet_amount' => 1000.0,
-                'payout_amount' => 0.0,
-                'bet_time' => '2021-01-01 12:00:00',
-                'bet_choice' => '-',
-                'game_code' => '1',
-                'sports_type' => '-',
-                'event' => '-',
-                'match' => '-',
-                'hdp' => '-',
-                'odds' => 0,
-                'result' => '-',
-                'flag' => 'running',
-                'status' => 1
-            ]);
-
         $request = [
             'CompanyKey' => 'invalid-company-key',
             'Username' => 'testPlayID',
@@ -1105,18 +1083,6 @@ class SboSettleTest extends TestCase
 
     public function test_settle_transactionAlreadyVoid_expectedData()
     {
-        $wallet = new class extends TestWallet {
-            public function balance(IWalletCredentials $credentials, string $playID): array
-            {
-                return [
-                    'credit' => 2500.0,
-                    'status_code' => 2100
-                ];
-            }
-        };
-
-        app()->bind(IWallet::class, $wallet::class);
-
         DB::table('sbo.players')
             ->insert([
                 'play_id' => 'testPlayID',

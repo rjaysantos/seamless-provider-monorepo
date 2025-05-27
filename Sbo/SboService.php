@@ -503,7 +503,7 @@ class SboService
                     playID: $playerData->play_id,
                     currency: $playerData->currency,
                     transactionID: $betID,
-                    amount: $request->WinLoss - $transactionData->payout_amount,
+                    amount: $request->WinLoss,
                     betID: $request->TransferCode,
                     settledTransactionID: $transactionData->bet_id,
                     betTime: $transactionDate
