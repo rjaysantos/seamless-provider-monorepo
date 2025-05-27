@@ -11,7 +11,9 @@ use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class PcaApi
 {
-    const PROVIDER_GMT8_TIMEZONE = 'Asia/Kuala_Lumpur';
+    private const PLAY_MODE_REAL = 1;
+    private const CASINO_MOBILE = 0;
+    private const PROVIDER_GMT8_TIMEZONE = 'Asia/Kuala_Lumpur';
 
     public function __construct(protected LaravelHttpClient $http)
     {
@@ -24,10 +26,10 @@ class PcaApi
             'serverName' => $credentials->getServerName(),
             'username' => strtoupper($credentials->getKioskName() . "_{$request->playId}"),
             'gameCodeName' => 'ubal',
-            'clientPlatform' => $request->device == 0 ? 'mobile' : 'web',
+            'clientPlatform' => $request->device == self::CASINO_MOBILE ? 'mobile' : 'web',
             'externalToken' => $token,
             'language' => $request->language,
-            'playMode' => 1
+            'playMode' => self::PLAY_MODE_REAL
         ];
 
         $headers = ['x-auth-kiosk-key' => $credentials->getKioskKey()];
@@ -38,7 +40,13 @@ class PcaApi
             headers: $headers
         );
 
-        if (isset($response->code) === false || $response->code !== 200)
+        $validator = Validator::make(data: json_decode(json_encode($response), true), rules: [
+            'code' => 'required|integer',
+            'data' => 'required|array',
+            'data.url' => 'required|string',
+        ]);
+
+        if ($validator->fails() || $response->code !== 200)
             throw new ThirdPartyApiErrorException;
 
         return $response->data->url;

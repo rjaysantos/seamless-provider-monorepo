@@ -102,4 +102,12 @@ class SboRepository
             ->where('flag', 'void')
             ->count();
     }
+
+    public function getRollbackCount(string $trxID): int
+    {
+        return  DB::table('sbo.reports')
+            ->where('trx_id', $trxID)
+            ->whereIn('flag', ['running', 'rollback'])
+            ->count();
+    }
 }

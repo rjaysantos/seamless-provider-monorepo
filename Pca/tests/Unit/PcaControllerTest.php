@@ -27,7 +27,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidCasinoRequestException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -47,7 +47,7 @@ class PcaControllerTest extends TestCase
         $this->expectException(InvalidCasinoRequestException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -73,12 +73,29 @@ class PcaControllerTest extends TestCase
         ];
     }
 
+    public function test_play_invalidCurrency_invalidCasinoRequestException()
+    {
+        $this->expectException(InvalidCasinoRequestException::class);
+
+        $request = new Request([
+            'playId' => 'testplayid',
+            'username' => 'testUsername',
+            'currency' => 'BRL',
+            'language' => 'en',
+            'gameId' => 'testGameID',
+            'device' => 1
+        ]);
+
+        $controller = $this->makeController();
+        $controller->play(request: $request);
+    }
+
     public function test_play_invalidBearerToken_invalidBearerTokenException()
     {
         $this->expectException(InvalidBearerTokenException::class);
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -94,7 +111,7 @@ class PcaControllerTest extends TestCase
     public function test_play_mockService_getLaunchUrl()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -106,7 +123,7 @@ class PcaControllerTest extends TestCase
         $mockService = $this->createMock(PcaService::class);
         $mockService->expects($this->once())
             ->method('getLaunchUrl')
-            ->with($request);
+            ->with(request: $request);
 
         $controller = $this->makeController(service: $mockService);
         $controller->play(request: $request);
@@ -115,7 +132,7 @@ class PcaControllerTest extends TestCase
     public function test_play_mockResponse_casinoSuccess()
     {
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -131,7 +148,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('casinoSuccess')
-            ->with('testUrl.com');
+            ->with(data: 'testUrl.com');
 
         $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->play(request: $request);
@@ -142,7 +159,7 @@ class PcaControllerTest extends TestCase
         $expected = new JsonResponse;
 
         $request = new Request([
-            'playId' => 'testPlayID',
+            'playId' => 'testplayid',
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
@@ -497,7 +514,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -519,7 +536,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -552,7 +569,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -564,7 +581,7 @@ class PcaControllerTest extends TestCase
         $mockProviderService = $this->createMock(PcaService::class);
         $mockProviderService->expects($this->once())
             ->method('bet')
-            ->with($request)
+            ->with(request: $request)
             ->willReturn(0.00);
 
         $controller = $this->makeController(service: $mockProviderService);
@@ -575,7 +592,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -591,7 +608,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('bet')
-            ->with($request, 100.00);
+            ->with(request: $request, balance: 100.00);
 
         $controller = $this->makeController(response: $mockResponse, service: $stubProviderService);
         $controller->bet(request: $request);
@@ -601,7 +618,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
