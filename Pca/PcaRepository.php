@@ -72,6 +72,13 @@ class PcaRepository
             ->first();
     }
 
+    public function getTransactionByBetID(string $betID): ?object
+    {
+        return DB::table('pca.reports')
+            ->where('bet_id', $betID)
+            ->first();
+    }
+
     public function getBetTransactionByTransactionID(string $transactionID): ?object
     {
         return DB::table('pca.reports')
@@ -99,21 +106,30 @@ class PcaRepository
             ->first();
     }
 
-    public function createBetTransaction(object $player, Request $request, string $betTime): void
-    {
+    public function createTransaction(
+        string $playID, 
+        string $currency,
+        string $gameCode,
+        string $betID,
+        string $betAmount, 
+        string $winAmount,
+        string $betTime,
+        string $status,
+        string $refID,
+    ): void {
         DB::connection('pgsql_write')
             ->table(table: 'pca.reports')
             ->insert([
-                'play_id' => $player->play_id,
-                'currency' => $player->currency,
-                'game_code' => $request->gameCodeName,
+                'play_id' => $playID,
+                'currency' => $currency,
+                'game_code' => $gameCode,
                 'bet_choice' => '-',
-                'bet_id' => $request->gameRoundCode,
-                'wager_amount' => (float) $request->amount,
-                'payout_amount' => 0,
+                'bet_id' => $betID,
+                'wager_amount' => $betAmount,
+                'payout_amount' => $winAmount,
                 'bet_time' => $betTime,
-                'status' => 'WAGER',
-                'ref_id' => $request->transactionCode
+                'status' => $status,
+                'ref_id' => $refID
             ]);
     }
 
