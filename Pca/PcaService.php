@@ -61,14 +61,14 @@ class PcaService
         if (is_null($player) === true)
             throw new CasinoPlayerNotFoundException;
 
-        $transaction = $this->repository->getTransactionByRefID(refID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByBetID(betID: $request->bet_id);
 
         if (is_null($transaction) === true)
             throw new CasinoTransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
 
-        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->trx_id);
+        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
     private function validateToken(Request $request, object $player): void

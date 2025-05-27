@@ -150,7 +150,7 @@ class PcaController
         $this->validateCasinoRequest(request: $request, rules: [
             'play_id' => 'required|string',
             'bet_id' => 'required|string',
-            'currency' => 'required|string'
+            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR'
         ]);
 
         $visualUrl = $this->service->getBetDetail(request: $request);
