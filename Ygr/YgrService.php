@@ -27,8 +27,7 @@ class YgrService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -60,7 +59,7 @@ class YgrService
 
     public function getBetDetail(Request $request): string
     {
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
@@ -120,7 +119,7 @@ class YgrService
         if (is_null($playerData) === true)
             throw new TokenNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->roundID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->roundID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
@@ -133,16 +132,20 @@ class YgrService
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = Carbon::parse($request->wagersTime, self::PROVIDER_API_TIMEZONE)
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                transactionID: $request->roundID,
+                extID: $request->roundID,
+                playID: $playerData->play_id,
+                username: $playerData->username,
+                currency: $playerData->currency,
+                gameCode: $playerData->status,
                 betAmount: $request->betAmount,
-                winAmount: $request->payoutAmount,
+                betWinlose: $request->payoutAmount - $request->betAmount,
                 transactionDate: $transactionDate
             );
 
@@ -166,9 +169,9 @@ class YgrService
             if ($walletResponse['status_code'] != 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 

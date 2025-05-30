@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -23,13 +24,13 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'token' => 'testToken',
             'expired' => 'FALSE',
             'status' => 'testGameID'
@@ -82,11 +83,16 @@ class YgrBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ygr.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Carbon::setTestNow();
@@ -142,7 +148,7 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -178,24 +184,29 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'token' => 'testToken',
             'expired' => 'FALSE',
             'status' => 'testGameID'
         ]);
 
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         $request = [
@@ -222,19 +233,29 @@ class YgrBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ygr.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         $this->assertDatabaseMissing('ygr.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 500.00,
-            'win_amount' => 0.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => -500.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Carbon::setTestNow();
@@ -245,13 +266,13 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'token' => 'testToken',
             'expired' => 'FALSE',
             'status' => 'testGameID'
@@ -299,13 +320,13 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'token' => 'testToken',
             'expired' => 'FALSE',
             'status' => 'testGameID'
@@ -354,13 +375,13 @@ class YgrBetAndSettleTest extends TestCase
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu027',
             'token' => 'testToken',
             'expired' => 'FALSE',
             'status' => 'testGameID'
@@ -409,11 +430,16 @@ class YgrBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('ygr.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Carbon::setTestNow();

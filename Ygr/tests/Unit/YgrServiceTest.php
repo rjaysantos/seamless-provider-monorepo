@@ -201,7 +201,7 @@ class YgrServiceTest extends TestCase
         $this->assertEquals(expected: $expected, actual: $response);
     }
 
-    public function test_getBetDetail_mockRepository_getTransactionByTrxID()
+    public function test_getBetDetail_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'play_id' => 'testPlayID',
@@ -212,9 +212,9 @@ class YgrServiceTest extends TestCase
 
         $mockRepository = $this->createMock(YgrRepository::class);
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: $request->bet_id)
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+            ->method('getTransactionByExtID')
+            ->with($request->bet_id)
+            ->willReturn((object) []);
 
         $stubApi = $this->createMock(YgrApi::class);
         $stubApi->method('getBetDetailUrl')
@@ -236,7 +236,7 @@ class YgrServiceTest extends TestCase
         ]);
 
         $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
@@ -253,8 +253,8 @@ class YgrServiceTest extends TestCase
         ]);
 
         $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) []);
 
         $mockCredentials = $this->createMock(YgrCredentials::class);
         $mockCredentials->expects($this->once())
@@ -278,8 +278,8 @@ class YgrServiceTest extends TestCase
         ]);
 
         $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) []);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(YgrCredentials::class);
@@ -308,8 +308,8 @@ class YgrServiceTest extends TestCase
         ]);
 
         $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) []);
 
         $stubApi = $this->createMock(YgrApi::class);
         $stubApi->method('getBetDetailUrl')
@@ -585,6 +585,7 @@ class YgrServiceTest extends TestCase
             ->with(token: $request->connectToken)
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -630,7 +631,7 @@ class YgrServiceTest extends TestCase
         $service->betAndSettle(request: $request);
     }
 
-    public function test_betAndSettle_mockRepository_getTransactionByTrxID()
+    public function test_betAndSettle_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'connectToken' => 'testToken',
@@ -645,12 +646,13 @@ class YgrServiceTest extends TestCase
         $mockRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: $request->roundID);
+            ->method('getTransactionByExtID')
+            ->with($request->roundID);
 
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
@@ -689,11 +691,12 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) []);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->betAndSettle(request: $request);
@@ -714,6 +717,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -762,6 +766,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -815,10 +820,11 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -852,6 +858,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -886,6 +893,7 @@ class YgrServiceTest extends TestCase
         $mockRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -904,9 +912,13 @@ class YgrServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('createTransaction')
             ->with(
-                transactionID: $request->roundID,
+                extID: $request->roundID,
+                playID: 'testPlayID',
+                username: 'testUsername',
+                currency: 'IDR',
+                gameCode: 'testGameID',
                 betAmount: $request->betAmount,
-                winAmount: $request->payoutAmount,
+                betWinlose: $request->payoutAmount - $request->betAmount,
                 transactionDate: '2021-01-01 00:00:00'
             );
 
@@ -935,6 +947,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -980,6 +993,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -1042,6 +1056,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);
@@ -1085,6 +1100,7 @@ class YgrServiceTest extends TestCase
         $stubRepository->method('getPlayerByToken')
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
+                'username' => 'testUsername',
                 'currency' => 'IDR',
                 'status' => 'testGameID'
             ]);

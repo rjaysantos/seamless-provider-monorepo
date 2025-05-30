@@ -2,6 +2,8 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -19,11 +21,16 @@ class YgrVisualTest extends TestCase
     public function test_visual_validRequest_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -122,11 +129,16 @@ class YgrVisualTest extends TestCase
     public function test_visual_transactionNotFound_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         $request = [
@@ -153,11 +165,16 @@ class YgrVisualTest extends TestCase
     public function test_visual_thirdPartyApiError_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'bet_winlose' => 200.00,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([

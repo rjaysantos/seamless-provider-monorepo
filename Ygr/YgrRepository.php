@@ -21,10 +21,10 @@ class YgrRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
         return DB::table('ygr.reports')
-            ->where('trx_id', $transactionID)
+            ->where('ext_id', $extID)
             ->first();
     }
 
@@ -53,18 +53,36 @@ class YgrRepository
             );
     }
 
+    private function getWebID(string $playID)
+    {
+        if (preg_match_all('/u(\d+)/', $playID, $matches)) {
+            $lastNumber = end($matches[1]);
+            return $lastNumber;
+        }
+    }
+
     public function createTransaction(
-        string $transactionID,
+        string $extID,
+        string $playID,
+        string $username,
+        string $currency,
+        string $gameCode,
         float $betAmount,
-        float $winAmount,
+        float $betWinlose,
         string $transactionDate
     ): void {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('ygr.reports')
             ->insert([
-                'trx_id' => $transactionID,
+                'ext_id' => $extID,
+                'username' => $username,
+                'play_id' => $playID,
+                'web_id' => $this->getWebID(playID: $playID),
+                'currency' => $currency,
+                'game_code' => $gameCode,
                 'bet_amount' => $betAmount,
-                'win_amount' => $winAmount,
+                'bet_valid' => $betAmount,
+                'bet_winlose' => $betWinlose,
                 'updated_at' => $transactionDate,
                 'created_at' => $transactionDate
             ]);
