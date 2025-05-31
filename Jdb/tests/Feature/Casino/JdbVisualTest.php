@@ -72,9 +72,9 @@ class JdbVisualTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->url() == 'http://api.jdb711.com' . '/apiRequest.do' &&
                 $request['dc'] == 'COLS' &&
-                $request['x'] == '1UsP3XuqUP9OuEoCIDB_at6xp3FI1Uxmyb90RE7crk3Q_WUmZsPifR-2VY4zXOo9eo-QiF778aDXhQVHnKRjyy7z6k5hemQ3CR_GGz7PiRzGRaBEXgAhbj8o-Nsg2BZb72eeXItsdthEnLJZzcff0etpUFp_fVcF-KwPefP5Ox0';
+                $request['x'] == '1UsP3XuqUP9OuEoCIDB_at6xp3FI1Uxmyb90RE7crk3Q_WUmZsPifR-2VY4zXOo9eo-QiF778aDXhQVHnK'.
+                    'RjyyDpCYEEeE-NORl3mkM4ExC8DoIMF2qglyxtXZUO3eLHqQEzhbBrfUP6C9LYJMseezOXjxU7yAz7eo0iAK7BIMU';
         });
-        Carbon::setTestNow();
     }
 
     public function test_visual_validRequestArcadeStaging_expectedData()
@@ -130,9 +130,9 @@ class JdbVisualTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->url() == 'http://api.jdb711.com' . '/apiRequest.do' &&
                 $request['dc'] == 'COLS' &&
-                $request['x'] == '1UsP3XuqUP9OuEoCIDB_at6xp3FI1Uxmyb90RE7crk3Q_WUmZsPifR-2VY4zXOo9eo-QiF778aDXhQVHnKRjyy7z6k5hemQ3CR_GGz7PiRyHc-q4eVXaHWUiNZOjpWIY0mYFCLw9sjLVrcmGfbZ2DmLSiAq0AhCnESqAViIp0Hc';
+                $request['x'] == '1UsP3XuqUP9OuEoCIDB_at6xp3FI1Uxmyb90RE7crk3Q_WUmZsPifR-2VY4zXOo9eo-QiF778aDXhQVHnK'.
+                    'RjyyDpCYEEeE-NORl3mkM4ExC8DoIMF2qglyxtXZUO3eLHqQEzhbBrfUP6C9LYJMseezOXjxU7yAz7eo0iAK7BIMU';
         });
-        Carbon::setTestNow();
     }
 
     public function test_records_invalidBearerToken_expected()

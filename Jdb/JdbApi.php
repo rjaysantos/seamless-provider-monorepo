@@ -105,16 +105,14 @@ class JdbApi
         string $gameID
     ): string {
         if ($this->isArcade(gameID: $gameID) === true)
-            $gameType = explode(separator: '-', string: $gameID)[0];
-        else
-            $gameType = self::JDB_SLOT_GAME_TYPE;
+            $gameID = explode(separator: '-', string: $gameID)[1];
 
         $requestData = [
             'action' => self::ACTION_QUERY_GAME,
             'ts' => $this->getCurrentTimestampInMilliseconds(),
             'parent' => $credentials->getParent(),
             'uid' => $playID,
-            'gType' => $gameType,
+            'mType' => $gameID,
             'historyId' => $historyID
         ];
 

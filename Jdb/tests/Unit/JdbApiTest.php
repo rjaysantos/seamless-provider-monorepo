@@ -302,7 +302,7 @@ class jdbApiTest extends TestCase
             'ts' => 1609430400000,
             'parent' => 'testParent',
             'uid' => 'testPlayID',
-            'gType' => 0,
+            'mType' => '8001',
             'historyId' => 'testHistoryID'
         ];
 
@@ -349,7 +349,7 @@ class jdbApiTest extends TestCase
             'ts' => 1609430400000,
             'parent' => 'testParent',
             'uid' => 'testPlayID',
-            'gType' => '7',
+            'mType' => '8001',
             'historyId' => 'testHistoryID'
         ];
 
