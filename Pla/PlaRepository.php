@@ -29,6 +29,13 @@ class PlaRepository
             ->first();
     }
 
+    public function getTransactionByRefID(string $refID): ?object
+    {
+        return DB::table('pla.reports')
+            ->where('ref_id', $refID)
+            ->first();
+    }
+
     public function createPlayer(string $playID, string $currency, string $username): void
     {
         DB::connection('pgsql_write')

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Wallet\V1\ProvSys\Transfer\Report;
 
 class PlaRefundTest extends TestCase
 {
@@ -61,16 +62,8 @@ class PlaRefundTest extends TestCase
         ];
 
         $wallet = new class extends TestWallet {
-            public function Resettle(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                string $betID,
-                string $settledTransactionID,
-                string $betTime
-            ): array {
+            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
+            {
                 return [
                     'credit_after' => 1010.0,
                     'status_code' => 2100
@@ -95,12 +88,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => 'R-1234567890',
+            'trx_id' => '8366794157',
             'bet_amount' => 10,
             'win_amount' => 10,
             'created_at' => '2024-01-01 08:00:00',
             'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => '27281386'
+            'ref_id' => '1234567890'
         ]);
     }
 
@@ -320,12 +313,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => 'R-1234567890',
+            'trx_id' => '8366794157',
             'bet_amount' => 10,
             'win_amount' => 10,
-            'created_at' => '2024-01-01 00:00:03',
-            'updated_at' => '2024-01-01 00:00:03',
-            'ref_id' => '27281386'
+            'created_at' => '2024-01-01 08:00:00',
+            'updated_at' => '2024-01-01 08:00:00',
+            'ref_id' => '1234567890'
         ]);
 
         $payload = [
@@ -372,15 +365,7 @@ class PlaRefundTest extends TestCase
     public function test_refund_invalidWalletResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
-            public function Resettle(
-                IWalletCredentials $credentials, 
-                string $playID, string $currency, 
-                string $transactionID, 
-                float $amount, 
-                string $betID, 
-                string $settledTransactionID, 
-                string $betTime
-            ): array {
+            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array {
                 return [
                     'status_code' => 'invalid'
                 ];
@@ -442,12 +427,12 @@ class PlaRefundTest extends TestCase
         ]);
 
         $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => 'R-1234567890',
+            'trx_id' => '8366794157',
             'bet_amount' => 10,
             'win_amount' => 10,
             'created_at' => '2024-01-01 08:00:00',
             'updated_at' => '2024-01-01 08:00:00',
-            'ref_id' => '27281386'
+            'ref_id' => '1234567890'
         ]);
     }
 
@@ -516,106 +501,50 @@ class PlaRefundTest extends TestCase
     {
         return [
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 123, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 123.456789, 'status_code' => 2100];
                 }
             }, '123.45'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 123.409987, 'status_code' => 2100];
                 }
             }, '123.40'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 123.000, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 123.000009, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 100.000, 'status_code' => 2100];
                 }
             }, '100.00'],
 
             [new class extends TestWallet {
-                public function Resettle(
-                    IWalletCredentials $credentials,
-                    string $playID,
-                    string $currency,
-                    string $transactionID,
-                    float $amount,
-                    string $betID,
-                    string $settledTransactionID,
-                    string $betTime
-                ): array {
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array 
+                {
                     return ['credit_after' => 100, 'status_code' => 2100];
                 }
             }, '100.00'],
