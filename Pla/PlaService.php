@@ -315,9 +315,7 @@ class PlaService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $refundTransaction = $this->repository->getTransactionByTrxID(
-            trxID: "R-{$request->pay['relatedTransactionCode']}"
-        );
+        $refundTransaction = $this->repository->getTransactionByRefID(refID: $request->pay['relatedTransactionCode']);
 
         if (is_null($refundTransaction) === false)
             return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
@@ -330,23 +328,30 @@ class PlaService
                 ->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                trxID: "R-{$request->pay['relatedTransactionCode']}",
+                trxID: $request->pay['transactionCode'],
                 betAmount: (float) $request->pay['amount'],
                 winAmount: (float) $request->pay['amount'],
                 betTime: $transactionDate,
                 settleTime: $transactionDate,
-                refID: $request->gameRoundCode
+                refID: $request->pay['relatedTransactionCode']
             );
 
-            $walletResponse = $this->wallet->resettle(
+            $report = $this->makeReport(
+                credentials: $credentials,
+                transactionID: $request->pay['transactionCode'],
+                gameCode: $request->gameCodeName,
+                betTime: $transactionDate
+            );
+
+            $walletResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,
                 playID: $player->play_id,
                 currency: $player->currency,
-                transactionID: "resettle-{$request->pay['relatedTransactionCode']}",
-                amount: (float) $request->pay['amount'],
-                betID: $request->pay['relatedTransactionCode'],
-                settledTransactionID: "wagerPayout-{$request->pay['relatedTransactionCode']}",
-                betTime: $transactionDate
+                wagerTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                wagerAmount: 0,
+                payoutTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                payoutAmount: (float) $request->pay['amount'],
+                report: $report
             );
 
             if ($walletResponse['status_code'] !== 2100)
