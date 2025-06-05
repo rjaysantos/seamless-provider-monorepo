@@ -71,13 +71,6 @@ class PcaRepository
             ->first();
     }
 
-    public function getTransactionByBetID(string $betID): ?object
-    {
-        return DB::table('pca.reports')
-            ->where('bet_id', $betID)
-            ->first();
-    }
-
     public function getBetTransactionByTransactionID(string $transactionID): ?object
     {
         return DB::table('pca.reports')

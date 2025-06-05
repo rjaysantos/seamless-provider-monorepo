@@ -55,4 +55,14 @@ class PcaStaging implements ICredentials
     {
         return '3bd7228891fb21391c355dda69a27548044ebf2bfc7d7c3e39c3f3a08e72e4e0';
     }
+
+    public function getCurrency(): string
+    {
+        return 'CNY';
+    }
+
+    public function getCountryCode(): string
+    {
+        return 'CN';
+    }
 }

@@ -6,6 +6,7 @@ use Providers\Pca\PcaService;
 use Providers\Pca\PcaResponse;
 use Providers\Pca\PcaController;
 use Illuminate\Http\JsonResponse;
+use Providers\Pca\Contracts\ICredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -189,7 +190,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -206,7 +207,7 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -229,17 +230,19 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $mockProviderService = $this->createMock(PcaService::class);
-        $mockProviderService->expects($this->once())
-            ->method('authenticate')
-            ->with($request)
-            ->willReturn('IDR');
+        $providerCredentials = $this->createMock(ICredentials::class);
 
-        $controller = $this->makeController(service: $mockProviderService);
+        $mockService = $this->createMock(PcaService::class);
+        $mockService->expects($this->once())
+            ->method('authenticate')
+            ->with(request: $request)
+            ->willReturn($providerCredentials);
+
+        $controller = $this->makeController(service: $mockService);
         $controller->authenticate(request: $request);
     }
 
@@ -247,20 +250,22 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
-        $stubProviderService = $this->createMock(PcaService::class);
-        $stubProviderService->method('authenticate')
-            ->willReturn('IDR');
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubService = $this->createMock(PcaService::class);
+        $stubService->method('authenticate')
+            ->willReturn($providerCredentials);
 
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('authenticate')
-            ->with($request->requestId, $request->username, 'IDR');
+            ->with(requestId: $request->requestId, playID: $request->username, playerCredentials: $providerCredentials);
 
-        $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
+        $controller = $this->makeController(service: $stubService, response: $mockResponse);
         $controller->authenticate(request: $request);
     }
 
@@ -268,7 +273,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -278,11 +283,13 @@ class PcaControllerTest extends TestCase
         $stubResponse->method('authenticate')
             ->willReturn($expected);
 
-        $stubProviderService = $this->createMock(PcaService::class);
-        $stubProviderService->method('authenticate')
-            ->willReturn('IDR');
+        $providerCredentials = $this->createMock(ICredentials::class);
 
-        $controller = $this->makeController(service: $stubProviderService, response: $stubResponse);
+        $stubService = $this->createMock(PcaService::class);
+        $stubService->method('authenticate')
+            ->willReturn($providerCredentials);
+
+        $controller = $this->makeController(service: $stubService, response: $stubResponse);
         $response = $controller->authenticate(request: $request);
 
         $this->assertSame(expected: $expected, actual: $response);
