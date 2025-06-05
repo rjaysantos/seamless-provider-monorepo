@@ -657,9 +657,9 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         unset($request[$unset]);
@@ -675,9 +675,9 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         $request[$key] = 34561;
@@ -710,10 +710,10 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => $payDetails,
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         if (isset($request[$unset]) === true)
@@ -741,10 +741,10 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => $payDetails,
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         if (isset($request[$key]) === true)
@@ -776,7 +776,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => [
@@ -785,7 +785,7 @@ class PcaControllerTest extends TestCase
                 'amount' => '10',
                 'type' => 'WIN'
             ],
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         $mockProviderService = $this->createMock(PcaService::class);
@@ -813,10 +813,10 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => $payDetails,
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         if (isset($request[$unset]) === true)
@@ -845,10 +845,10 @@ class PcaControllerTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => $payDetails,
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         if (isset($request[$key]) === true)
@@ -881,7 +881,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => [
@@ -891,7 +891,7 @@ class PcaControllerTest extends TestCase
                 'type' => 'REFUND',
                 'relatedTransactionCode' => 'testRelatedTransactionCode'
             ],
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         $mockProviderService = $this->createMock(PcaService::class);
@@ -908,7 +908,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => [
@@ -917,7 +917,7 @@ class PcaControllerTest extends TestCase
                 'amount' => '10',
                 'type' => 'WIN'
             ],
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         $stubProviderService = $this->createMock(PcaService::class);
@@ -937,7 +937,7 @@ class PcaControllerTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken',
             'gameRoundCode' => 'testGameRoundCode',
             'pay' => [
@@ -946,7 +946,7 @@ class PcaControllerTest extends TestCase
                 'amount' => '10',
                 'type' => 'WIN'
             ],
-            'gameCodeName' => 'testCodeName'
+            'gameCodeName' => 'testGameCode'
         ]);
 
         $expected = new JsonResponse();
