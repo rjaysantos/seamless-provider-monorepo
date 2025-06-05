@@ -791,7 +791,7 @@ class PcaControllerTest extends TestCase
         $mockProviderService = $this->createMock(PcaService::class);
         $mockProviderService->expects($this->once())
             ->method('settle')
-            ->with($request)
+            ->with(request: $request)
             ->willReturn(0.00);
 
         $controller = $this->makeController(service: $mockProviderService);
@@ -897,7 +897,7 @@ class PcaControllerTest extends TestCase
         $mockProviderService = $this->createMock(PcaService::class);
         $mockProviderService->expects($this->once())
             ->method('refund')
-            ->with($request)
+            ->with(request: $request)
             ->willReturn(0.00);
 
         $controller = $this->makeController(service: $mockProviderService);
@@ -927,7 +927,7 @@ class PcaControllerTest extends TestCase
         $mockResponse = $this->createMock(PcaResponse::class);
         $mockResponse->expects($this->once())
             ->method('gameRoundResult')
-            ->with($request, 0.00);
+            ->with(request: $request, balance: 0.00);
 
         $controller = $this->makeController(service: $stubProviderService, response: $mockResponse);
         $controller->gameRoundResult(request: $request);
