@@ -321,7 +321,7 @@ class PcaRefundTest extends TestCase
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:00',
             'status' => 'REFUND',
-            'ref_id' => '27281386'
+            'ref_id' => '1234567890'
         ]);
 
         $payload = [
@@ -351,11 +351,11 @@ class PcaRefundTest extends TestCase
         ];
 
         $wallet = new class extends TestWallet {
-            public function Resettle(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, string $betID, string $settledTransactionID, string $betTime): array
+            public function Balance(IWalletCredentials $credentials, string $playID): array
             {
                 return [
-                    'credit_after' => 1010.0,
-                    'status_code' => 2102
+                    'credit' => 1010.0,
+                    'status_code' => 2100
                 ];
             }
         };

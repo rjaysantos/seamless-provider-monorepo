@@ -471,7 +471,7 @@ class PcaSettleTest extends TestCase
             public function Balance(IWalletCredentials $credentials, string $playID): array
             {
                 return [
-                    'credit' => 1000.0,
+                    'credit' => 800.0,
                     'status_code' => 2100
                 ];
             }
@@ -488,7 +488,7 @@ class PcaSettleTest extends TestCase
             'externalTransactionCode' => 'b0f09415-8eec-493d-8e70-c0659b972653',
             'externalTransactionDate' => '2023-12-31 16:00:00.000',
             'balance' => [
-                'real' => '1000.00',
+                'real' => '800.00',
                 'timestamp' => '2023-12-31 16:00:00.000'
             ]
         ]);
@@ -554,11 +554,11 @@ class PcaSettleTest extends TestCase
         ];
 
         $wallet = new class extends TestWallet {
-            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
+            public function Balance(IWalletCredentials $credentials, string $playID): array
             {
                 return [
-                    'credit_after' => 1010.0,
-                    'status_code' => 2102
+                    'credit' => 800.0,
+                    'status_code' => 2100
                 ];
             }
         };
@@ -574,7 +574,7 @@ class PcaSettleTest extends TestCase
             'externalTransactionCode' => '8366794157',
             'externalTransactionDate' => '2024-01-01 00:00:00.000',
             'balance' => [
-                'real' => '1010.00',
+                'real' => '800.00',
                 'timestamp' => '2024-01-01 00:00:00.000'
             ]
         ]);

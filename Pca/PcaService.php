@@ -215,23 +215,25 @@ class PcaService
         $transactionData = $this->repository->getTransactionByBetID(betID: $betID);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+        $playerBalance = $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
+
+        if (is_null($transactionData) === false)
+            return $playerBalance;
 
         if (is_null($request->pay) === true) {
-            if (is_null($transactionData) === true) {
-                $this->repository->createTransaction(
-                    playID: $player->play_id,
-                    currency: $player->currency,
-                    gameCode: $request->gameCodeName,
-                    betID: $betID,
-                    betAmount: 0,
-                    winAmount: 0,
-                    betTime: Carbon::now()->setTimezone('GMT+8')->format('Y-m-d H:i:s'),
-                    status: 'PAYOUT',
-                    refID: $request->gameRoundCode
-                );
-            }
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                betID: $betID,
+                betAmount: 0,
+                winAmount: 0,
+                betTime: Carbon::now()->setTimezone('GMT+8')->format('Y-m-d H:i:s'),
+                status: 'PAYOUT',
+                refID: $request->gameRoundCode
+            );
 
-            return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
+            return $playerBalance;
         }
 
         try {
@@ -241,19 +243,17 @@ class PcaService
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
-            if (is_null($transactionData) === true) {
-                $this->repository->createTransaction(
-                    playID: $player->play_id,
-                    currency: $player->currency,
-                    gameCode: $request->gameCodeName,
-                    betID: $betID,
-                    betAmount: 0,
-                    winAmount: (float) $request->pay['amount'],
-                    betTime: $transactionDate,
-                    status: 'PAYOUT',
-                    refID: $request->gameRoundCode,
-                );
-            }
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                betID: $betID,
+                betAmount: 0,
+                winAmount: (float) $request->pay['amount'],
+                betTime: $transactionDate,
+                status: 'PAYOUT',
+                refID: $request->gameRoundCode,
+            );
 
             $report = $this->report->makeCasinoReport(
                 trxID: $request->pay['transactionCode'],
@@ -274,7 +274,7 @@ class PcaService
                 report: $report
             );
 
-            if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
+            if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();
@@ -297,6 +297,15 @@ class PcaService
         if (is_null($betTransaction) === true)
             throw new RefundTransactionNotFoundException(request: $request);
 
+        $refundTransaction = $this->repository->getTransactionByRefID(
+            refID: $request->pay['relatedTransactionCode']
+        );
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        if (is_null($refundTransaction) === false)
+            return $this->getPlayerBalance(credentials: $credentials, playID: $player->play_id);
+
         try {
             DB::connection('pgsql_write')->beginTransaction();
 
@@ -304,25 +313,17 @@ class PcaService
                 ->setTimezone('GMT+8')
                 ->format('Y-m-d H:i:s');
 
-            $refundTransaction = $this->repository->getTransactionByRefID(
+            $this->repository->createTransaction(
+                playID: $player->play_id,
+                currency: $player->currency,
+                gameCode: $request->gameCodeName,
+                betID: $request->pay['transactionCode'],
+                betAmount: (float) $request->pay['amount'],
+                winAmount: (float) $request->pay['amount'],
+                betTime: $transactionDate,
+                status: 'REFUND',
                 refID: $request->pay['relatedTransactionCode']
-            );
-
-            if (is_null($refundTransaction) === true) {
-                $this->repository->createTransaction(
-                    playID: $player->play_id,
-                    currency: $player->currency,
-                    gameCode: $request->gameCodeName,
-                    betID: $request->pay['transactionCode'],
-                    betAmount: (float) $request->pay['amount'],
-                    winAmount: (float) $request->pay['amount'],
-                    betTime: $transactionDate,
-                    status: 'REFUND',
-                    refID: $request->pay['relatedTransactionCode']
-                );  
-            }
-
-            $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+            );  
 
             $walletResponse = $this->wallet->resettle(
                 credentials: $credentials,
@@ -335,7 +336,7 @@ class PcaService
                 betTime: $transactionDate
             );
 
-            if (in_array($walletResponse['status_code'], [2100, 2102]) === false)
+            if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
             DB::connection('pgsql_write')->commit();

@@ -1907,7 +1907,7 @@ class PcaServiceTest extends TestCase
         $service->settle($request);
     }
 
-    public function test_settle_transactionAlreadyExistsWithoutWin_expected()
+    public function test_settle_transactionAlreadyExists_expected()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -1943,53 +1943,6 @@ class PcaServiceTest extends TestCase
             ->willReturn([
                 'status_code' => 2100,
                 'credit' => $expected
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, report: $stubReport);
-        $response = $service->settle($request);
-
-        $this->assertSame(expected: $expected, actual: $response);
-    }
-
-    public function test_settle_transactionAlreadyExistsWithWin_expected()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_TESTPLAYID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'testplayid',
-            'currency' => 'IDR'
-        ];
-
-        $expected = 990.00;
-
-        $stubRepository = $this->createMock(PcaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeCasinoReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => $expected
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, report: $stubReport);
@@ -2929,7 +2882,7 @@ class PcaServiceTest extends TestCase
         $service->refund(request: $request);
     }
 
-    public function test_refund_transactionAlreadySettled_TransactionAlreadyExistsException()
+    public function test_refund_transactionAlreadyRefunded_expected()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -2969,10 +2922,13 @@ class PcaServiceTest extends TestCase
         $mockRepository->method('getBetTransactionByBetID')
             ->willReturn($betTransaction);
 
+        $mockRepository->method('getTransactionByRefID')
+            ->willReturn((object) []);
+
         $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('resettle')
+        $stubWallet->method('balance')
             ->willReturn([
-                'credit_after' => $expected,
+                'credit' => $expected,
                 'status_code' => 2100
             ]);
 
