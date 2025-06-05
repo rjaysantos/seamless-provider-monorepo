@@ -208,7 +208,7 @@ class PcaService
         $betTransaction = $this->repository->getBetTransactionByRefID(refID: $request->gameRoundCode);
 
         if (is_null($betTransaction) === true)
-            throw new ProviderTransactionNotFoundException(request: $request);
+            throw new ProviderTransactionNotFoundException;
 
         $betID = is_null($request->pay) === true ? "L-{$request->requestId}" : $request->pay['transactionCode'];
 
@@ -295,7 +295,7 @@ class PcaService
         );
 
         if (is_null($betTransaction) === true)
-            throw new RefundTransactionNotFoundException(request: $request);
+            throw new RefundTransactionNotFoundException;
 
         $refundTransaction = $this->repository->getTransactionByRefID(
             refID: $request->pay['relatedTransactionCode']
