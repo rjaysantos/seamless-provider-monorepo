@@ -169,6 +169,7 @@ class SboService
                 playID: $playID,
                 currency: $playerDetails->currency,
                 betAmount: $request->Amount,
+                payoutAmount: 0,
                 betTime: $transactionDate,
                 flag: 'running',
                 sportsbookDetails: $sportsbookDetails
