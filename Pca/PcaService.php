@@ -323,17 +323,25 @@ class PcaService
                 betTime: $transactionDate,
                 status: 'REFUND',
                 refID: $request->pay['relatedTransactionCode']
-            );  
+            );
 
-            $walletResponse = $this->wallet->resettle(
+            $report = $this->report->makeCasinoReport(
+                trxID: $request->pay['transactionCode'],
+                gameCode: $request->gameCodeName,
+                betTime: $transactionDate,
+                betChoice: '-',
+                result: '-'
+            );
+
+            $walletResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,
                 playID: $player->play_id,
                 currency: $player->currency,
-                transactionID: "resettle-{$request->pay['transactionCode']}",
-                amount: (float) $request->pay['amount'],
-                betID: $request->pay['transactionCode'],
-                settledTransactionID: "wager-{$request->pay['transactionCode']}",
-                betTime: $transactionDate
+                wagerTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                wagerAmount: 0,
+                payoutTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                payoutAmount: (float) $request->pay['amount'],
+                report: $report
             );
 
             if ($walletResponse['status_code'] !== 2100)

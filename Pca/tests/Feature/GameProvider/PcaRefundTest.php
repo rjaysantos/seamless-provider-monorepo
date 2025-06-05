@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Wallet\V1\ProvSys\Transfer\Report;
 
 class PcaRefundTest extends TestCase
 {
@@ -65,12 +66,13 @@ class PcaRefundTest extends TestCase
         ];
 
         $wallet = new class extends TestWallet {
-            public function Resettle(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, string $betID, string $settledTransactionID, string $betTime): array
+            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
             {
                 return [
                     'credit_after' => 1010.0,
                     'status_code' => 2100
                 ];
+                  
             }
         };
 
@@ -425,7 +427,7 @@ class PcaRefundTest extends TestCase
         ];
 
         $wallet = new class extends TestWallet {
-            public function Resettle(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, string $betID, string $settledTransactionID, string $betTime): array
+            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
             {
                 return [
                     'status_code' => 'invalid'
@@ -529,49 +531,49 @@ class PcaRefundTest extends TestCase
     {
         return [
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 123, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 123.456789, 'status_code' => 2100];
                 }
             }, '123.45'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 123.409987, 'status_code' => 2100];
                 }
             }, '123.40'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 123.000, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 123.000009, 'status_code' => 2100];
                 }
             }, '123.00'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 100.000, 'status_code' => 2100];
                 }
             }, '100.00'],
 
             [new class extends TestWallet {
-                public function Resettle(IWalletCredentials $credentials,  string $playID, string $currency,  string $transactionID,  float $amount,  string $betID,  string $settledTransactionID,  string $betTime): array
+                public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Report $report): array
                 {
                     return ['credit_after' => 100, 'status_code' => 2100];
                 }
