@@ -39,7 +39,7 @@ class Staging implements ICredentials
 
     public function getAgToken(): string
     {
-        return 'ag-token';
+        return 'ais-token';
     }
 
     public function getSecretKey(): string
