@@ -34,12 +34,12 @@ class PcaVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
         Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
+            '/reports/gameRoundStatus?*' => Http::response(json_encode([
                 'code' => 200,
                 'data' => [
                     'game_history_url' => ['testUrl.com']
@@ -60,10 +60,10 @@ class PcaVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/reports/gameRoundStatus' .
-                '?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' &&
+                '?game_round=testRefID&timezone=Asia%2FKuala_Lumpur' &&
                 $request->hasHeader('x-auth-admin-key', '3bd7228891fb21391c355dda69a27548044e' .
                     'bf2bfc7d7c3e39c3f3a08e72e4e0') &&
-                $request['game_round'] == 'testTransactionID' &&
+                $request['game_round'] == 'testRefID' &&
                 $request['timezone'] == 'Asia/Kuala_Lumpur';
         });
     }
@@ -73,7 +73,7 @@ class PcaVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -102,11 +102,33 @@ class PcaVisualTest extends TestCase
         ];
     }
 
+    public function test_visual_invalidCurrency_expectedData()
+    {
+        $request = [
+            'play_id' => 'testPlayID',
+            'bet_id' => 'testTransactionID',
+            'currency' => 'BRL'
+        ];
+
+        $response = $this->post('pca/in/visual', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'invalid request format'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_visual_invalidBearerToken_expectedData()
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -132,27 +154,11 @@ class PcaVisualTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        DB::table('pca.reports')->insert([
-            'bet_id' => 'testTransactionID',
-            'wager_amount' => 100.00,
-            'payout_amount' => 500.00,
-            'ref_id' => 'testRefID'
-        ]);
-
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
-
-        Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
-                'code' => 200,
-                'data' => [
-                    'game_history_url' => ['testUrl.com']
-                ],
-            ]))
-        ]);
 
         $response = $this->post('pca/in/visual', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
@@ -187,15 +193,6 @@ class PcaVisualTest extends TestCase
             'currency' => 'IDR'
         ];
 
-        Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
-                'code' => 200,
-                'data' => [
-                    'game_history_url' => ['testUrl.com']
-                ],
-            ]))
-        ]);
-
         $response = $this->post('pca/in/visual', $request, ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]);
 
         $response->assertJson([
@@ -225,12 +222,12 @@ class PcaVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ];
 
         Http::fake([
-            '/reports/gameRoundStatus?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' => Http::response(json_encode([
+            '/reports/gameRoundStatus?*' => Http::response(json_encode([
                 'code' => 500,
                 'data' => null,
             ]))
@@ -249,10 +246,10 @@ class PcaVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/reports/gameRoundStatus' .
-                '?game_round=testTransactionID&timezone=Asia%2FKuala_Lumpur' &&
+                '?game_round=testRefID&timezone=Asia%2FKuala_Lumpur' &&
                 $request->hasHeader('x-auth-admin-key', '3bd7228891fb21391c355dda69a27548044e' .
                     'bf2bfc7d7c3e39c3f3a08e72e4e0') &&
-                $request['game_round'] == 'testTransactionID' &&
+                $request['game_round'] == 'testRefID' &&
                 $request['timezone'] == 'Asia/Kuala_Lumpur';
         });
     }

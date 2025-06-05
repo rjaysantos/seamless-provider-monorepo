@@ -106,7 +106,7 @@ class AixService
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = $this->convertProviderDateTime(dateTime: $request->debit_time);
 
@@ -139,9 +139,9 @@ class AixService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 
@@ -173,7 +173,7 @@ class AixService
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = $this->convertProviderDateTime(dateTime: $request->credit_time);
 
@@ -206,9 +206,9 @@ class AixService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 
@@ -238,7 +238,7 @@ class AixService
             throw new DuplicateBonusException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = $this->convertProviderDateTime(dateTime: Carbon::now());
 
@@ -273,9 +273,9 @@ class AixService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 

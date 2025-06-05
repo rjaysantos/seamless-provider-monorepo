@@ -225,6 +225,130 @@ class SboControllerTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
+    #[DataProvider('deductParams')]
+    public function test_deduct_invalidRequestParams_ProviderInvalidRequestException($param, $value)
+    {
+        $this->expectException(InvalidRequestException::class);
+
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        $request[$param] = $value;
+
+        $controller = $this->makeController();
+        $controller->deduct(request: $request);
+    }
+
+    #[DataProvider('deductParams')]
+    public function test_deduct_missingRequestParams_ProviderInvalidRequestException($param)
+    {
+        $this->expectException(InvalidRequestException::class);
+
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        unset($request[$param]);
+
+        $controller = $this->makeController();
+        $controller->deduct(request: $request);
+    }
+
+    public static function deductParams()
+    {
+        return [
+            ['Amount', 'test'],
+            ['TransferCode', 123],
+            ['BetTime', 123],
+            ['CompanyKey', 123],
+            ['Username', 123],
+            ['GameId', 'test'],
+            ['ProductType', 'test']
+        ];
+    }
+
+    public function test_deduct_mockService_deduct()
+    {
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        $mockService = $this->createMock(SboService::class);
+        $mockService->expects($this->once())
+            ->method('deduct')
+            ->with($request);
+
+        $controller = $this->makeController(service: $mockService);
+        $controller->deduct(request: $request);
+    }
+
+    public function test_deduct_mockResponse_deduct()
+    {
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        $mockResponse = $this->createMock(SboResponse::class);
+        $mockResponse->expects($this->once())
+            ->method('deduct')
+            ->with(
+                $request,
+                0.0
+            );
+
+        $controller = $this->makeController(response: $mockResponse);
+        $controller->deduct(request: $request);
+    }
+
+    public function test_deduct_stubResponse_expected()
+    {
+        $request = new Request([
+            'Amount' => 100.00,
+            'TransferCode' => 'testTransactionID',
+            'BetTime' => '2021-06-01T00:23:25.9143053-04:00',
+            'CompanyKey' => 'sampleCompanyKey',
+            'Username' => 'testPlayID',
+            'GameId' => 0,
+            'ProductType' => 1
+        ]);
+
+        $expected = new JsonResponse;
+
+        $stubResponse = $this->createMock(SboResponse::class);
+        $stubResponse->method('deduct')
+            ->willReturn($expected);
+
+        $controller = $this->makeController(response: $stubResponse);
+        $result = $controller->deduct(request: $request);
+
+        $this->assertSame(expected: $expected, actual: $result);
+    }
+
     #[DataProvider('settleParams')]
     public function test_settle_missingRequestParameter_invalidProviderRequestException($param)
     {

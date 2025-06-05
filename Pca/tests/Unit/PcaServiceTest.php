@@ -228,7 +228,7 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -238,8 +238,8 @@ class PcaServiceTest extends TestCase
             ->with($request->play_id)
             ->willReturn((object) []);
 
-        $mockRepository->method('getTransactionByRefID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $mockRepository->method('getTransactionByBetID')
+            ->willReturn((object) ['bet_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('gameRoundStatus')
@@ -255,7 +255,7 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -263,19 +263,15 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn(null);
 
-        $stubApi = $this->createMock(PcaApi::class);
-        $stubApi->method('gameRoundStatus')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $stubRepository, api: $stubApi);
+        $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetail(request: $request);
     }
 
-    public function test_getBetDetail_mockRepository_getTransactionByRefID()
+    public function test_getBetDetail_mockRepository_getTransactionByBetID()
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -284,9 +280,9 @@ class PcaServiceTest extends TestCase
             ->willReturn((object) []);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByRefID')
+            ->method('getTransactionByBetID')
             ->with($request->bet_id)
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+            ->willReturn((object) ['bet_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('gameRoundStatus')
@@ -302,7 +298,7 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -310,14 +306,10 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByRefID')
+        $stubRepository->method('getTransactionByBetID')
             ->willReturn(null);
 
-        $stubApi = $this->createMock(PcaApi::class);
-        $stubApi->method('gameRoundStatus')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $stubRepository, api: $stubApi);
+        $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetail(request: $request);
     }
 
@@ -333,7 +325,7 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByRefID')
+        $stubRepository->method('getTransactionByBetID')
             ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
 
         $mockCredentials = $this->createMock(PcaCredentials::class);
@@ -353,7 +345,7 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -361,8 +353,8 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByRefID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $stubRepository->method('getTransactionByBetID')
+            ->willReturn((object) ['bet_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -373,7 +365,7 @@ class PcaServiceTest extends TestCase
         $mockApi = $this->createMock(PcaApi::class);
         $mockApi->expects($this->once())
             ->method('gameRoundStatus')
-            ->with($providerCredentials, 'testTransactionID')
+            ->with($providerCredentials, 'testRefID')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, api: $mockApi);
@@ -386,7 +378,7 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -394,8 +386,8 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByRefID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $stubRepository->method('getTransactionByBetID')
+            ->willReturn((object) ['bet_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
 
         $stubApi = $this->createMock(PcaApi::class);
         $stubApi->method('gameRoundStatus')

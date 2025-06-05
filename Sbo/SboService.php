@@ -38,7 +38,7 @@ class SboService
     const CASINO_MOBILE = 0;
     const SBO_MOBILE = 'm';
     const SBO_DESKTOP = 'd';
-    const SBO_RNG_PRODUCTS = [3, 7];
+    const SBO_SPORTS_PRODUCTS = [1, 5];
 
     public function __construct(
         private SboRepository $repository,
@@ -125,172 +125,19 @@ class SboService
         return $this->getWalletBalance(credentials: $credentials, playID: $playID);
     }
 
-    private function addBetRNG(
-        object $transaction,
-        float $balance,
-        float $newTotalBetAmount,
-        ICredentials $credentials,
-        string $betTime
-    ): float {
-        if (trim($transaction->flag) == 'settled' || trim($transaction->flag) == 'void')
-            throw new InvalidTransactionStatusException(data: $balance);
-
-        if ($transaction->bet_amount > $newTotalBetAmount)
-            throw new InvalidBetAmountException(data: $balance);
-
-        try {
-            DB::connection('pgsql_write')->beginTransaction();
-
-            $sportsbookDetails = (object) [
-                'gameCode' => $transaction->game_code,
-                'betChoice' => $transaction->bet_choice,
-                'result' => $transaction->result,
-                'event' => $transaction->event,
-                'match' => $transaction->match,
-                'market' => '-',
-                'hdp' => $transaction->hdp,
-                'odds' => $transaction->odds,
-                'opt' => '-',
-                'sportsType' => $transaction->sports_type
-            ];
-
-            if (trim($transaction->flag) == 'running') {
-                $sportsbookReports = $this->walletReport->sportsbookBetReport(
-                    trxID: $transaction->trx_id,
-                    betTime: $betTime,
-                    sportsbookDetails: $sportsbookDetails
-                );
-
-                $payoutResponse = $this->wallet->payout(
-                    credentials: $credentials,
-                    playID: $transaction->play_id,
-                    currency: $transaction->currency,
-                    transactionID: "payout-1-{$transaction->trx_id}",
-                    amount: $transaction->payout_amount,
-                    report: $sportsbookReports
-                );
-
-                if ($payoutResponse['status_code'] != 2100)
-                    throw new WalletException;
-            }
-
-            $this->repository->inactiveTransaction($transaction->trx_id);
-
-            $betID = "wager-2-{$transaction->trx_id}";
-
-            $this->repository->createTransaction(
-                betID: $betID,
-                trxID: $transaction->trx_id,
-                playID: $transaction->play_id,
-                currency: $transaction->currency,
-                betAmount: $newTotalBetAmount,
-                payoutAmount: 0,
-                betTime: $betTime,
-                flag: 'running-inc',
-                sportsbookDetails: $sportsbookDetails
-            );
-
-            $resettleResponse = $this->wallet->resettle(
-                credentials: $credentials,
-                playID: $transaction->play_id,
-                currency: $transaction->currency,
-                transactionID: $betID,
-                amount: $transaction->bet_amount - $newTotalBetAmount,
-                betID: $transaction->trx_id,
-                settledTransactionID: $transaction->bet_id,
-                betTime: $betTime,
-            );
-
-            if ($resettleResponse['status_code'] != 2100)
-                throw new WalletException;
-
-            DB::connection('pgsql_write')->commit();
-        } catch (\Exception $e) {
-            DB::connection('pgsql_write')->rollback();
-            throw $e;
-        }
-
-        return $resettleResponse['credit_after'];
-    }
-
-    private function bet(
-        string|int $gameID,
-        string $trxID,
-        string $playID,
-        string $currency,
-        float $betAmount,
-        string $betTime,
-        ICredentials $credentials
-    ): float {
-        try {
-            $sportsbookDetails = (object) [
-                'gameCode' => $gameID,
-                'betChoice' => '-',
-                'result' => '-',
-                'event' => '-',
-                'match' => '-',
-                'market' => '-',
-                'hdp' => '-',
-                'odds' => '0',
-                'opt' => '-',
-                'sportsType' => match ($gameID) {
-                    285 => 'Mini Mines',
-                    286 => 'Mini Football Strike',
-                    default => '-'
-                },
-            ];
-
-            $betID = "wager-1-{$trxID}";
-
-            $this->repository->createTransaction(
-                betID: $betID,
-                trxID: $trxID,
-                playID: $playID,
-                currency: $currency,
-                betAmount: $betAmount,
-                payoutAmount: 0,
-                betTime: $betTime,
-                flag: 'running',
-                sportsbookDetails: $sportsbookDetails
-            );
-
-            $sportsbookReports = $this->walletReport->sportsbookBetReport(
-                trxID: $trxID,
-                betTime: $betTime,
-                sportsbookDetails: $sportsbookDetails
-            );
-
-            $wagerResponse = $this->wallet->wager(
-                credentials: $credentials,
-                playID: $playID,
-                currency: $currency,
-                transactionID: $betID,
-                amount: $betAmount,
-                report: $sportsbookReports
-            );
-
-            if ($wagerResponse['status_code'] != 2100)
-                throw new WalletException;
-
-            DB::connection('pgsql_write')->commit();
-        } catch (\Exception $e) {
-            DB::connection('pgsql_write')->rollback();
-            throw $e;
-        }
-
-        return $wagerResponse['credit_after'];
-    }
-
     public function deduct(Request $request): float
     {
-        $playID = str_replace('sbo_', '', $request->Username);
+        if (in_array($request->ProductType, self::SBO_SPORTS_PRODUCTS) === false)
+            abort(404, 'Game not supported');
 
-        $player = $this->repository->getPlayerByPlayID(playID: $playID);
+        $playID = Str::after($request->Username, 'sbo_');
 
-        if (is_null($player) === true)
+        $playerDetails = $this->repository->getPlayerByPlayID(playID: $playID);
+
+        if (is_null($playerDetails) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency($player->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
 
         if ($request->CompanyKey != $credentials->getCompanyKey())
             throw new InvalidCompanyKeyException;
@@ -302,32 +149,56 @@ class SboService
 
         $transaction = $this->repository->getTransactionByTrxID(trxID: $request->TransferCode);
 
-        $betTime = Carbon::parse($request->BetTime, self::PROVIDER_TIMEZONE)
+        if (is_null($transaction) === false)
+            throw new TransactionAlreadyExistException(data: $balance);
+
+        $transactionDate = Carbon::parse($request->BetTime, self::PROVIDER_TIMEZONE)
             ->setTimezone(8)
             ->format('Y-m-d H:i:s');
 
-        if (is_null($transaction) === false) {
-            if (in_array($request->ProductType, self::SBO_RNG_PRODUCTS) === true)
-                return $this->addBetRNG(
-                    transaction: $transaction,
-                    balance: $balance,
-                    newTotalBetAmount: $request->Amount,
-                    credentials: $credentials,
-                    betTime: $betTime
-                );
+        try {
+            DB::connection('pgsql_write')->beginTransaction();
 
-            throw new TransactionAlreadyExistException(data: $balance);
+            $betID = "wager-1-{$request->TransferCode}";
+
+            $sportsbookDetails = new SboRunningSportsbookDetails(gameCode: $request->GameId);
+
+            $this->repository->createTransaction(
+                betID: $betID,
+                trxID: $request->TransferCode,
+                playID: $playID,
+                currency: $playerDetails->currency,
+                betAmount: $request->Amount,
+                betTime: $transactionDate,
+                flag: 'running',
+                sportsbookDetails: $sportsbookDetails
+            );
+
+            $sportsbookReports = $this->walletReport->makeSportsbookReport(
+                trxID: $request->TransferCode,
+                betTime: $transactionDate,
+                sportsbookDetails: $sportsbookDetails
+            );
+
+            $walletResponse = $this->wallet->wager(
+                credentials: $credentials,
+                playID: $playID,
+                currency: $playerDetails->currency,
+                transactionID: $betID,
+                amount: $request->Amount,
+                report: $sportsbookReports
+            );
+
+            if ($walletResponse['status_code'] != 2100)
+                throw new WalletException;
+
+            DB::connection('pgsql_write')->commit();
+        } catch (Exception $e) {
+            DB::connection('pgsql_write')->rollback();
+            throw $e;
         }
 
-        return $this->bet(
-            gameID: $request->GameId,
-            trxID: $request->TransferCode,
-            playID: $playID,
-            currency: $player->currency,
-            betAmount: $request->Amount,
-            betTime: $betTime,
-            credentials: $credentials
-        );
+        return $walletResponse['credit_after'];
     }
 
     public function cancel(Request $request): float
