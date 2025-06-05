@@ -71,7 +71,7 @@ class PcaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
-    private function validateToken(Request $request, ?object $player): void
+    private function validateToken(Request $request, object $player): void
     {
         $playGame = $this->repository->getPlayGameByPlayIDToken(
             playID: $player->play_id,
@@ -104,13 +104,13 @@ class PcaService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): string
+    public function authenticate(Request $request): ICredentials
     {
         $player = $this->getPlayerDetails(request: $request);
 
         $this->validateToken(request: $request, player: $player);
 
-        return $player->currency;
+        return $this->credentials->getCredentialsByCurrency(currency: $player->currency);
     }
 
     public function getBalance(Request $request): float
@@ -348,4 +348,3 @@ class PcaService
         return $walletResponse['credit_after'];
     }
 }
-

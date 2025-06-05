@@ -12,6 +12,7 @@ use Providers\Pca\PcaCredentials;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pca\Contracts\ICredentials;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Providers\Pca\Exceptions\WalletErrorException;
 use Providers\Pca\Exceptions\InvalidTokenException;
 use Providers\Pca\Exceptions\InsufficientFundException;
@@ -404,17 +405,17 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
@@ -422,13 +423,19 @@ class PcaServiceTest extends TestCase
         $mockRepository = $this->createMock(PcaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
-            ->with('playerid')
+            ->with(playID: 'testplayid')
             ->willReturn($player);
 
         $mockRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $mockRepository);
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $mockRepository, credentials: $stubCredentials);
         $service->authenticate(request: $request);
     }
 
@@ -438,7 +445,7 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
@@ -468,17 +475,17 @@ class PcaServiceTest extends TestCase
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
@@ -489,10 +496,16 @@ class PcaServiceTest extends TestCase
 
         $mockRepository->expects($this->once())
             ->method('getPlayGameByPlayIDToken')
-            ->with('playerid', 'TEST_authToken')
+            ->with(playID: 'testplayid', token: 'TEST_authToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $mockRepository);
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $mockRepository, credentials: $stubCredentials);
         $service->authenticate(request: $request);
     }
 
@@ -502,12 +515,12 @@ class PcaServiceTest extends TestCase
 
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
@@ -522,23 +535,21 @@ class PcaServiceTest extends TestCase
         $service->authenticate(request: $request);
     }
 
-    public function test_authenticate_stubRepository_expected()
+    public function test_authenticate_mockCredentials_getCredentialsByCurrency()
     {
-        $expected = 'IDR';
-
         $request = new Request([
             'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
+            'username' => 'TEST_TESTPLAYID',
             'externalToken' => 'TEST_authToken'
         ]);
 
         $player = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'currency' => 'IDR'
         ];
 
         $playGame = (object) [
-            'play_id' => 'playerid',
+            'play_id' => 'testplayid',
             'token' => 'TEST_authToken',
             'expired' => 'FALSE'
         ];
@@ -550,7 +561,51 @@ class PcaServiceTest extends TestCase
         $stubRepository->method('getPlayGameByPlayIDToken')
             ->willReturn($playGame);
 
-        $service = $this->makeService(repository: $stubRepository);
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $mockCredentials = $this->createMock(PcaCredentials::class);
+        $mockCredentials->expects($this->once())
+            ->method('getCredentialsByCurrency')
+            ->with(currency: 'IDR')
+            ->willReturn($providerCredentials);
+
+        $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials);
+        $service->authenticate(request: $request);
+    }
+
+    public function test_authenticate_stubCredentials_expected()
+    {
+        $expected = $this->createMock(ICredentials::class);
+
+        $request = new Request([
+            'requestId' => 'TEST_requestToken',
+            'username' => 'TEST_TESTPLAYID',
+            'externalToken' => 'TEST_authToken'
+        ]);
+
+        $player = (object) [
+            'play_id' => 'testplayid',
+            'currency' => 'IDR'
+        ];
+
+        $playGame = (object) [
+            'play_id' => 'testplayid',
+            'token' => 'TEST_authToken',
+            'expired' => 'FALSE'
+        ];
+
+        $stubRepository = $this->createMock(PcaRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($player);
+
+        $stubRepository->method('getPlayGameByPlayIDToken')
+            ->willReturn($playGame);
+
+        $stubCredentials = $this->createMock(PcaCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($expected);
+
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
         $response = $service->authenticate(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $response);

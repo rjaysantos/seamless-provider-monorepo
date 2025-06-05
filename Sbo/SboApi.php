@@ -21,18 +21,15 @@ class SboApi
         return $this->http->post($url, $request, $headers);
     }
 
-    private function validateResponseData(object $data, array $rules): void
+    private function validateResponse(object $response, array $rules): void
     {
         $validate = Validator::make(
-            json_decode(json_encode((array)$data), true),
-            $rules
+            data: json_decode(json_encode((array)$response), true),
+            rules: $rules
         );
 
-        if ($validate->fails())
+        if ($validate->fails() || $response->error->id !== 0)
             throw new ThirdPartyApiErrorException();
-
-        if ($data->error->id != 0)
-            throw new ThirdPartyApiErrorException;
     }
 
     public function registerPlayer(ICredentials $credentials, string $username): void
@@ -49,7 +46,7 @@ class SboApi
             request: $request
         );
 
-        $this->validateResponseData(data: $response, rules: [
+        $this->validateResponse(response: $response, rules: [
             'error.id' => 'required'
         ]);
     }
@@ -68,7 +65,7 @@ class SboApi
             request: $request
         );
 
-        $this->validateResponseData(data: $response, rules: [
+        $this->validateResponse(response: $response, rules: [
             'url' => 'required',
             'error.id' => 'required'
         ]);
@@ -107,11 +104,35 @@ class SboApi
             request: $request
         );
 
-        $this->validateResponseData(data: $response, rules: [
+        $this->validateResponse(response: $response, rules: [
             'url' => 'required',
             'error.id' => 'required'
         ]);
 
         return $response->url;
+    }
+
+    public function getBetList(ICredentials $credentials, string $trxID): object
+    {
+        $apiRequest = [
+            'companyKey' => $credentials->getCompanyKey(),
+            'serverId' => $credentials->getServerID(),
+            'refnos' => $trxID,
+            'portfolio' => $this->getPortfolio(transactionID: $trxID),
+            'language' => 'en'
+        ];
+
+        $response = $this->callApi(
+            url: $credentials->getApiUrl() . '/web-root/restricted/report/get-bet-list-by-refnos.aspx',
+            request: $apiRequest
+        );
+
+        $this->validateResponse(response: $response, rules: [
+            'result' => 'required|array',
+            'error' => 'required|array',
+            'error.id' => 'required|integer'
+        ]);
+
+        return $response->result[0];
     }
 }
