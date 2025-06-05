@@ -20,27 +20,27 @@ class PcaRefundTest extends TestCase
     public function test_refund_validRequest_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '1234567890',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -91,16 +91,16 @@ class PcaRefundTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pca.reports', [
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 10,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:00',
             'status' => 'REFUND',
-            'ref_id' => 'R-1234567890'
+            'ref_id' => '1234567890'
         ]);
     }
 
@@ -109,7 +109,7 @@ class PcaRefundTest extends TestCase
     {
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -168,7 +168,7 @@ class PcaRefundTest extends TestCase
     {
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -247,14 +247,14 @@ class PcaRefundTest extends TestCase
     public function test_refund_transactionNotFound_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -293,40 +293,40 @@ class PcaRefundTest extends TestCase
     public function test_refund_transactionAlreadyExist_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '1234567890',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 10,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:00',
             'status' => 'REFUND',
-            'ref_id' => 'R-1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -380,27 +380,27 @@ class PcaRefundTest extends TestCase
     public function test_refund_invalidWalletResponse_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '1234567890',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
@@ -447,16 +447,16 @@ class PcaRefundTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pca.reports', [
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 10,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:00',
             'status' => 'REFUND',
-            'ref_id' => 'R-1234567890'
+            'ref_id' => '1234567890'
         ]);
     }
 
@@ -464,27 +464,27 @@ class PcaRefundTest extends TestCase
     public function test_refund_validDataGiven_expectedData($wallet, $expectedBalance)
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '1234567890',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '1234567890'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PCAUCN_PLAYER001',
+            'username' => 'PCAUCN_TESTPLAYID',
             'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [

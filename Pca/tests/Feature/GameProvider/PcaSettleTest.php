@@ -22,28 +22,28 @@ class PcaSettleTest extends TestCase
     public function test_settle_validRequestNoWin_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'jackpot' => [
                 'contributionAmount' => '0.0123456789123456',
@@ -87,44 +87,44 @@ class PcaSettleTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('pca.reports', [
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653',
             'wager_amount' => 0,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'PAYOUT',
-            'ref_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653'
+            'ref_id' => '27281386'
         ]);
     }
 
     public function test_settle_validRequestWithWin_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -173,16 +173,16 @@ class PcaSettleTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('pca.reports', [
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 0,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:03',
             'status' => 'PAYOUT',
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
     }
 
@@ -191,8 +191,8 @@ class PcaSettleTest extends TestCase
     {
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'jackpot' => [
                 'contributionAmount' => '0.0123456789123456',
@@ -236,8 +236,8 @@ class PcaSettleTest extends TestCase
     {
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -294,8 +294,8 @@ class PcaSettleTest extends TestCase
     {
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -334,7 +334,7 @@ class PcaSettleTest extends TestCase
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
             'username' => 'invalidUsername',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -371,15 +371,15 @@ class PcaSettleTest extends TestCase
     public function test_settle_NoBetTransactionFound_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -416,41 +416,41 @@ class PcaSettleTest extends TestCase
     public function test_settle_transactionAlreadyExistWithoutWin_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653',
             'wager_amount' => 0,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'PAYOUT',
-            'ref_id' => 'L-b0f09415-8eec-493d-8e70-c0659b972653'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'jackpot' => [
                 'contributionAmount' => '0.0123456789123456',
@@ -497,41 +497,41 @@ class PcaSettleTest extends TestCase
     public function test_settle_transactionAlreadyExistWithWin_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 08:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 0,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 08:00:03',
             'status' => 'PAYOUT',
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -583,28 +583,28 @@ class PcaSettleTest extends TestCase
     public function test_settle_invalidWalletResponse_expectedData()
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
@@ -649,16 +649,16 @@ class PcaSettleTest extends TestCase
         ]);
 
         $this->assertDatabaseMissing('pca.reports', [
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794157',
             'wager_amount' => 0,
             'payout_amount' => 10,
             'bet_time' => '2024-01-01 00:00:03',
             'status' => 'PAYOUT',
-            'ref_id' => '8366794157'
+            'ref_id' => '27281386'
         ]);
     }
 
@@ -666,28 +666,28 @@ class PcaSettleTest extends TestCase
     public function test_settle_validDataGiven_expectedData($wallet, $expectedBalance)
     {
         DB::table('pca.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'username' => 'testPlayer',
             'currency' => 'IDR'
         ]);
 
         DB::table('pca.reports')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'testplayid',
             'currency' => 'IDR',
             'game_code' => 'aogs',
             'bet_choice' => '-',
-            'bet_id' => '27281386',
+            'bet_id' => '8366794150',
             'wager_amount' => 10,
             'payout_amount' => 0,
             'bet_time' => '2024-01-01 00:00:00',
             'status' => 'WAGER',
-            'ref_id' => '8366794150'
+            'ref_id' => '27281386'
         ]);
 
         $payload = [
             'requestId' => 'b0f09415-8eec-493d-8e70-c0659b972653',
-            'username' => 'PLAUC_PLAYER001',
-            'externalToken' => 'PLAUC_TOKEN88888888',
+            'username' => 'PCAUCN_TESTPLAYID',
+            'externalToken' => 'PCAUCN_TOKEN88888888',
             'gameRoundCode' => '27281386',
             'pay' => [
                 'transactionCode' => '8366794157',
