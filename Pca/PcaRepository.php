@@ -74,6 +74,7 @@ class PcaRepository
     {
         return DB::table('pca.reports')
             ->where('ref_id', $refID)
+            ->where('status', 'WAGER')
             ->first();
     }
 
@@ -81,6 +82,7 @@ class PcaRepository
     {
         return DB::table('pca.reports')
             ->where('bet_id', $betID)
+            ->where('status', 'WAGER')
             ->first();
     }
 
