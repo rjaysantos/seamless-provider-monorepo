@@ -23,12 +23,21 @@ class OrsVisualTest extends TestCase
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'testTransacID'
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransacID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -58,10 +67,10 @@ class OrsVisualTest extends TestCase
         $response->assertStatus(200);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/transaction/history?transaction_id=testTransacID&player_id=testPlayID&game_type_id=2' &&
+            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/transaction/history?transaction_id=testTransactionID&player_id=testPlayID&game_type_id=2' &&
                 $request->hasHeader('key', 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x') &&
                 $request->hasHeader('operator-name', 'mog052testidrslot') &&
-                $request['transaction_id'] == 'testTransacID' &&
+                $request['transaction_id'] == 'testTransactionID' &&
                 $request['player_id'] == 'testPlayID' &&
                 $request['game_type_id'] == 2;
         });
@@ -75,13 +84,9 @@ class OrsVisualTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        DB::table('ors.reports')->insert([
-            'trx_id' => 'testTransacID'
-        ]);
-
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransacID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -108,7 +113,7 @@ class OrsVisualTest extends TestCase
 
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testTransacID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -145,12 +150,21 @@ class OrsVisualTest extends TestCase
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'testTransacID'
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'InvalidTransacID',
+            'bet_id' => 'InvalidTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -187,12 +201,21 @@ class OrsVisualTest extends TestCase
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'testTransacID'
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransacID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR',
         ];
 

@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrsRepository
 {
-    public function __construct(private Randomizer $randomizer)
-    {
-    }
+    public function __construct(private Randomizer $randomizer) {}
 
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -116,5 +114,13 @@ class OrsRepository
                 'created_at' => $bonusTime,
                 'updated_at' => $bonusTime
             ]);
+    }
+
+    public function getTransactionByExtID(string $extID): ?object
+    {
+        return DB::connection('pgsql_report_read')
+            ->table('ors.reports')
+            ->where('ext_id', $extID)
+            ->first();
     }
 }
