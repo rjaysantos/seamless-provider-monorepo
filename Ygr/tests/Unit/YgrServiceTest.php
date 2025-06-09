@@ -289,7 +289,11 @@ class YgrServiceTest extends TestCase
         $mockApi = $this->createMock(YgrApi::class);
         $mockApi->expects($this->once())
             ->method('getBetDetailUrl')
-            ->with(credentials: $stubProviderCredentials, transactionID: 'testTransactionID')
+            ->with(
+                credentials: $stubProviderCredentials,
+                transactionID: 'testTransactionID',
+                currency: 'IDR'
+            )
             ->willReturn('testVisual.com');
 
         $service = $this->makeService(repository: $stubRepository, api: $mockApi, credentials: $stubCredentials);

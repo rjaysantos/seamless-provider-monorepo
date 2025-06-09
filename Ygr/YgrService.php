@@ -27,8 +27,7 @@ class YgrService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -69,7 +68,8 @@ class YgrService
 
         return $this->api->getBetDetailUrl(
             credentials: $credentials,
-            transactionID: $request->bet_id
+            transactionID: $request->bet_id,
+            currency: $request->currency
         );
     }
 

@@ -2,6 +2,8 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -57,7 +59,8 @@ class YgrVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/GetGameDetailUrl' &&
-                $request['WagersId'] == 'testTransactionID';
+                $request['WagersId'] == 'testTransactionID' &&
+                $request['Lang'] == 'id-ID';
         });
     }
 
@@ -189,7 +192,8 @@ class YgrVisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/GetGameDetailUrl' &&
-                $request['WagersId'] == 'testTransactionID';
+                $request['WagersId'] == 'testTransactionID' &&
+                $request['Lang'] == 'id-ID';
         });
     }
 }
