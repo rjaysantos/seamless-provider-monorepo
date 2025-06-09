@@ -63,14 +63,14 @@ class OrsService
         if (is_null($playerData) === true)
             throw new CasinoPlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: "payout-{$request->bet_id}");
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new CasinoTransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
 
-        $extID = Str::after($transactionData->ext_id, '-');
+        $extID = Str::after($request->bet_id, '-');
 
         return $this->api->getBettingRecords(
             credentials: $credentials,

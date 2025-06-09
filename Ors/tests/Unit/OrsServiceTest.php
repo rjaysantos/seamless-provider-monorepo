@@ -164,7 +164,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -189,7 +189,7 @@ class OrsServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -205,7 +205,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -215,7 +215,7 @@ class OrsServiceTest extends TestCase
 
         $mockRepository->expects($this->once())
             ->method('getTransactionByExtID')
-            ->with(extID: "payout-{$request->bet_id}")
+            ->with(extID: $request->bet_id)
             ->willReturn((object) [
                 'ext_id' => 'payout-testTransactionID',
             ]);
@@ -230,7 +230,7 @@ class OrsServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -249,7 +249,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTranscationID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -275,7 +275,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTranscationID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -299,7 +299,7 @@ class OrsServiceTest extends TestCase
             ->method('getBettingRecords')
             ->with(
                 credentials: $providerCredentials,
-                transactionID: $request->bet_id,
+                transactionID: 'testTransactionID',
                 playID: $request->play_id
             );
 

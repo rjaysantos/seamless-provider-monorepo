@@ -44,10 +44,11 @@ class OrsRepository
         return $token;
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
+        return DB::connection('pgsql_report_read')
+            ->table('ors.reports')
+            ->where('ext_id', $extID)
             ->first();
     }
 
@@ -114,13 +115,5 @@ class OrsRepository
                 'created_at' => $bonusTime,
                 'updated_at' => $bonusTime
             ]);
-    }
-
-    public function getTransactionByExtID(string $extID): ?object
-    {
-        return DB::connection('pgsql_report_read')
-            ->table('ors.reports')
-            ->where('ext_id', $extID)
-            ->first();
     }
 }
