@@ -25,22 +25,13 @@ class YgrApi
 
     private function getProviderLanguage(string $lang): string
     {
-        switch (strtolower($lang)) {
-            case 'id':
-            case 'idr':
-                return 'id-ID';
-            case 'th':
-            case 'thb':
-                return 'th-TH';
-            case 'vn':
-            case 'vnd':
-                return 'vi-VN';
-            case 'br':
-            case 'brl':
-                return 'pt-BR';
-            default:
-                return 'en-US';
-        }
+        return match ($lang) {
+            'id', 'IDR' => 'id-ID',
+            'th', 'THB' => 'th-TH',
+            'vn', 'VND' => 'vi-VN',
+            'br', 'BRL' => 'pt-BR',
+            default => 'en-US'
+        };
     }
 
     public function launch(ICredentials $credentials, string $token, string $language): string
