@@ -75,7 +75,7 @@ class RedService
         if (is_null($playerData) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(transactionID: $request->bet_id);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;

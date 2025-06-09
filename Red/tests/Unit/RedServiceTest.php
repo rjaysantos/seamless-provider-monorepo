@@ -329,7 +329,7 @@ class RedServiceTest extends TestCase
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['trx_id' => 'payout-testTransactionID']);
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetailUrl(request: $request);
@@ -367,8 +367,8 @@ class RedServiceTest extends TestCase
 
         $stubRepository->expects($this->once())
             ->method('getTransactionByExtID')
-            ->with(transactionID: $request->bet_id)
-            ->willReturn((object) ['trx_id' => 'payout-testTransactionID']);
+            ->with(extID: $request->bet_id)
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetailUrl(request: $request);
@@ -408,7 +408,7 @@ class RedServiceTest extends TestCase
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['trx_id' => 'payout-testTransactionID']);
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $mockCredentials = $this->createMock(RedCredentials::class);
         $mockCredentials->expects($this->once())
@@ -435,7 +435,7 @@ class RedServiceTest extends TestCase
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['trx_id' => 'payout-testTransactionID']);
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $stubProviderCredentials = $this->createMock(RedStaging::class);
         $stubCredentials = $this->createMock(RedCredentials::class);
@@ -473,7 +473,7 @@ class RedServiceTest extends TestCase
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['trx_id' => 'payout-testTransactionID']);
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $stubApi = $this->createMock(RedApi::class);
         $stubApi->method('getBetResult')
