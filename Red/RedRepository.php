@@ -15,7 +15,8 @@ class RedRepository
 
     public function getPlayerByUserIDProvider(int $userIDProvider): ?object
     {
-        return DB::table('red.players')
+        return DB::connection('pgsql_report_read')
+            ->table('red.players')
             ->where('user_id_provider', $userIDProvider)
             ->first();
     }
