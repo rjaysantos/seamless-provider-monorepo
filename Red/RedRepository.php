@@ -20,10 +20,10 @@ class RedRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $transactionID): ?object
     {
         return DB::table('red.reports')
-            ->where('trx_id', $transactionID)
+            ->where('ext_id', $transactionID)
             ->first();
     }
 
@@ -44,7 +44,7 @@ class RedRepository
         DB::connection('pgsql_write')
             ->table('red.reports')
             ->insert([
-                'trx_id' => $transactionID,
+                'ext_id' => $transactionID,
                 'bet_amount' => $betAmount,
                 'win_amount' => 0,
                 'updated_at' => null,
@@ -56,7 +56,7 @@ class RedRepository
     {
         DB::connection('pgsql_write')
             ->table('red.reports')
-            ->where('trx_id', $transactionID)
+            ->where('ext_id', $transactionID)
             ->update([
                 'win_amount' => $winAmount,
                 'updated_at' => $transactionDate
@@ -68,7 +68,7 @@ class RedRepository
         DB::connection('pgsql_write')
             ->table('red.reports')
             ->insert([
-                'trx_id' => $transactionID,
+                'ext_id' => $transactionID,
                 'bet_amount' => 0,
                 'win_amount' => $bonusAmount,
                 'updated_at' => $transactionDate,
