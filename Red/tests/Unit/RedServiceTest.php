@@ -426,7 +426,7 @@ class RedServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'payout-testTransactionID',
+            'bet_id' => 'testTransactionID',
             'currency' => 'IDR'
         ]);
 

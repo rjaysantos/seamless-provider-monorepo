@@ -44,7 +44,7 @@ class RedRepository
         DB::connection('pgsql_write')
             ->table('red.reports')
             ->insert([
-                'ext_id' => $transactionID,
+                'trx_id' => $transactionID,
                 'bet_amount' => $betAmount,
                 'win_amount' => 0,
                 'updated_at' => null,
