@@ -9,9 +9,7 @@ use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class YgrApi
 {
-    public function __construct(private LaravelHttpClient $http)
-    {
-    }
+    public function __construct(private LaravelHttpClient $http) {}
 
     private function validateResponse(object $response): void
     {
@@ -27,13 +25,22 @@ class YgrApi
 
     private function getProviderLanguage(string $lang): string
     {
-        return match ($lang) {
-            'id' => 'id-ID',
-            'th' => 'th-TH',
-            'vn' => 'vi-VN',
-            'br' => 'pt-BR',
-            default => 'en-US'
-        };
+        switch (strtolower($lang)) {
+            case 'id':
+            case 'idr':
+                return 'id-ID';
+            case 'th':
+            case 'thb':
+                return 'th-TH';
+            case 'vn':
+            case 'vnd':
+                return 'vi-VN';
+            case 'br':
+            case 'brl':
+                return 'pt-BR';
+            default:
+                return 'en-US';
+        }
     }
 
     public function launch(ICredentials $credentials, string $token, string $language): string
@@ -58,9 +65,12 @@ class YgrApi
         return $response->Data->Url;
     }
 
-    public function getBetDetailUrl(ICredentials $credentials, string $transactionID): string
+    public function getBetDetailUrl(ICredentials $credentials, string $transactionID, string $currency): string
     {
-        $apiRequest = ['WagersId' => $transactionID];
+        $apiRequest = [
+            'WagersId' => $transactionID,
+            'Lang' => $this->getProviderLanguage(lang: $currency)
+        ];
 
         $response = $this->http->post(
             url: $credentials->getApiUrl() . '/GetGameDetailUrl',
