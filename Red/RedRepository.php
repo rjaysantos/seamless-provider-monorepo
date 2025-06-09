@@ -56,7 +56,7 @@ class RedRepository
     {
         DB::connection('pgsql_write')
             ->table('red.reports')
-            ->where('ext_id', $transactionID)
+            ->where('trx_id', $transactionID)
             ->update([
                 'win_amount' => $winAmount,
                 'updated_at' => $transactionDate
@@ -68,7 +68,7 @@ class RedRepository
         DB::connection('pgsql_write')
             ->table('red.reports')
             ->insert([
-                'ext_id' => $transactionID,
+                'trx_id' => $transactionID,
                 'bet_amount' => 0,
                 'win_amount' => $bonusAmount,
                 'updated_at' => $transactionDate,
