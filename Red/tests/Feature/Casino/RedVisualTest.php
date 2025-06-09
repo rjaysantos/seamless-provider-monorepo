@@ -34,7 +34,7 @@ class RedVisualTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 1,
             'bet_amount' => 100.0,
-            'bet_winlose' => 0,
+            'bet_winlose' => 200.0,
             'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2025-01-01 00:00:00'
         ]);
@@ -175,7 +175,7 @@ class RedVisualTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 1,
             'bet_amount' => 100.0,
-            'bet_winlose' => 0,
+            'bet_winlose' => 200.0,
             'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2025-01-01 00:00:00'
         ]);
@@ -214,7 +214,7 @@ class RedVisualTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 1,
             'bet_amount' => 100.0,
-            'bet_winlose' => 0,
+            'bet_winlose' => 200.0,
             'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2025-01-01 00:00:00'
         ]);
@@ -263,7 +263,7 @@ class RedVisualTest extends TestCase
             'currency' => 'IDR',
             'game_code' => 1,
             'bet_amount' => 100.0,
-            'bet_winlose' => 0,
+            'bet_winlose' => 200.0,
             'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2025-01-01 00:00:00'
         ]);

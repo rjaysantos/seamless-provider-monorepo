@@ -76,12 +76,13 @@ class RedService
             throw new PlayerNotFoundException;
 
         $transactionData = $this->repository->getTransactionByExtID(transactionID: $request->bet_id);
-        $transactionID = Str::after($request->bet_id, '-');
-
+        
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+
+        $transactionID = Str::after($request->bet_id, '-');
 
         return $this->api->getBetResult(
             credentials: $credentials,
