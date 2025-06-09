@@ -426,7 +426,7 @@ class RedServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -447,7 +447,7 @@ class RedServiceTest extends TestCase
             ->method('getBetResult')
             ->with(
                 credentials: $stubProviderCredentials,
-                transactionID: $request->bet_id
+                transactionID: 'testTransactionID'
             );
 
         $service = $this->makeService(
