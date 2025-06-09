@@ -2,14 +2,12 @@
 
 namespace Providers\Aix;
 
-use App\DTO\PlayerDTO;
-use Illuminate\Http\Request;
 use App\DTO\CasinoRequestDTO;
-use Providers\Aix\DTO\AixPlayerDTO;
 use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Aix\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Aix\DTO\AixPlayerDTO;
 
 class AixApi
 {
@@ -19,7 +17,7 @@ class AixApi
 
     public function auth(
         ICredentials $credentials,
-        PlayerDTO $player,
+        AixPlayerDTO $player,
         CasinoRequestDTO $casinoRequest,
         float $balance
     ): string {
