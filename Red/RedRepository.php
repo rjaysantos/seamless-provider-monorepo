@@ -15,15 +15,15 @@ class RedRepository
 
     public function getPlayerByUserIDProvider(int $userIDProvider): ?object
     {
-        return DB::connection('pgsql_report_read')
-            ->table('red.players')
+        return DB::table('red.players')
             ->where('user_id_provider', $userIDProvider)
             ->first();
     }
 
     public function getTransactionByExtID(string $transactionID): ?object
     {
-        return DB::table('red.reports')
+        return DB::connection('pgsql_report_read')
+            ->table('red.reports')
             ->where('ext_id', $transactionID)
             ->first();
     }
