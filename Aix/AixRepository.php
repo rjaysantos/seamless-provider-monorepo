@@ -2,81 +2,59 @@
 
 namespace Providers\Aix;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Providers\Aix\DTO\AixPlayerDTO;
+use Providers\Aix\DTO\AixTransactionDTO;
 
 class AixRepository
 {
-    public function createIgnorePlayer(string $playID, string $username, string $currency): void
+    public function createIgnorePlayer(AixPlayerDTO $playerDTO): void
     {
         DB::connection('pgsql_report_write')
             ->table('aix.players')
             ->insertOrIgnore([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency
             ]);
     }
 
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?AixPlayerDTO
     {
-        return DB::connection('pgsql_report_read')
+        $data = DB::connection('pgsql_report_read')
             ->table('aix.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : AixPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function getTransactionByExtID(string $extID): ?object
+    public function getTransactionByExtID(string $extID): ?AixTransactionDTO
     {
-        return DB::connection('pgsql_report_read')
+        $data = DB::connection('pgsql_report_read')
             ->table('aix.reports')
             ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : AixTransactionDTO::fromDB(dbData: $data);
     }
 
-    private function getWebID(string $playID)
+    public function createTransaction(AixTransactionDTO $transactionDTO): void
     {
-        if (preg_match_all('/u(\d+)/', $playID, $matches)) {
-            $lastNumber = end($matches[1]);
-            return $lastNumber;
-        }
-    }
-
-    public function createTransaction(
-        string $extID,
-        string $playID,
-        string $username,
-        string $currency,
-        string $gameCode,
-        float $betAmount,
-        float $betWinlose,
-        string $transactionDate,
-    ): void {
         DB::connection('pgsql_report_write')
             ->table('aix.reports')
             ->insert([
-                'ext_id' => $extID,
-                'username' => $username,
-                'play_id' => $playID,
-                'web_id' => $this->getWebID($playID),
-                'currency' => $currency,
-                'game_code' => $gameCode,
-                'bet_amount' => $betAmount,
-                'bet_valid' => $betAmount,
-                'bet_winlose' => $betWinlose,
-                'updated_at' => $transactionDate,
-                'created_at' => $transactionDate
-            ]);
-    }
-
-    public function settleTransaction(string $extID, float $winloseAmount, string $settleTime): void
-    {
-        DB::connection('pgsql_report_write')
-            ->table('aix.reports')
-            ->where('ext_id', $extID)
-            ->update([
-                'bet_winlose' => $winloseAmount,
-                'updated_at' => $settleTime
+                'ext_id' => $transactionDTO->extID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 }

@@ -72,7 +72,7 @@ class AixPlayTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->url() == 'https://stg-games-api.ais-le.com/api/v1/auth' &&
                 $request->hasHeader('ag-code', 'ais') &&
-                $request->hasHeader('ag-token', 'ag-token') &&
+                $request->hasHeader('ag-token', 'ais-token') &&
                 $request['user']['id'] == 'testPlayID' &&
                 $request['user']['name'] == 'testUsername' &&
                 $request['user']['balance'] == 1000.0 &&
