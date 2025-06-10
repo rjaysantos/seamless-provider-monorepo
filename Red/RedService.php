@@ -227,7 +227,7 @@ class RedService
                 currency: $betTransactionData->currency,
                 gameCode: $betTransactionData->game_code,
                 betAmount: 0,
-                betWinlose: $betTransactionData->bet_amount - $request->amount,
+                betWinlose: $request->amount - $betTransactionData->bet_amount,
                 transactionDate: $transactionDate
             );
 

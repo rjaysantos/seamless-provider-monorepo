@@ -1624,7 +1624,7 @@ class RedServiceTest extends TestCase
                 currency: 'IDR',
                 gameCode: 456,
                 betAmount: 0,
-                betWinlose: -900,
+                betWinlose: 900,
                 transactionDate: '2021-01-01 08:00:00'
             );
 
