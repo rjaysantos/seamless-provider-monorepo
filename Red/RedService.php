@@ -123,6 +123,13 @@ class RedService
         );
     }
 
+    private function convertProviderDateTime(string $dateTime): string
+    {
+        return Carbon::parse($dateTime, self::PROVIDER_API_TIMEZONE)
+            ->setTimezone('GMT+8')
+            ->format('Y-m-d H:i:s');
+    }
+
     public function bet(Request $request): float
     {
         $playerData = $this->getPlayerDataByUserIDProvider(userID: $request->user_id);
@@ -134,7 +141,7 @@ class RedService
 
         $extID = "wager-{$request->txn_id}";
 
-        $transactionData = $this->repository->getTransactionByTrxID(extID: $extID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
@@ -147,9 +154,7 @@ class RedService
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $transactionDate = Carbon::parse($request->debit_time, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone(8)
-                ->format('Y-m-d H:i:s');
+            $transactionDate = $this->convertProviderDateTime(dateTime: $request->debit_time);
 
             $this->repository->createTransaction(
                 extID: $extID,
@@ -198,14 +203,14 @@ class RedService
         if ($request->header('secret-key') != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $betTransactionData = $this->repository->getTransactionByTrxID(extID: "wager-{$request->txn_id}");
+        $betTransactionData = $this->repository->getTransactionByExtID(extID: "wager-{$request->txn_id}");
 
         if (is_null($betTransactionData) === true)
             throw new TransactionDoesNotExistException;
 
         $extID = "payout-{$request->txn_id}";
 
-        $transactionData = $this->repository->getTransactionByTrxID(extID: $extID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadySettledException;
@@ -213,9 +218,7 @@ class RedService
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $transactionDate = Carbon::parse($request->credit_time, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone(8)
-                ->format('Y-m-d H:i:s');
+            $transactionDate = $this->convertProviderDateTime(dateTime: $request->credit_time);
 
             $this->repository->createTransaction(
                 extID: $extID,
@@ -266,7 +269,7 @@ class RedService
 
         $extID = "bonus-{$request->txn_id}";
 
-        $transactionData = $this->repository->getTransactionByTrxID(extID: $extID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
     
         if (is_null($transactionData) === false)
             throw new BonusTransactionAlreadyExists;
@@ -274,9 +277,7 @@ class RedService
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $transactionDate = Carbon::parse($request->credit_time, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone(8)
-                ->format('Y-m-d H:i:s');
+            $transactionDate = $this->convertProviderDateTime(dateTime: Carbon::now());
 
             $this->repository->createTransaction(
                 extID: $extID,

@@ -861,7 +861,7 @@ class RedServiceTest extends TestCase
         $service->bet(request: $request);
     }
 
-    public function test_bet_mockRepository_getTransactionByTrxID()
+    public function test_bet_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'user_id' => 123,
@@ -880,7 +880,7 @@ class RedServiceTest extends TestCase
             ]);
 
         $stubRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
+            ->method('getTransactionByExtID')
             ->with(transactionID: 'wager-testTransactionID')
             ->willReturn(null);
 
@@ -928,7 +928,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn((object) ['trx_id' => 'wager-testTransactionID']);
 
         $service = $this->makeService(repository: $stubRepository);
@@ -1327,7 +1327,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $mockRepository->method('getTransactionByTrxID')
+        $mockRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'wager-testTransactionID',
@@ -1401,7 +1401,7 @@ class RedServiceTest extends TestCase
             ->method('getCredentialsByCurrency')
             ->with(currency: 'IDR');
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'wager-testTransactionID',
@@ -1468,7 +1468,7 @@ class RedServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockRepository_getTransactionByTrxID()
+    public function test_settle_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'user_id' => 123,
@@ -1493,7 +1493,7 @@ class RedServiceTest extends TestCase
         $callCount = 0;
 
         $mockRepository->expects($this->exactly(2))
-            ->method('getTransactionByTrxID')
+            ->method('getTransactionByExtID')
             ->with($this->callback(function($param) use (&$callCount, $expectedValues){
                 return $param === $expectedValues[$callCount++];
             }))
@@ -1548,7 +1548,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
@@ -1574,7 +1574,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn((object) [
                 'trx_id' => 'testTransactionID',
                 'updated_at' => '2021-01-01 00:00:00'
@@ -1584,7 +1584,7 @@ class RedServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockRepository_settleTransaction()
+    public function test_settle_mockRepository_createTransaction()
     {
         $request = new Request([
             'user_id' => 123,
@@ -1601,7 +1601,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $mockRepository->method('getTransactionByTrxID')
+        $mockRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'payout-testTransactionID',
@@ -1624,7 +1624,7 @@ class RedServiceTest extends TestCase
                 currency: 'IDR',
                 gameCode: 456,
                 betAmount: 0,
-                betWinlose: 900,
+                betWinlose: -900,
                 transactionDate: '2021-01-01 08:00:00'
             );
 
@@ -1665,7 +1665,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'payout-testTransactionID',
@@ -1727,7 +1727,7 @@ class RedServiceTest extends TestCase
         $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($stubProviderCredentials);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'payout-testTransactionID',
@@ -1790,7 +1790,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'payout-testTransactionID',
@@ -1840,7 +1840,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(
                 (object) [
                     'ext_id' => 'payout-testTransactionID',
@@ -2023,7 +2023,7 @@ class RedServiceTest extends TestCase
         $service->bonus(request: $request);
     }
 
-    public function test_bonus_mockRepository_getTransactionByTrxID()
+    public function test_bonus_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'user_id' => 123,
@@ -2041,7 +2041,7 @@ class RedServiceTest extends TestCase
             ]);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
+            ->method('getTransactionByExtID')
             ->with(extID: 'bonus-testTransactionID');
 
         $stubWalletReport = $this->createMock(WalletReport::class);
@@ -2082,7 +2082,7 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn((object) ['trx_id' => 'bonus-testTransactionID']);
 
         $stubWalletReport = $this->createMock(WalletReport::class);
@@ -2105,7 +2105,7 @@ class RedServiceTest extends TestCase
         $service->bonus(request: $request);
     }
 
-    public function test_bonus_mockRepository_createBonusTransaction()
+    public function test_bonus_mockRepository_createTransaction()
     {
         Carbon::setTestNow('2025-01-01 00:00:00');
 
@@ -2134,7 +2134,7 @@ class RedServiceTest extends TestCase
                 gameCode: '456',
                 betAmount: 0,
                 betWinlose: $request->amount,
-                transactionDate: '2025-01-01 00:00:00'
+                transactionDate: '2025-01-01 08:00:00'
             );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
@@ -2184,7 +2184,7 @@ class RedServiceTest extends TestCase
             ->with(
                 transactionID: $request->txn_id,
                 gameCode: $request->game_id,
-                betTime: '2025-01-01 00:00:00'
+                betTime: '2025-01-01 08:00:00'
             )
             ->willReturn(new Report);
 

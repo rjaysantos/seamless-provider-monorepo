@@ -68,8 +68,8 @@ class RedBonusTest extends TestCase
             'game_code' => '1',
             'bet_amount' => 0,
             'bet_winlose' => 200.0,
-            'created_at' => '2025-01-01 08:00:00',
-            'updated_at' => '2025-01-01 08:00:00'
+            'created_at' => '2025-01-01 16:00:00',
+            'updated_at' => '2025-01-01 16:00:00'
         ]);
     }
 
