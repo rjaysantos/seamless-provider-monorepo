@@ -164,7 +164,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -174,8 +174,10 @@ class OrsServiceTest extends TestCase
             ->with(playID: $request->play_id)
             ->willReturn((object) []);
 
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
+        $mockRepository->method('getTransactionByExtID')
+            ->willReturn((object) [
+                'ext_id' => 'payout-testTransactionID'
+            ]);
 
         $service = $this->makeService(repository: $mockRepository);
         $service->getBetDetailUrl(request: $request);
@@ -187,7 +189,7 @@ class OrsServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -199,11 +201,11 @@ class OrsServiceTest extends TestCase
         $service->getBetDetailUrl(request: $request);
     }
 
-    public function test_getBetDetailUrl_mockRepository_getTransactionByTrxID()
+    public function test_getBetDetailUrl_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -212,9 +214,11 @@ class OrsServiceTest extends TestCase
             ->willReturn((object) []);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: $request->bet_id)
-            ->willReturn((object) []);
+            ->method('getTransactionByExtID')
+            ->with(extID: $request->bet_id)
+            ->willReturn((object) [
+                'ext_id' => 'payout-testTransactionID',
+            ]);
 
         $service = $this->makeService(repository: $mockRepository);
         $service->getBetDetailUrl(request: $request);
@@ -226,7 +230,7 @@ class OrsServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -234,7 +238,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
@@ -245,7 +249,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -253,8 +257,10 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) [
+                'ext_id' => 'payout-testTranscationID'
+            ]);
 
         $mockCredentials = $this->createMock(OrsCredentials::class);
         $mockCredentials->expects($this->once())
@@ -269,7 +275,7 @@ class OrsServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayID',
-            'bet_id' => 'testBetID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -277,8 +283,10 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) []);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) [
+                'ext_id' => 'payout-testTranscationID'
+            ]);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -291,7 +299,7 @@ class OrsServiceTest extends TestCase
             ->method('getBettingRecords')
             ->with(
                 credentials: $providerCredentials,
-                transactionID: $request->bet_id,
+                transactionID: 'testTransactionID',
                 playID: $request->play_id
             );
 
@@ -483,7 +491,7 @@ class OrsServiceTest extends TestCase
     public function test_authenticate_stubEncryptionInvalidSignature_invalidSignatureException()
     {
         $this->expectException(InvalidSignatureException::class);
-        
+
         $request = new Request(
             query: [
                 'player_id' => 'testPlayID',
