@@ -238,7 +238,7 @@ class RedService
                 credentials: $credentials,
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
-                transactionID: "payout-{$request->txn_id}",
+                transactionID: $extID,
                 amount: $request->amount,
                 report: $report
             );
