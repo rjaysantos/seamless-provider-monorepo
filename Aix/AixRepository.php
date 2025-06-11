@@ -2,7 +2,6 @@
 
 namespace Providers\Aix;
 
-use App\DTO\PlayerDTO;
 use Illuminate\Support\Facades\DB;
 use Providers\Aix\DTO\AixPlayerDTO;
 use Providers\Aix\DTO\AixTransactionDTO;

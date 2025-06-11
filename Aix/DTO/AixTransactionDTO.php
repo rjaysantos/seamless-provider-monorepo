@@ -4,7 +4,6 @@ namespace Providers\Aix\DTO;
 
 use Carbon\Carbon;
 use App\DTO\TransactionDTO;
-use Illuminate\Http\Request;
 use App\Traits\TransactionDTOTrait;
 
 class AixTransactionDTO extends TransactionDTO
@@ -63,44 +62,6 @@ class AixTransactionDTO extends TransactionDTO
             gameID: $settleTransactionDTO->gameID,
             betWinlose: $requestDTO->amount,
             dateTime: self::convertProviderDateTime($requestDTO->dateTime),
-        );
-    }
-
-    public static function debitRequest(Request $request): self
-    {
-        return new self(
-            extID: "wager-{$request->txn_id}",
-            roundID: $request->txn_id,
-            gameID: $request->prd_id,
-            betAmount: $request->amount,
-            betValid: $request->amount,
-            dateTime: self::convertProviderDateTime($request->debit_time),
-        );
-    }
-
-    // public static function settle(Request $request): self
-    // {
-    //     return new self(
-    //         extID: $request->txn_id,
-    //         transactionID: "payout-{$request->txn_id}",
-    //         winAmount: $request->amount,
-    //         updatedDateTime: self::convertProviderDateTime($request->credit_time),
-    //     );
-    // }
-
-    public static function fromBonusRequest(AixRequestDTO $aixRequest, AixTransactionDTO $transaction): self
-    {
-        return new self(
-            extID: $aixRequest->extID,
-            transactionID: "bonus-{$aixRequest->extID}",
-            playID: $transaction->playID,
-            username: $transaction->username,
-            webID: $transaction->webID,
-            currency: $transaction->currency,
-            gameID: $transaction->gameID,
-            betWinAmount: $aixRequest->amount,
-            betWinlose: $aixRequest->amount,
-            dateTime: self::convertProviderDateTime($aixRequest->dateTime),
         );
     }
 }

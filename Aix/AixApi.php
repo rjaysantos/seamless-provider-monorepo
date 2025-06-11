@@ -3,7 +3,6 @@
 namespace Providers\Aix;
 
 use App\DTO\CasinoRequestDTO;
-use App\DTO\PlayerDTO;
 use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Aix\Contracts\ICredentials;

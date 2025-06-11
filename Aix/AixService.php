@@ -6,7 +6,6 @@ use Exception;
 use Providers\Aix\AixApi;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
-use App\DTO\PlayerDTO;
 use Providers\Aix\AixRepository;
 use Illuminate\Support\Facades\DB;
 use Providers\Aix\DTO\AixRequestDTO;
