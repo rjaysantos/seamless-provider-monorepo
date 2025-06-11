@@ -35,29 +35,41 @@ class OrsRollbackTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('ors.players')->insert([
-            'play_id' => 'test_PlayerID',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -67,7 +79,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -75,7 +87,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -83,7 +95,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "3bd3363fb0624fcc0838f79a3279f5c5"
+            "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
         }';
 
         $response = $this->call(
@@ -101,13 +113,13 @@ class OrsRollbackTest extends TestCase
         $response->assertJson([
             'rs_code' => 'S-100',
             'rs_message' => 'success',
-            'player_id' => 'test_PlayerID',
+            'player_id' => '8dxw86xw6u027',
             'total_amount' => 0,
             'updated_balance' => 250.00,
             'billing_at' => 1715071526,
             'records' => [
                 [
-                    'transaction_id' => 'test_transacID_1',
+                    'transaction_id' => 'testTransactionID1',
                     'secondary_info' => [],
                     'amount' => 150,
                     'other_info' => [],
@@ -115,7 +127,7 @@ class OrsRollbackTest extends TestCase
                     'bet_place' => 'BASEGAME'
                 ],
                 [
-                    'transaction_id' => 'test_transacID_2',
+                    'transaction_id' => 'testTransactionID2',
                     'secondary_info' => [],
                     'amount' => 100,
                     'other_info' => [],
@@ -128,48 +140,72 @@ class OrsRollbackTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ors.reports', [
-            'trx_id' => 'test_transacID_1',
-            'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => '2024-05-07 16:45:26'
+            'ext_id' => 'cancel-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
+            'bet_amount' => -150.00,
+            'bet_valid' => -150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 16:45:26',
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
 
         $this->assertDatabaseHas('ors.reports', [
-            'trx_id' => 'test_transacID_2',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => '2024-05-07 16:45:26'
+            'ext_id' => 'cancel-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
+            'bet_amount' => -100.00,
+            'bet_valid' => -100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 16:45:26',
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
     }
 
     public function test_rollback_invalidPublicKeyHeader_expectedData()
     {
         DB::table('ors.players')->insert([
-            'play_id' => 'test_PlayerID',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -179,7 +215,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -187,7 +223,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -195,7 +231,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "3bd3363fb0624fcc0838f79a3279f5c5"
+            "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
         }';
 
         $response = $this->call(
@@ -221,29 +257,41 @@ class OrsRollbackTest extends TestCase
     public function test_rollback_invalidSignature_expectedData()
     {
         DB::table('ors.players')->insert([
-            'play_id' => 'test_PlayerID',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -253,7 +301,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -261,7 +309,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -269,7 +317,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "Invalid Signature"
+            "signature": "invalidSignature"
         }';
 
         $response = $this->call(
@@ -295,7 +343,7 @@ class OrsRollbackTest extends TestCase
     public function test_rollback_playerNotFound_expectedData()
     {
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -305,7 +353,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -313,7 +361,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -321,7 +369,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "3bd3363fb0624fcc0838f79a3279f5c5"
+            "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
         }';
 
         $response = $this->call(
@@ -347,29 +395,41 @@ class OrsRollbackTest extends TestCase
     public function test_rollback_transactionNotFound_expectedData()
     {
         DB::table('ors.players')->insert([
-            'play_id' => 'test_PlayerID',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_3',
+            'ext_id' => 'wager-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -379,7 +439,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "invalidTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -387,7 +447,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "invalidTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -395,7 +455,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "3bd3363fb0624fcc0838f79a3279f5c5"
+            "signature": "c84c5588fe09af24c7d721a996b7ad6b"
         }';
 
         $response = $this->call(
@@ -421,12 +481,8 @@ class OrsRollbackTest extends TestCase
     public function test_rollback_invalidWalletResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
-            public function Cancel(
-                IWalletCredentials $credentials,
-                string $transactionID,
-                float $amount,
-                string $transactionIDToCancel
-            ): array {
+            public function Cancel(IWalletCredentials $credentials, string $transactionID, float $amount, string $transactionIDToCancel): array
+            {
                 return [
                     'status_code' => 'invalid'
                 ];
@@ -436,29 +492,41 @@ class OrsRollbackTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('ors.players')->insert([
-            'play_id' => 'test_PlayerID',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'created_at' => '2024-05-07 00:00:00',
+            'updated_at' => '2024-05-07 00:00:00',
         ]);
 
         $request = '{
-            "player_id": "test_PlayerID",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 0,
             "transaction_type": "rollback",
@@ -468,7 +536,7 @@ class OrsRollbackTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -476,7 +544,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -484,7 +552,7 @@ class OrsRollbackTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "3bd3363fb0624fcc0838f79a3279f5c5"
+            "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
         }';
 
         $response = $this->call(
@@ -541,84 +609,110 @@ class OrsRollbackTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
-                            "secondary_info": {},
-                            "amount": 150,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "transaction_id": "testTransactionID1",
+                            "amount": 150
                         },
                         {
-                            "transaction_id": "test_transacID_2",
-                            "secondary_info": {},
-                            "amount": 100,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
                         }
                     ],
-                    "signature": "invalid_signature"
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
                 }'
             ],
             [
                 '{
-                    "player_id": "test_PlayerID",
+                    "player_id": "8dxw86xw6u027",
+                    "called_at": 1715071526,
+                    "records": [
+                        {
+                            "transaction_id": "testTransactionID1",
+                            "amount": 150
+                        },
+                        {
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
+                        }
+                    ],
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
+                }'
+            ],
+            [
+                '{
+                    "player_id": "8dxw86xw6u027",
                     "transaction_type": "rollback",
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
-                            "secondary_info": {},
-                            "amount": 150,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "transaction_id": "testTransactionID1",
+                            "amount": 150
                         },
                         {
-                            "transaction_id": "test_transacID_2",
-                            "secondary_info": {},
-                            "amount": 100,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
                         }
                     ],
-                    "signature": "invalid_signature"
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
                 }'
             ],
             [
                 '{
-                    "player_id": "test_PlayerID",
-                    "transaction_type": "rollback",
-                    "called_at": 1715071526,
-                    "signature": "invalid_signature"
-                }'
-            ],
-            [
-                '{
-                    "player_id": "test_PlayerID",
+                    "player_id": "8dxw86xw6u027",
                     "transaction_type": "rollback",
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
-                            "secondary_info": {},
-                            "amount": 150,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "amount": 150
                         },
                         {
-                            "transaction_id": "test_transacID_2",
-                            "secondary_info": {},
-                            "amount": 100,
-                            "other_info": {},
-                            "remark": {},
-                            "bet_place": "BASEGAME"
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
+                        }
+                    ],
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
+                }'
+            ],
+            [
+                '{
+                    "player_id": "8dxw86xw6u027",
+                    "transaction_type": "rollback",
+                    "called_at": 1715071526,
+                    "records": [
+                        {
+                            "transaction_id": "testTransactionID1"
+                        },
+                        {
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
+                        }
+                    ],
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
+                }'
+            ],
+            [
+                '{
+                    "player_id": "8dxw86xw6u027",
+                    "transaction_type": "rollback",
+                    "called_at": 1715071526,
+                    "signature": "3a885960c6e58f8c0e05e5f61b1cec16"
+                }'
+            ],
+            [
+                '{
+                    "player_id": "8dxw86xw6u027",
+                    "transaction_type": "rollback",
+                    "called_at": 1715071526,
+                    "records": [
+                        {
+                            "transaction_id": "testTransactionID1",
+                            "amount": 150
+                        },
+                        {
+                            "transaction_id": "testTransactionID2",
+                            "amount": 100
                         }
                     ]
                 }'
-            ],
-
+            ]
         ];
     }
 }

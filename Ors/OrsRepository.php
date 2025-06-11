@@ -46,18 +46,11 @@ class OrsRepository
         return $token;
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->first();
-    }
-
-    public function getBetTransactionByTrxID(string $transactionID): ?object
-    {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
+        return DB::connection('pgsql_report_read')
+            ->table('ors.reports')
+            ->where('ext_id', $extID)
             ->first();
     }
 
@@ -69,52 +62,38 @@ class OrsRepository
             ->first();
     }
 
-    public function createBetTransaction(string $transactionID, float $betAmount, string $betTime): void
+    private function getWebID(string $playID)
     {
-        DB::connection('pgsql_write')
+        if (preg_match_all('/u(\d+)/', $playID, $matches)) {
+            $lastNumber = end($matches[1]);
+            return $lastNumber;
+        }
+    }
+
+    public function createTransaction(
+        string $extID,
+        string $playID,
+        string $username,
+        string $currency,
+        string $gameCode,
+        float $betAmount,
+        float $betWinlose,
+        string $transactionDate,
+    ): void {
+        DB::connection('pgsql_report_write')
             ->table('ors.reports')
             ->insert([
-                'trx_id' => $transactionID,
+                'ext_id' => $extID,
+                'username' => $username,
+                'play_id' => $playID,
+                'web_id' => $this->getWebID($playID),
+                'currency' => $currency,
+                'game_code' => $gameCode,
                 'bet_amount' => $betAmount,
-                'created_at' => $betTime,
-                'updated_at' => null
-            ]);
-    }
-
-    public function cancelBetTransaction(string $transactionID, string $cancelTme): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->update([
-                'updated_at' => $cancelTme
-            ]);
-    }
-
-    public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->updateOrInsert(
-                ['trx_id' => $transactionID],
-                [
-                    'win_amount' => $winAmount,
-                    'updated_at' => $settleTime
-                ]
-            );
-    }
-
-    public function createBonusTransaction(string $transactionID, float $bonusAmount, string $bonusTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->insert([
-                'trx_id' => $transactionID,
-                'bet_amount' => 0,
-                'win_amount' => $bonusAmount,
-                'created_at' => $bonusTime,
-                'updated_at' => $bonusTime
+                'bet_valid' => $betAmount,
+                'bet_winlose' => $betWinlose,
+                'updated_at' => $transactionDate,
+                'created_at' => $transactionDate
             ]);
     }
 }
