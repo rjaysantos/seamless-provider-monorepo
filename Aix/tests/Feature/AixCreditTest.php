@@ -76,6 +76,7 @@ class AixCreditTest extends TestCase
             'web_id' => 1,
             'currency' => 'IDR',
             'game_code' => '1',
+            'bet_valid' => 0,
             'bet_amount' => 0,
             'bet_winlose' => 100,
             'created_at' => '2025-01-01 00:00:00',

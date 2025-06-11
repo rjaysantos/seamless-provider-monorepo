@@ -28,6 +28,7 @@ class AixBonusTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -72,6 +73,7 @@ class AixBonusTest extends TestCase
 
         $this->assertDatabaseHas('aix.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -200,6 +202,7 @@ class AixBonusTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -240,6 +243,7 @@ class AixBonusTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -253,6 +257,7 @@ class AixBonusTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -293,6 +298,7 @@ class AixBonusTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -336,6 +342,7 @@ class AixBonusTest extends TestCase
 
         $this->assertDatabaseMissing('aix.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
