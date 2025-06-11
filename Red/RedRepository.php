@@ -8,7 +8,8 @@ class RedRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::table('red.players')
+        return DB::connection('pgsql_report_read')
+            ->table('red.players')
             ->where('play_id', $playID)
             ->first();
     }
@@ -31,7 +32,7 @@ class RedRepository
 
     public function createPlayer(string $playID, string $currency, int $userIDProvider): void
     {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('red.players')
             ->insert([
                 'play_id' => $playID,

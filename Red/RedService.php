@@ -75,7 +75,7 @@ class RedService
         if (is_null($playerData) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->bet_id);
+        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
@@ -277,7 +277,7 @@ class RedService
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $transactionDate = $this->convertProviderDateTime(dateTime: Carbon::now());
+            $transactionDate = Carbon::now()->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
                 extID: $extID,

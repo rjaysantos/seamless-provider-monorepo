@@ -306,7 +306,7 @@ class RedCreditTest extends TestCase
             public function Payout(App\Contracts\V2\IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
             {
                 return [
-                    'status_code' => 986516
+                    'status_code' => 'invalid'
                 ];
             }
         };
@@ -337,7 +337,7 @@ class RedCreditTest extends TestCase
             'amount' => 200.00,
             'txn_id' => 'testTransactionID',
             'game_id' => 123,
-            'credit_time' => '2021-01-01 00:00:00'
+            'credit_time' => '2025-01-01 00:00:00'
         ];
 
         $response = $this->post('/red/prov/credit', $request, [
@@ -360,8 +360,8 @@ class RedCreditTest extends TestCase
             'game_code' => '1',
             'bet_amount' => 0,
             'bet_winlose' => 100,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00'
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00'
         ]);
     }
 }
