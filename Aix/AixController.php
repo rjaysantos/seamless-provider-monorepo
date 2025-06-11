@@ -1,14 +1,20 @@
 <?php
+
 namespace Providers\Aix;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\AbstractCasinoController;
+use Providers\Aix\DTO\AixRequestDTO;
 use Providers\Aix\Exceptions\InvalidProviderRequestException;
 
 class AixController extends AbstractCasinoController
 {
-    public function __construct(protected AixService $service, protected AixResponse $response){}
+    public function __construct(AixService $service, AixResponse $response)
+    {
+        $this->service = $service;
+        $this->response = $response;
+    }
 
     private function validateProviderRequest(Request $request, array $rules)
     {
@@ -25,22 +31,9 @@ class AixController extends AbstractCasinoController
             'prd_id' => 'required|integer'
         ]);
 
-        $balance = $this->service->getBalance(request: $request);
+        $requestDTO = AixRequestDTO::fromBalanceRequest(request: $request);
 
-        return $this->response->successResponse(balance: $balance);
-    }
-
-    public function credit(Request $request)
-    {
-        $this->validateProviderRequest(request: $request, rules: [
-            'user_id' => 'required|string',
-            'amount' => 'required|numeric',
-            'prd_id' => 'required|integer',
-            'txn_id' => 'required|string',
-            'credit_time' => 'required|string'
-        ]);
-
-        $balance = $this->service->settle(request: $request);
+        $balance = $this->service->getBalance(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }
@@ -56,7 +49,26 @@ class AixController extends AbstractCasinoController
             'debit_time' => 'required|string'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = AixRequestDTO::fromDebitRequest(request: $request);
+
+        $balance = $this->service->bet(requestDTO: $requestDTO);
+
+        return $this->response->successResponse(balance: $balance);
+    }
+
+    public function credit(Request $request)
+    {
+        $this->validateProviderRequest(request: $request, rules: [
+            'user_id' => 'required|string',
+            'amount' => 'required|numeric',
+            'prd_id' => 'required|integer',
+            'txn_id' => 'required|string',
+            'credit_time' => 'required|string'
+        ]);
+
+        $requestDTO = AixRequestDTO::fromCreditRequest(request: $request);
+
+        $balance = $this->service->settle(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }
@@ -70,7 +82,9 @@ class AixController extends AbstractCasinoController
             'txn_id' => 'required|string'
         ]);
 
-        $balance = $this->service->bonus(request: $request);
+        $requestDTO = AixRequestDTO::fromBonusRequest(request: $request);
+
+        $balance = $this->service->bonus(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }
