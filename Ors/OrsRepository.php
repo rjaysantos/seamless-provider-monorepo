@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrsRepository
 {
-    public function __construct(private Randomizer $randomizer)
-    {
-    }
+    public function __construct(private Randomizer $randomizer) {}
 
     public function getPlayerByPlayID(string $playID): ?object
     {

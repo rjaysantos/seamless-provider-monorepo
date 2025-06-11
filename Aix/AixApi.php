@@ -2,11 +2,12 @@
 
 namespace Providers\Aix;
 
-use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\LaravelHttpClient;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Providers\Aix\Contracts\ICredentials;
+use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Aix\DTO\AixPlayerDTO;
 
 class AixApi
 {
@@ -14,8 +15,12 @@ class AixApi
 
     public function __construct(private LaravelHttpClient $http) {}
 
-    public function auth(ICredentials $credentials, Request $request, float $balance): string
-    {
+    public function auth(
+        ICredentials $credentials,
+        AixPlayerDTO $player,
+        CasinoRequestDTO $casinoRequest,
+        float $balance
+    ): string {
         $headers = [
             'ag-code' => $credentials->getAgCode(),
             'ag-token' => $credentials->getAgToken(),
@@ -23,16 +28,16 @@ class AixApi
 
         $request = [
             'user' => [
-                'id' => $request->playId,
-                'name' => $request->username,
+                'id' => $player->playID,
+                'name' => $player->username,
                 'balance' => $balance,
-                'domain_url' => $request->host,
+                'domain_url' => $casinoRequest->host,
                 'language' => 'en',
-                'currency' => $request->currency,
+                'currency' => $player->currency,
             ],
             'prd' => [
-                'id' => $request->gameId,
-                'is_mobile' => $request->device == self::CASINO_MOBILE ? true : false,
+                'id' => $casinoRequest->gameID,
+                'is_mobile' => $casinoRequest->device == self::CASINO_MOBILE ? true : false,
             ]
         ];
 

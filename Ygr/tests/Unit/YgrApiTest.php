@@ -137,7 +137,8 @@ class YgrApiTest extends TestCase
         $api->launch(credentials: $providerCredentials, token: $token, language: 'id');
     }
 
-    public function test_getBetDetailUrl_mockHttp_post()
+    #[DataProvider('visualLanguages')]
+    public function test_getBetDetailUrl_mockHttpMultipleLanguage_post($currency, $language)
     {
         $transactionID = 'testTransactionID';
 
@@ -150,7 +151,10 @@ class YgrApiTest extends TestCase
             ->method('post')
             ->with(
                 url: $providerCredentials->getApiUrl() . '/GetGameDetailUrl',
-                request: ['WagersId' => $transactionID]
+                request: [
+                    'WagersId' => $transactionID,
+                    'Lang' => $language
+                ]
             )
             ->willReturn((object) [
                 'ErrorCode' => 0,
@@ -160,7 +164,20 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $mockHttp);
-        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID);
+        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID, currency: $currency);
+    }
+
+    public static function visualLanguages()
+    {
+        return [
+            ['IDR', 'id-ID'],
+            ['PHP', 'en-US'],
+            ['THB', 'th-TH'],
+            ['VND', 'vi-VN'],
+            ['BRL', 'pt-BR'],
+            ['USD', 'en-US'],
+            ['MYR', 'en-US']
+        ];
     }
 
     public function test_getBetDetailUrl_stubHttp_expectedData()
@@ -183,7 +200,7 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $response = $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID);
+        $response = $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID, currency: 'IDR');
 
         $this->assertSame(expected: $expected, actual: $response);
     }
@@ -206,7 +223,7 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID);
+        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID, currency: 'IDR');
     }
 
     #[DataProvider('apiResponse')]
@@ -240,7 +257,7 @@ class YgrApiTest extends TestCase
             ]);
 
         $api = $this->makeApi(http: $stubHttp);
-        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID);
+        $api->getBetDetailUrl(credentials: $providerCredentials, transactionID: $transactionID, currency: 'IDR');
     }
 
     public static function apiResponse()

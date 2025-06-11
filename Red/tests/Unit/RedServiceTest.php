@@ -318,7 +318,7 @@ class RedServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -328,8 +328,8 @@ class RedServiceTest extends TestCase
             ->with(playID: $request->play_id)
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetailUrl(request: $request);
@@ -341,7 +341,7 @@ class RedServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -353,11 +353,11 @@ class RedServiceTest extends TestCase
         $service->getBetDetailUrl(request: $request);
     }
 
-    public function test_getBetDetailUrl_mockRepository_getTransactionByTrxID()
+    public function test_getBetDetailUrl_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -366,9 +366,9 @@ class RedServiceTest extends TestCase
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
         $stubRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: $request->bet_id)
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+            ->method('getTransactionByExtID')
+            ->with(extID: $request->bet_id)
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->getBetDetailUrl(request: $request);
@@ -380,7 +380,7 @@ class RedServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -388,7 +388,7 @@ class RedServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
@@ -399,7 +399,7 @@ class RedServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -407,8 +407,8 @@ class RedServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $mockCredentials = $this->createMock(RedCredentials::class);
         $mockCredentials->expects($this->once())
@@ -426,7 +426,7 @@ class RedServiceTest extends TestCase
     {
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -434,8 +434,8 @@ class RedServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $stubProviderCredentials = $this->createMock(RedStaging::class);
         $stubCredentials = $this->createMock(RedCredentials::class);
@@ -447,7 +447,7 @@ class RedServiceTest extends TestCase
             ->method('getBetResult')
             ->with(
                 credentials: $stubProviderCredentials,
-                transactionID: $request->bet_id
+                transactionID: 'testTransactionID'
             );
 
         $service = $this->makeService(
@@ -464,7 +464,7 @@ class RedServiceTest extends TestCase
 
         $request = new Request([
             'play_id' => 'testPlayerID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR'
         ]);
 
@@ -472,8 +472,8 @@ class RedServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn((object) ['play_id' => 'testPlayID']);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn((object) ['ext_id' => 'payout-testTransactionID']);
 
         $stubApi = $this->createMock(RedApi::class);
         $stubApi->method('getBetResult')

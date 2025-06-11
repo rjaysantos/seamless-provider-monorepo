@@ -20,10 +20,11 @@ class RedRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
-        return DB::table('red.reports')
-            ->where('trx_id', $transactionID)
+        return DB::connection('pgsql_report_read')
+            ->table('red.reports')
+            ->where('ext_id', $extID)
             ->first();
     }
 

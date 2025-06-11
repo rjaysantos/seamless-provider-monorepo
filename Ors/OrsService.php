@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Exception;
 use Carbon\Carbon;
 use Providers\Ors\OrsApi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use Providers\Ors\OgSignature;
@@ -35,8 +36,7 @@ class OrsService
         private OgSignature $encryption,
         private IWallet $wallet,
         private WalletReport $report
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -70,9 +70,11 @@ class OrsService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
 
+        $extID = Str::after($request->bet_id, '-');
+
         return $this->api->getBettingRecords(
             credentials: $credentials,
-            transactionID: $request->bet_id,
+            transactionID: $extID,
             playID: $request->play_id
         );
     }
