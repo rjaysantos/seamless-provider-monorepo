@@ -67,11 +67,13 @@ class AixDebitTest extends TestCase
 
         $this->assertDatabaseHas('aix.reports', [
             'ext_id' => 'wager-testTxnID',
+            'round_id' => 'testTxnID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
             'currency' => 'IDR',
             'game_code' => '1',
+            'bet_valid' => 100.00,
             'bet_amount' => 100.00,
             'bet_winlose' => 0,
             'created_at' => '2025-01-01 00:00:00',

@@ -37,26 +37,26 @@ class AixService
 
     public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerDTO = AixPlayerDTO::fromCasinoRequestDTO(casinoRequestDTO: $casinoRequest);
+        $player = AixPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        $this->repository->createIgnorePlayer(playerDTO: $playerDTO);
+        $this->repository->createIgnorePlayer(playerDTO: $player);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDTO->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $walletResponse = $this->wallet->Balance(credentials: $credentials, playID: $playerDTO->playID);
+        $walletResponse = $this->wallet->Balance(credentials: $credentials, playID: $player->playID);
 
         if ($walletResponse['status_code'] != 2100)
             throw new WalletErrorException;
 
         return $this->api->auth(
             credentials: $credentials,
-            player: $playerDTO,
+            player: $player,
             casinoRequest: $casinoRequest,
             balance: $walletResponse['credit']
         );
     }
 
-    private function getWalletBalance(ICredentials $credentials, PlayerDTO $player): float
+    private function getWalletBalance(ICredentials $credentials, AixPlayerDTO $player): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $player->playID);
 
@@ -66,62 +66,66 @@ class AixService
         return $walletResponse['credit'];
     }
 
-    public function getBalance(AixRequestDTO $providerRequest): float
+    public function getBalance(AixRequestDTO $requestDTO): float
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $providerRequest->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        if ($providerRequest->secretKey !== $credentials->getSecretKey())
+        if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
         return $this->getWalletBalance(credentials: $credentials, player: $player);
     }
 
-    public function bet(AixRequestDTO $aixRequest): float
+    public function bet(AixRequestDTO $requestDTO): float
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $aixRequest->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        if ($aixRequest->secretKey !== $credentials->getSecretKey())
+        if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $aixRequest->debitExtID);
+        $transactionDTO = AixTransactionDTO::bet(
+            extID: "wager-{$requestDTO->trxID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player
+        );
 
-        if (is_null($transactionData) === false)
+        $existingTransactionData = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+
+        if (is_null($existingTransactionData) === false)
             throw new TransactionAlreadyExistsException;
 
         $balance = $this->getWalletBalance(credentials: $credentials, player: $player);
 
-        $debitTransaction = AixTransactionDTO::fromBetRequest(aixRequest: $aixRequest, player: $player);
-
-        if ($balance < $debitTransaction->betAmount)
+        if ($balance < $transactionDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $debitTransaction);
+            $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $debitTransaction->trxID,
-                gameCode: $debitTransaction->gameID,
-                betTime: $debitTransaction->dateTime
+                transactionID: $transactionDTO->roundID,
+                gameCode: $transactionDTO->gameID,
+                betTime: $transactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $debitTransaction->playID,
-                currency: $debitTransaction->currency,
-                transactionID: $debitTransaction->extID,
-                amount: $debitTransaction->betAmount,
+                playID: $transactionDTO->playID,
+                currency: $transactionDTO->currency,
+                transactionID: $transactionDTO->extID,
+                amount: $transactionDTO->betAmount,
                 report: $report
             );
 
@@ -137,50 +141,51 @@ class AixService
         return $walletResponse['credit_after'];
     }
 
-    public function settle(AixRequestDTO $aixRequest): float
+    public function settle(AixRequestDTO $requestDTO): float
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $aixRequest->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        if ($aixRequest->secretKey !== $credentials->getSecretKey())
+        if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $debitTransaction =  $this->repository->getTransactionByExtID(extID: $aixRequest->debitExtID);
+        $betTransaction =  $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->trxID}");
 
-        if (is_null($debitTransaction) === true)
+        if (is_null($betTransaction) === true)
             throw new ProviderTransactionNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $aixRequest->creditExtID);
-
-        if (is_null($transactionData) === false)
-            throw new TransactionAlreadySettledException;
-
-        $creditTransaction = AixTransactionDTO::fromCreditRequest(
-            aixRequest: $aixRequest,
-            transaction: $debitTransaction
+        $transactionDTO = AixTransactionDTO::settle(
+            extID: "payout-{$requestDTO->trxID}",
+            requestDTO: $requestDTO,
+            betTransactionDTO: $betTransaction
         );
+
+        $existingSettleTransaction =  $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+
+        if (is_null($existingSettleTransaction) === false)
+            throw new TransactionAlreadySettledException;
 
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $creditTransaction);
+            $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $creditTransaction->trxID,
-                gameCode: $creditTransaction->gameID,
-                betTime: $creditTransaction->dateTime
+                transactionID: $transactionDTO->extID,
+                gameCode: $transactionDTO->gameID,
+                betTime: $transactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->payout(
                 credentials: $credentials,
-                playID: $creditTransaction->playID,
-                currency: $creditTransaction->currency,
-                transactionID: $creditTransaction->extID,
-                amount: $creditTransaction->betWinAmount,
+                playID: $transactionDTO->playID,
+                currency: $transactionDTO->currency,
+                transactionID: $transactionDTO->extID,
+                amount: $transactionDTO->winAmount,
                 report: $report
             );
 
@@ -196,50 +201,51 @@ class AixService
         return $walletResponse['credit_after'];
     }
 
-    public function bonus(AixRequestDTO $aixRequest)
+    public function bonus(AixRequestDTO $requestDTO)
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $aixRequest->playID);
+        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($playerData) === true)
             throw new PlayerNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
 
-        if ($aixRequest->secretKey !== $credentials->getSecretKey())
+        if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $creditTransaction = $this->repository->getTransactionByExtID(extID: $aixRequest->creditExtID);
+        $settleTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$requestDTO->trxID}");
 
-        if (is_null($creditTransaction) == true)
+        if (is_null($settleTransaction) == true)
             throw new ProviderTransactionNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $aixRequest->bonusExtID);
-
-        if (is_null($transactionData) == false)
-            throw new DuplicateBonusException;
-
-        $bonusTransaction = AixTransactionDTO::fromBonusRequest(
-            aixRequest: $aixRequest,
-            transaction: $creditTransaction
+        $transactionDTO = AixTransactionDTO::bonus(
+            extID: "bonus-{$requestDTO->trxID}",
+            requestDTO: $requestDTO,
+            settleTransactionDTO: $settleTransaction
         );
+
+        $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+
+        if (is_null($existingBonusTransaction) == false)
+            throw new DuplicateBonusException;
 
         try {
             DB::connection('pgsql_report_write')->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $bonusTransaction);
+            $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
             $report = $this->walletReport->makeBonusReport(
-                transactionID: $bonusTransaction->trxID,
-                gameCode: $bonusTransaction->gameID,
-                betTime: $bonusTransaction->dateTime
+                transactionID: $transactionDTO->roundID,
+                gameCode: $transactionDTO->gameID,
+                betTime: $transactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->bonus(
                 credentials: $credentials,
-                playID: $bonusTransaction->playID,
-                currency: $bonusTransaction->currency,
-                transactionID: $bonusTransaction->extID,
-                amount: $bonusTransaction->betWinAmount,
+                playID: $transactionDTO->playID,
+                currency: $transactionDTO->currency,
+                transactionID: $transactionDTO->extID,
+                amount: $transactionDTO->winAmount,
                 report: $report
             );
 
