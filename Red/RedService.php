@@ -5,6 +5,7 @@ namespace Providers\Red;
 use Exception;
 use Carbon\Carbon;
 use Providers\Red\RedApi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use Providers\Red\RedRepository;
@@ -34,8 +35,7 @@ class RedService
         private RedApi $api,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -75,16 +75,18 @@ class RedService
         if (is_null($playerData) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
 
+        $betID = Str::after($request->bet_id, '-');
+
         return $this->api->getBetResult(
             credentials: $credentials,
-            transactionID: $request->bet_id
+            transactionID: $betID
         );
     }
 
