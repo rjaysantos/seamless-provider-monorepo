@@ -63,7 +63,7 @@ class OrsService
         if (is_null($playerData) === true)
             throw new CasinoPlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: "payout-{$request->bet_id}");
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new CasinoTransactionNotFoundException;

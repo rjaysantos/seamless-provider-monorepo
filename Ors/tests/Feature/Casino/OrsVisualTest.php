@@ -38,7 +38,7 @@ class OrsVisualTest extends TestCase
 
         $request = [
             'play_id' => '8dxw86xw6u027',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -101,7 +101,7 @@ class OrsVisualTest extends TestCase
 
         $request = [
             'play_id' => '8dxw86xw6u027',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -128,7 +128,7 @@ class OrsVisualTest extends TestCase
 
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -232,7 +232,7 @@ class OrsVisualTest extends TestCase
 
         $request = [
             'play_id' => '8dxw86xw6u027',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -264,7 +264,7 @@ class OrsVisualTest extends TestCase
     {
         $request = [
             'play_id' => '8dxw86xw6u027',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'currency' => 'IDR',
         ];
 
