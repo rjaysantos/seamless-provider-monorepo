@@ -11,7 +11,7 @@ class RedRequestDTO
         public readonly ?string $providerUserID = null,
         public readonly ?string $gameID = null,
         public readonly ?string $roundID = null,
-        public readonly ?string $amount = null,
+        public readonly ?float $amount = null,
         public readonly ?string $dateTime = null,
     ) {}
 

@@ -12,7 +12,7 @@ class AixRequestDTO
         public readonly ?string $playID = null,
         public readonly ?string $gameID = null,
         public readonly ?string $roundID = null,
-        public readonly ?string $amount = null,
+        public readonly ?float $amount = null,
         public readonly ?string $dateTime = null,
     ) {}
 
@@ -28,7 +28,7 @@ class AixRequestDTO
     {
         return new self(
             secretKey: $request->header('secret-key'),
-            playID: $request->user_id,
+            playID: str_replace('sbo_', '', $request->user_id),
             gameID: $request->prd_id,
             roundID: $request->txn_id,
             amount: $request->amount,
