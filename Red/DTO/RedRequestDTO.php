@@ -35,4 +35,16 @@ class RedRequestDTO
             dateTime: $request->debit_time
         );
     }
+
+    public static function fromCreditRequest(Request $request): self
+    {
+        return new self(
+            secretKey: $request->header('secret-key'),
+            providerUserID: $request->user_id,
+            gameID: $request->game_id,
+            roundID: $request->txn_id,
+            amount: $request->amount,
+            dateTime: $request->credit_time
+        );
+    }
 }
