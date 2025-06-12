@@ -2,7 +2,6 @@
 
 namespace Providers\Red\DTO;
 
-use Carbon\Carbon;
 use App\DTO\TransactionDTO;
 use App\Traits\TransactionDTOTrait;
 
@@ -31,39 +30,22 @@ class RedTransactionDTO extends TransactionDTO
         );
     }
 
-    public static function settle(string $extID, AixRequestDTO $requestDTO, AixTransactionDTO $betTransactionDTO): self
+    public static function settle(string $extID, RedRequestDTO $requestDTO, RedTransactionDTO $betTransaction): self
     {
         return new self(
             extID: $extID,
-            roundID: $betTransactionDTO->roundID,
-            playID: $betTransactionDTO->playID,
-            username: $betTransactionDTO->username,
-            webID: $betTransactionDTO->webID,
-            currency: $betTransactionDTO->currency,
-            gameID: $betTransactionDTO->gameID,
-            betWinlose: $requestDTO->amount - $betTransactionDTO->betAmount,
+            roundID: $requestDTO->roundID,
+            playID: $betTransaction->playID,
+            username: $betTransaction->username,
+            webID: $betTransaction->webID,
+            currency: $betTransaction->currency,
+            gameID: $betTransaction->gameID,
+            winAmount: $requestDTO->amount,
+            betWinlose: $requestDTO->amount - $betTransaction->betAmount,
             dateTime: self::convertProviderDateTime(
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE
-            ),
-        );
-    }
-
-    public static function bonus(string $extID, AixRequestDTO $requestDTO, AixTransactionDTO $settleTransactionDTO): self
-    {
-        return new self(
-            extID: $extID,
-            roundID: $settleTransactionDTO->roundID,
-            playID: $settleTransactionDTO->playID,
-            username: $settleTransactionDTO->username,
-            webID: $settleTransactionDTO->webID,
-            currency: $settleTransactionDTO->currency,
-            gameID: $settleTransactionDTO->gameID,
-            betWinlose: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime(
-                dateTime: $requestDTO->dateTime,
-                providerTimezone: self::PROVIDER_API_TIMEZONE
-            ),
+            )
         );
     }
 }

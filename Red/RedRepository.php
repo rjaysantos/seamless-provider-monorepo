@@ -57,14 +57,6 @@ class RedRepository extends AbstractProviderRepository
             ]);
     }
 
-    private function getWebID(string $playID)
-    {
-        if (preg_match_all('/u(\d+)/', $playID, $matches)) {
-            $lastNumber = end($matches[1]);
-            return $lastNumber;
-        }
-    }
-
     public function createTransaction(RedTransactionDTO $transactionDTO): void
     {
         $this->write->table('red.reports')
@@ -83,30 +75,4 @@ class RedRepository extends AbstractProviderRepository
                 'created_at' => $transactionDTO->dateTime
             ]);
     }
-
-    // public function createTransaction(
-    //     string $extID,
-    //     string $playID,
-    //     string $username,
-    //     string $currency,
-    //     string $gameCode,
-    //     float $betAmount,
-    //     float $betWinlose,
-    //     string $transactionDate,
-    // ): void {
-    //     $this->write->table('red.reports')
-    //         ->insert([
-    //             'ext_id' => $extID,
-    //             'username' => $username,
-    //             'play_id' => $playID,
-    //             'web_id' => $this->getWebID($playID),
-    //             'currency' => $currency,
-    //             'game_code' => $gameCode,
-    //             'bet_amount' => $betAmount,
-    //             'bet_valid' => $betAmount,
-    //             'bet_winlose' => $betWinlose,
-    //             'updated_at' => $transactionDate,
-    //             'created_at' => $transactionDate
-    //         ]);
-    // }
 }
