@@ -29,7 +29,6 @@ class RedBalanceTest extends TestCase
         $request = [
             'user_id' => 27,
             'prd_id' => 1,
-            'sid' => 'testSid'
         ];
 
         $wallet = new class extends TestWallet {
@@ -61,7 +60,6 @@ class RedBalanceTest extends TestCase
         $request = [
             'user_id' => 3,
             'prd_id' => 1,
-            'sid' => 'testSid'
         ];
 
         unset($request[$param]);
@@ -83,7 +81,6 @@ class RedBalanceTest extends TestCase
         return [
             ['user_id'],
             ['prd_id'],
-            ['sid']
         ];
     }
 
@@ -99,7 +96,6 @@ class RedBalanceTest extends TestCase
         $request = [
             'user_id' => 27,
             'prd_id' => 1,
-            'sid' => 'testSid'
         ];
 
         $response = $this->post('/red/prov/balance', $request, [
@@ -126,7 +122,6 @@ class RedBalanceTest extends TestCase
         $request = [
             'user_id' => 1234567,
             'prd_id' => 1,
-            'sid' => 'testSid'
         ];
 
         $response = $this->post('/red/prov/balance', $request, [
@@ -153,7 +148,6 @@ class RedBalanceTest extends TestCase
         $request = [
             'user_id' => 27,
             'prd_id' => 1,
-            'sid' => 'testSid'
         ];
 
         $wallet = new class extends TestWallet {
