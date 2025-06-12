@@ -13,7 +13,6 @@ class RedDebitTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -266,7 +265,7 @@ class RedDebitTest extends TestCase
                 ];
             }
         };
-        
+
         app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('/red/prov/debit', $request, [

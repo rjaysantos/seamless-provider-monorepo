@@ -2,38 +2,51 @@
 
 namespace Providers\Red;
 
-use Illuminate\Support\Facades\DB;
+use Providers\Red\DTO\RedPlayerDTO;
+use App\Repositories\AbstractProviderRepository;
+use Providers\Red\DTO\RedTransactionDTO;
 
-class RedRepository
+class RedRepository extends AbstractProviderRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::connection('pgsql_report_read')
-            ->table('red.players')
+        $data = $this->read->table('red.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : RedPlayerDTO::fromDB(dbData: $data);
+    }
+
+    public function createIgnorePlayer(RedPlayerDTO $playerDTO, int $providerUserID): void
+    {
+        $this->write->table('red.players')
+            ->insertOrIgnore([
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
+                'user_id_provider' => $providerUserID
+            ]);
     }
 
     public function getPlayerByUserIDProvider(int $userIDProvider): ?object
     {
-        return DB::connection('pgsql_report_read')
-            ->table('red.players')
+        return $this->read->table('red.players')
             ->where('user_id_provider', $userIDProvider)
             ->first();
     }
 
-    public function getTransactionByExtID(string $extID): ?object
+    public function getTransactionByExtID(string $extID): ?RedTransactionDTO
     {
-        return DB::connection('pgsql_report_read')
-            ->table('red.reports')
+        $data = $this->read->table('red.reports')
             ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : RedTransactionDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $currency, int $userIDProvider): void
     {
-        DB::connection('pgsql_report_write')
-            ->table('red.players')
+        $this->write->table('red.players')
             ->insert([
                 'play_id' => $playID,
                 'username' => $playID,
@@ -59,10 +72,8 @@ class RedRepository
         float $betAmount,
         float $betWinlose,
         string $transactionDate,
-    ): void
-    {
-        DB::connection('pgsql_report_write')
-            ->table('red.reports')
+    ): void {
+        $this->write->table('red.reports')
             ->insert([
                 'ext_id' => $extID,
                 'username' => $username,

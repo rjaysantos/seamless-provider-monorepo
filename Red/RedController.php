@@ -2,61 +2,21 @@
 
 namespace Providers\Red;
 
+use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Red\RedService;
 use Providers\Red\RedResponse;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Casino\InvalidBearerTokenException;
-use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Red\Exceptions\InvalidProviderRequestException;
 
-class RedController
+class RedController extends AbstractCasinoController
 {
     public function __construct(
-        private RedService $service,
-        private RedResponse $response
+        RedService $service,
+        RedResponse $response
     ) {
-    }
-
-    private function validateCasinoRequest(Request $request, array $rules): void
-    {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'playId' => 'required|string',
-            'memberId' => 'required|integer',
-            'username' => 'required|string',
-            'host' => 'required|string',
-            'currency' => 'required|string',
-            'device' => 'required|integer',
-            'gameId' => 'required|string'
-        ]);
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'currency' => 'required|string'
-        ]);
-
-        $betDetailUrl = $this->service->getBetDetailUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $betDetailUrl);
+        $this->service = $service;
+        $this->response = $response;
     }
 
     private function validateProviderRequest(Request $request, array $rules): void

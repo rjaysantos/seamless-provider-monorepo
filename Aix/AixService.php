@@ -109,7 +109,7 @@ class AixService
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
             $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
@@ -131,9 +131,9 @@ class AixService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
@@ -169,7 +169,7 @@ class AixService
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
             $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
@@ -191,9 +191,9 @@ class AixService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 

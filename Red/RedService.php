@@ -5,12 +5,12 @@ namespace Providers\Red;
 use Exception;
 use Carbon\Carbon;
 use Providers\Red\RedApi;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use Providers\Red\RedRepository;
 use Providers\Red\RedCredentials;
-use Illuminate\Support\Facades\DB;
+use Providers\Red\DTO\RedPlayerDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Red\Contracts\ICredentials;
 use App\Exceptions\Casino\WalletErrorException;
@@ -37,56 +37,50 @@ class RedService
         private WalletReport $walletReport
     ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID) ??
+            RedPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $balanceResponse = $this->wallet->balance(
             credentials: $credentials,
-            playID: $request->playId
+            playID: $player->playID
         );
 
         if ($balanceResponse['status_code'] !== 2100)
             throw new WalletErrorException;
 
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playId);
-
         $apiResponse = $this->api->authenticate(
             credentials: $credentials,
-            request: $request,
-            username: is_null($playerData) === true ? $request->playId : $playerData->username,
+            requestDTO: $casinoRequest,
+            playerDTO: $player,
             balance: $balanceResponse['credit']
         );
 
-        if (is_null($playerData) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                currency: $request->currency,
-                userIDProvider: $apiResponse->userID
-            );
+        $this->repository->createIgnorePlayer(playerDTO: $player, providerUserID: $apiResponse->userID);
 
         return $apiResponse->launchUrl;
     }
 
-    public function getBetDetailUrl(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->play_id);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
-        if (is_null($transactionData) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
-
-        $betID = Str::after($request->bet_id, '-');
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         return $this->api->getBetResult(
             credentials: $credentials,
-            transactionID: $betID
+            transactionDTO: $transaction
         );
     }
 
@@ -154,7 +148,7 @@ class RedService
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
             $transactionDate = $this->convertProviderDateTime(dateTime: $request->debit_time);
 
@@ -187,9 +181,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
@@ -218,18 +212,18 @@ class RedService
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
             $transactionDate = $this->convertProviderDateTime(dateTime: $request->credit_time);
 
             $this->repository->createTransaction(
                 extID: $extID,
-                playID: $betTransactionData->play_id,
+                playID: $betTransactionData->playID,
                 username: $betTransactionData->username,
                 currency: $betTransactionData->currency,
-                gameCode: $betTransactionData->game_code,
+                gameCode: $betTransactionData->gameID,
                 betAmount: 0,
-                betWinlose: $request->amount - $betTransactionData->bet_amount,
+                betWinlose: $request->amount - $betTransactionData->betAmount,
                 transactionDate: $transactionDate
             );
 
@@ -251,9 +245,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
@@ -272,12 +266,12 @@ class RedService
         $extID = "bonus-{$request->txn_id}";
 
         $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
-    
+
         if (is_null($transactionData) === false)
             throw new BonusTransactionAlreadyExists;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
             $transactionDate = Carbon::now()->format('Y-m-d H:i:s');
 
@@ -310,9 +304,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 

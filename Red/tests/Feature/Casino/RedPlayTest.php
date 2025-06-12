@@ -14,7 +14,6 @@ class RedPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -28,7 +27,11 @@ class RedPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {
@@ -51,7 +54,7 @@ class RedPlayTest extends TestCase
         ]);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -102,7 +105,9 @@ class RedPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {
@@ -125,7 +130,7 @@ class RedPlayTest extends TestCase
         ]);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -170,13 +175,15 @@ class RedPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         unset($request[$parameter]);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -211,7 +218,9 @@ class RedPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $response = $this->post('red/in/play', $request, [
@@ -237,7 +246,9 @@ class RedPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {
@@ -251,7 +262,7 @@ class RedPlayTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -271,9 +282,11 @@ class RedPlayTest extends TestCase
             'memberId' => 123,
             'username' => 'testUsername',
             'host' => 'testHost.com',
-            'currency' => 'abc',
+            'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {
@@ -295,7 +308,7 @@ class RedPlayTest extends TestCase
         ]);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -316,9 +329,11 @@ class RedPlayTest extends TestCase
             'memberId' => 123,
             'username' => 'testUsername',
             'host' => 'testHost.com',
-            'currency' => 'abc',
+            'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {
@@ -343,7 +358,7 @@ class RedPlayTest extends TestCase
         Http::fake(['/auth' => Http::response($apiResponse)]);
 
         $response = $this->post('red/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([

@@ -2,11 +2,13 @@
 
 namespace Providers\Red;
 
-use Illuminate\Http\Request;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Red\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Red\DTO\RedPlayerDTO;
+use Providers\Red\DTO\RedTransactionDTO;
 
 class RedApi
 {
@@ -14,9 +16,7 @@ class RedApi
     private const RED_MOBILE = true;
     private const RED_DESKTOP = false;
 
-    public function __construct(private LaravelHttpClient $http)
-    {
-    }
+    public function __construct(private LaravelHttpClient $http) {}
 
     private function callApi(string $url, ICredentials $credentials, array $request): object
     {
@@ -39,23 +39,23 @@ class RedApi
 
     public function authenticate(
         ICredentials $credentials,
-        Request $request,
-        string $username,
+        CasinoRequestDTO $requestDTO,
+        RedPlayerDTO $playerDTO,
         float $balance
     ): object {
         $apiRequest = [
             'user' => [
-                'id' => $request->memberId,
-                'name' => $username,
+                'id' => $requestDTO->memberID,
+                'name' => $playerDTO->username,
                 'balance' => $balance,
                 'language' => 'en',
-                'domain_url' => $request->host,
-                'currency' => $request->currency,
+                'domain_url' => $requestDTO->host,
+                'currency' => $requestDTO->currency,
             ],
             'prd' => [
                 'id' => $credentials->getPrdID(),
-                'type' => $request->gameId,
-                'is_mobile' => $request->device == self::MOBILE_DEVICE ? self::RED_MOBILE : self::RED_DESKTOP
+                'type' => $requestDTO->gameID,
+                'is_mobile' => $requestDTO->device == self::MOBILE_DEVICE ? self::RED_MOBILE : self::RED_DESKTOP
             ]
         ];
 
@@ -77,11 +77,11 @@ class RedApi
         ];
     }
 
-    public function getBetResult(ICredentials $credentials, string $transactionID): string
+    public function getBetResult(ICredentials $credentials, RedTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
             'prd_id' => $credentials->getPrdID(),
-            'txn_id' => $transactionID,
+            'txn_id' => $transactionDTO->roundID,
             'lang' => 'en'
         ];
 

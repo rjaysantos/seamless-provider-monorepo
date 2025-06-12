@@ -13,7 +13,6 @@ class RedVisualTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -28,6 +27,7 @@ class RedVisualTest extends TestCase
 
         DB::table('red.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -53,7 +53,7 @@ class RedVisualTest extends TestCase
         ]);
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -87,7 +87,7 @@ class RedVisualTest extends TestCase
         unset($request[$param]);
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -146,7 +146,7 @@ class RedVisualTest extends TestCase
         ];
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -187,7 +187,7 @@ class RedVisualTest extends TestCase
         ];
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -233,7 +233,7 @@ class RedVisualTest extends TestCase
         ]);
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -284,7 +284,7 @@ class RedVisualTest extends TestCase
         Http::fake(['/bet/results' => Http::response($apiResponse)]);
 
         $response = $this->post('red/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $response->assertJson([
