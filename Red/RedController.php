@@ -36,7 +36,7 @@ class RedController extends AbstractCasinoController
             'sid' => 'required|string'
         ]);
 
-        $balance = $this->service->getBalance(request: $request);
+        $balance = $this->service->balance(request: $request);
 
         return $this->response->providerSuccess(balance: $balance);
     }
@@ -53,7 +53,7 @@ class RedController extends AbstractCasinoController
 
         $requestDTO = RedRequestDTO::fromDebitRequest($request);
 
-        $balance = $this->service->bet(requestDTO: $requestDTO);
+        $balance = $this->service->wager(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }
@@ -68,7 +68,7 @@ class RedController extends AbstractCasinoController
             'credit_time' => 'required|date'
         ]);
 
-        $balance = $this->service->settle(request: $request);
+        $balance = $this->service->payout(request: $request);
 
         return $this->response->providerSuccess(balance: $balance);
     }

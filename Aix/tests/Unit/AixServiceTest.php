@@ -239,7 +239,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, credentials: $stubCredentials);
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_playerNotFound_PlayerNotFoundException()
@@ -256,7 +256,7 @@ class AixServiceTest extends TestCase
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_mockCredentials_getCredentialsByCurrency()
@@ -293,7 +293,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_invalidSecretKey_invalidSecretKeyException()
@@ -334,7 +334,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet,
             credentials: $stubCredentials
         );
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_mockWallet_balance()
@@ -374,7 +374,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $mockWallet, credentials: $stubCredentials);
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_walletStatusCodeNot2100_WalletException()
@@ -408,7 +408,7 @@ class AixServiceTest extends TestCase
             ->willReturn(['status_code' => 'invalid']);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->balance(request: $request);
     }
 
     public function test_getBalance_stubWallet_expectedData()
@@ -445,7 +445,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, credentials: $stubCredentials);
-        $result = $service->getBalance(request: $request);
+        $result = $service->balance(request: $request);
 
         $this->assertEquals(expected: $expected, actual: $result);
     }
@@ -505,7 +505,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_playerNotFound_PlayerNotFoundException()
@@ -526,7 +526,7 @@ class AixServiceTest extends TestCase
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockRepository_getTransactionByExtID()
@@ -587,7 +587,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_transactionAlreadyExists_TransactionAlreadyExistsException()
@@ -617,7 +617,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockCredentials_getCredentialsByCurrency()
@@ -678,7 +678,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_invalidSecretKey_InvalidSecretKeyException()
@@ -724,7 +724,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet,
             credentials: $stubCredentials
         );
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockWallet_balance()
@@ -788,7 +788,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_balanceWalletStatusCodeNot2100_WalletException()
@@ -830,7 +830,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_walletBalanceNotEnough_InsufficientFundException()
@@ -877,7 +877,7 @@ class AixServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockRepository_createTransaction()
@@ -946,7 +946,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockWalletReport_makeSlotReport()
@@ -1008,7 +1008,7 @@ class AixServiceTest extends TestCase
             walletReport: $mockWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockWallet_wager()
@@ -1075,7 +1075,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_walletStatusCodeNot2100_WalletException()
@@ -1132,7 +1132,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubWallet_expected()
@@ -1190,7 +1190,7 @@ class AixServiceTest extends TestCase
             walletReport: $stubWalletReport
         );
 
-        $result = $service->bet(request: $request);
+        $result = $service->wager(request: $request);
 
         $this->assertSame(expected: $expected, actual: $result);
     }
@@ -1256,7 +1256,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubRepositoryNullPlayer_ProviderPlayerNotFoundException()
@@ -1278,7 +1278,7 @@ class AixServiceTest extends TestCase
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_mockCredentails_getCredentialsByCurrency()
@@ -1342,7 +1342,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubRepositoryInvalidSecretKey_InvalidSecretKeyException()
@@ -1374,8 +1374,8 @@ class AixServiceTest extends TestCase
         $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($providerCredentials);
 
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, );
-        $service->settle(request: $request);
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials,);
+        $service->payout(request: $request);
     }
 
     public function test_settle_mockRepository_getTransactionByExtID()
@@ -1448,7 +1448,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubRepositoryNullTransaction_TransactionNotFoundException()
@@ -1483,8 +1483,8 @@ class AixServiceTest extends TestCase
         $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, );
-        $service->settle(request: $request);
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials,);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubRepositoryTransactionAlreadySettled_TransactionAlreadySettledException()
@@ -1522,8 +1522,8 @@ class AixServiceTest extends TestCase
                 'updated_at' => '2021-01-01 00:00:00'
             ]);
 
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, );
-        $service->settle(request: $request);
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials,);
+        $service->payout(request: $request);
     }
 
     public function test_settle_mockRepository_createTransaction()
@@ -1598,7 +1598,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_mockReport_makeSlotReport()
@@ -1666,7 +1666,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_mockWallet_payout()
@@ -1737,7 +1737,7 @@ class AixServiceTest extends TestCase
             wallet: $mockWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubWalletInvalidStatus_WalletErrorException()
@@ -1800,7 +1800,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->settle(request: $request);
+        $service->payout(request: $request);
     }
 
     public function test_settle_stubWallet_expectedData()
@@ -1864,7 +1864,7 @@ class AixServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $response = $service->settle(request: $request);
+        $response = $service->payout(request: $request);
 
         $this->assertSame(expected: $expectedData, actual: $response);
     }

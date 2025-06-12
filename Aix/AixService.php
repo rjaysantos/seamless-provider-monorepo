@@ -65,7 +65,7 @@ class AixService
         return $walletResponse['credit'];
     }
 
-    public function getBalance(AixRequestDTO $requestDTO): float
+    public function balance(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -80,7 +80,7 @@ class AixService
         return $this->getWalletBalance(credentials: $credentials, player: $player);
     }
 
-    public function bet(AixRequestDTO $requestDTO): float
+    public function wager(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -140,7 +140,7 @@ class AixService
         return $walletResponse['credit_after'];
     }
 
-    public function settle(AixRequestDTO $requestDTO): float
+    public function payout(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 

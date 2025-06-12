@@ -106,7 +106,7 @@ class RedService
         return $player;
     }
 
-    public function getBalance(Request $request): float
+    public function balance(Request $request): float
     {
         $playerData = $this->getPlayerDataByUserIDProvider(userID: $request->user_id);
 
@@ -128,7 +128,7 @@ class RedService
             ->format('Y-m-d H:i:s');
     }
 
-    public function bet(RedRequestDTO $requestDTO): float
+    public function wager(RedRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByUserIDProvider(providerUserID: $requestDTO->providerUserID);
 
