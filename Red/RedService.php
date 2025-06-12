@@ -106,18 +106,21 @@ class RedService
         return $player;
     }
 
-    public function balance(Request $request): float
+    public function balance(RedRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDataByUserIDProvider(userID: $request->user_id);
+        $player = $this->repository->getPlayerByUserIDProvider(providerUserID: $requestDTO->providerUserID);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        if (is_null($player) === true)
+            throw new ProviderPlayerNotFoundException;
 
-        if ($request->header('secret-key') != $credentials->getSecretKey())
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        if ($requestDTO->secretKey != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
         return $this->getPlayerBalance(
             credentials: $credentials,
-            playID: $playerData->play_id
+            playerDTO: $player
         );
     }
 

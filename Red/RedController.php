@@ -32,11 +32,12 @@ class RedController extends AbstractCasinoController
     {
         $this->validateProviderRequest(request: $request, rules: [
             'user_id' => 'required|integer',
-            'prd_id' => 'required|integer',
-            'sid' => 'required|string'
+            'prd_id' => 'required|integer'
         ]);
 
-        $balance = $this->service->balance(request: $request);
+        $requestDTO = RedRequestDTO::fromBalanceRequest(request: $request);
+
+        $balance = $this->service->balance(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }

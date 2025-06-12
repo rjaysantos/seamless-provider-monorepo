@@ -8,12 +8,21 @@ class RedRequestDTO
 {
     public function __construct(
         public readonly ?string $secretKey = null,
-        public readonly ?string $providerUserID = null,
-        public readonly ?string $gameID = null,
+        public readonly ?int $providerUserID = null,
+        public readonly ?int $gameID = null,
         public readonly ?string $roundID = null,
         public readonly ?float $amount = null,
         public readonly ?string $dateTime = null,
     ) {}
+
+    public static function fromBalanceRequest(Request $request): self
+    {
+        return new self(
+            secretKey: $request->header('secret-key'),
+            providerUserID: $request->user_id,
+            gameID: $request->prd_id
+        );
+    }
 
     public static function fromDebitRequest(Request $request): self
     {
