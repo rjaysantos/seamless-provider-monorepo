@@ -11,10 +11,7 @@ class AixRequestDTO
         public readonly ?string $secretKey = null,
         public readonly ?string $playID = null,
         public readonly ?string $gameID = null,
-        public readonly ?string $trxID = null,
-        public readonly ?string $betExtID = null,
-        public readonly ?string $settleExtID = null,
-        public readonly ?string $bonusExtID = null,
+        public readonly ?string $roundID = null,
         public readonly ?string $amount = null,
         public readonly ?string $dateTime = null,
     ) {}
@@ -33,7 +30,7 @@ class AixRequestDTO
             secretKey: $request->header('secret-key'),
             playID: $request->user_id,
             gameID: $request->prd_id,
-            trxID: $request->txn_id,
+            roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: $request->debit_time
         );
@@ -45,7 +42,7 @@ class AixRequestDTO
             secretKey: $request->header('secret-key'),
             playID: $request->user_id,
             gameID: $request->prd_id,
-            trxID: $request->txn_id,
+            roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: $request->credit_time
         );
@@ -57,7 +54,7 @@ class AixRequestDTO
             secretKey: $request->header('secret-key'),
             playID: $request->user_id,
             gameID: $request->prd_id,
-            trxID: $request->txn_id,
+            roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: Carbon::now()->format('Y-m-d H:i:s')
         );

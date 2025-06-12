@@ -93,7 +93,7 @@ class AixService
             throw new InvalidSecretKeyException;
 
         $transactionDTO = AixTransactionDTO::bet(
-            extID: "wager-{$requestDTO->trxID}",
+            extID: "wager-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
@@ -152,13 +152,13 @@ class AixService
         if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $betTransaction =  $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->trxID}");
+        $betTransaction =  $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
 
         if (is_null($betTransaction) === true)
             throw new ProviderTransactionNotFoundException;
 
         $transactionDTO = AixTransactionDTO::settle(
-            extID: "payout-{$requestDTO->trxID}",
+            extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             betTransactionDTO: $betTransaction
         );
@@ -212,13 +212,13 @@ class AixService
         if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $settleTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$requestDTO->trxID}");
+        $settleTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$requestDTO->roundID}");
 
         if (is_null($settleTransaction) == true)
             throw new ProviderTransactionNotFoundException;
 
         $transactionDTO = AixTransactionDTO::bonus(
-            extID: "bonus-{$requestDTO->trxID}",
+            extID: "bonus-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             settleTransactionDTO: $settleTransaction
         );

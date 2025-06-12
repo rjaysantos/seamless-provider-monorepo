@@ -23,7 +23,7 @@ class AixTransactionDTO extends TransactionDTO
     {
         return new self(
             extID: $extID,
-            roundID: $requestDTO->trxID,
+            roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
             webID: self::getWebID(playID: $playerDTO->playID),
