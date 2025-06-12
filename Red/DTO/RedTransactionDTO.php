@@ -10,20 +10,13 @@ class RedTransactionDTO extends TransactionDTO
 {
     use TransactionDTOTrait;
 
-    private const PROVIDER_API_TIMEZONE = 'GMT+8';
+    private const PROVIDER_API_TIMEZONE = 'GMT+0';
 
-    private static function convertProviderDateTime(string $dateTime): string
-    {
-        return Carbon::parse($dateTime, self::PROVIDER_API_TIMEZONE)
-            ->setTimezone('GMT+8')
-            ->format('Y-m-d H:i:s');
-    }
-
-    public static function bet(string $extID, AixRequestDTO $requestDTO, AixPlayerDTO $playerDTO): self
+    public static function bet(string $extID, RedRequestDTO $requestDTO, RedPlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,
-            roundID: $requestDTO->trxID,
+            roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
             webID: self::getWebID(playID: $playerDTO->playID),
@@ -31,7 +24,10 @@ class RedTransactionDTO extends TransactionDTO
             gameID: $requestDTO->gameID,
             betValid: $requestDTO->amount,
             betAmount: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
         );
     }
 
@@ -46,7 +42,10 @@ class RedTransactionDTO extends TransactionDTO
             currency: $betTransactionDTO->currency,
             gameID: $betTransactionDTO->gameID,
             betWinlose: $requestDTO->amount - $betTransactionDTO->betAmount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
         );
     }
 
@@ -61,7 +60,10 @@ class RedTransactionDTO extends TransactionDTO
             currency: $settleTransactionDTO->currency,
             gameID: $settleTransactionDTO->gameID,
             betWinlose: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
         );
     }
 }

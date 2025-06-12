@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Providers\Red\RedService;
 use Providers\Red\RedResponse;
 use Illuminate\Support\Facades\Validator;
+use Providers\Red\DTO\RedRequestDTO;
 use Providers\Red\Exceptions\InvalidProviderRequestException;
 
 class RedController extends AbstractCasinoController
@@ -40,7 +41,7 @@ class RedController extends AbstractCasinoController
         return $this->response->providerSuccess(balance: $balance);
     }
 
-    public function wager(Request $request)
+    public function debit(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'user_id' => 'required|integer',
@@ -50,7 +51,9 @@ class RedController extends AbstractCasinoController
             'debit_time' => 'required|date'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = RedRequestDTO::fromDebitRequest($request);
+
+        $balance = $this->service->bet(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }
