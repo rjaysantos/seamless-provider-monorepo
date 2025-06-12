@@ -14,7 +14,7 @@ Route::prefix('red')->group(function () {
     Route::prefix('prov')->group(function () {
         Route::post('balance', [RedController::class, 'balance']);
         Route::post('debit', [RedController::class, 'debit']);
-        Route::post('credit', [RedController::class, 'payout']);
+        Route::post('credit', [RedController::class, 'credit']);
         Route::post('bonus', [RedController::class, 'bonus']);
     });
 });
