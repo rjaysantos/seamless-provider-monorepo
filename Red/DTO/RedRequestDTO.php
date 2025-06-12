@@ -8,8 +8,8 @@ class RedRequestDTO
 {
     public function __construct(
         public readonly ?string $secretKey = null,
-        public readonly ?string $providerUserID = null,
-        public readonly ?string $gameID = null,
+        public readonly ?int $providerUserID = null,
+        public readonly ?int $gameID = null,
         public readonly ?string $roundID = null,
         public readonly ?float $amount = null,
         public readonly ?string $dateTime = null,
