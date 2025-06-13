@@ -11,14 +11,15 @@ class OrsRepository
 
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::table('ors.players')
+        return DB::connection('pgsql_report_read')
+            ->table('ors.players')
             ->where('play_id', $playID)
             ->first();
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void
     {
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('ors.players')
             ->insertOrIgnore([
                 'play_id' => $playID,
@@ -31,7 +32,7 @@ class OrsRepository
     {
         $token = $this->randomizer->createToken();
 
-        DB::connection('pgsql_write')
+        DB::connection('pgsql_report_write')
             ->table('ors.playgame')
             ->updateOrInsert(
                 ['play_id' => $playID],
@@ -54,7 +55,8 @@ class OrsRepository
 
     public function getPlayGameByPlayIDToken(string $playID, string $token): ?object
     {
-        return DB::table('ors.playgame')
+        return DB::connection('pgsql_report_read')
+            ->table('ors.playgame')
             ->where('play_id', $playID)
             ->where('token', $token)
             ->first();
