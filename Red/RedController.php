@@ -5,58 +5,19 @@ namespace Providers\Red;
 use Illuminate\Http\Request;
 use Providers\Red\RedService;
 use Providers\Red\RedResponse;
+use Providers\Red\DTO\RedRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Casino\InvalidBearerTokenException;
-use App\Exceptions\Casino\InvalidCasinoRequestException;
+use App\Http\Controllers\AbstractCasinoController;
 use Providers\Red\Exceptions\InvalidProviderRequestException;
 
-class RedController
+class RedController extends AbstractCasinoController
 {
     public function __construct(
-        private RedService $service,
-        private RedResponse $response
+        RedService $service,
+        RedResponse $response
     ) {
-    }
-
-    private function validateCasinoRequest(Request $request, array $rules): void
-    {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'playId' => 'required|string',
-            'memberId' => 'required|integer',
-            'username' => 'required|string',
-            'host' => 'required|string',
-            'currency' => 'required|string',
-            'device' => 'required|integer',
-            'gameId' => 'required|string'
-        ]);
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'currency' => 'required|string'
-        ]);
-
-        $betDetailUrl = $this->service->getBetDetailUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $betDetailUrl);
+        $this->service = $service;
+        $this->response = $response;
     }
 
     private function validateProviderRequest(Request $request, array $rules): void
@@ -71,16 +32,17 @@ class RedController
     {
         $this->validateProviderRequest(request: $request, rules: [
             'user_id' => 'required|integer',
-            'prd_id' => 'required|integer',
-            'sid' => 'required|string'
+            'prd_id' => 'required|integer'
         ]);
 
-        $balance = $this->service->getBalance(request: $request);
+        $requestDTO = RedRequestDTO::fromBalanceRequest(request: $request);
+
+        $balance = $this->service->balance(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }
 
-    public function wager(Request $request)
+    public function debit(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'user_id' => 'required|integer',
@@ -90,12 +52,14 @@ class RedController
             'debit_time' => 'required|date'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = RedRequestDTO::fromDebitRequest(request: $request);
+
+        $balance = $this->service->wager(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }
 
-    public function payout(Request $request)
+    public function credit(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'user_id' => 'required|integer',
@@ -105,7 +69,9 @@ class RedController
             'credit_time' => 'required|date'
         ]);
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = RedRequestDTO::fromCreditRequest($request);
+
+        $balance = $this->service->payout(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }

@@ -42,7 +42,7 @@ class AixService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $walletResponse = $this->wallet->Balance(credentials: $credentials, playID: $player->playID);
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $player->playID);
 
         if ($walletResponse['status_code'] != 2100)
             throw new WalletErrorException;
@@ -65,7 +65,7 @@ class AixService
         return $walletResponse['credit'];
     }
 
-    public function getBalance(AixRequestDTO $requestDTO): float
+    public function balance(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -80,7 +80,7 @@ class AixService
         return $this->getWalletBalance(credentials: $credentials, player: $player);
     }
 
-    public function bet(AixRequestDTO $requestDTO): float
+    public function wager(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -92,55 +92,55 @@ class AixService
         if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionDTO = AixTransactionDTO::bet(
-            extID: "wager-{$requestDTO->trxID}",
+        $wagerTransactionDTO = AixTransactionDTO::wager(
+            extID: "wager-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
 
-        $existingTransactionData = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $existingTransactionData = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
 
         if (is_null($existingTransactionData) === false)
             throw new TransactionAlreadyExistsException;
 
         $balance = $this->getWalletBalance(credentials: $credentials, player: $player);
 
-        if ($balance < $transactionDTO->betAmount)
+        if ($balance < $wagerTransactionDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
+            $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $transactionDTO->roundID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime
+                transactionID: $wagerTransactionDTO->roundID,
+                gameCode: $wagerTransactionDTO->gameID,
+                betTime: $wagerTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->betAmount,
+                playID: $wagerTransactionDTO->playID,
+                currency: $wagerTransactionDTO->currency,
+                transactionID: $wagerTransactionDTO->extID,
+                amount: $wagerTransactionDTO->betAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
         return $walletResponse['credit_after'];
     }
 
-    public function settle(AixRequestDTO $requestDTO): float
+    public function payout(AixRequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -152,48 +152,48 @@ class AixService
         if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $betTransaction =  $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->trxID}");
+        $wagerTransaction =  $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
 
-        if (is_null($betTransaction) === true)
+        if (is_null($wagerTransaction) === true)
             throw new ProviderTransactionNotFoundException;
 
-        $transactionDTO = AixTransactionDTO::settle(
-            extID: "payout-{$requestDTO->trxID}",
+        $payoutTransactionDTO = AixTransactionDTO::payout(
+            extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            betTransactionDTO: $betTransaction
+            wagerTransactionDTO: $wagerTransaction
         );
 
-        $existingSettleTransaction =  $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $existingPayoutTransaction =  $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
 
-        if (is_null($existingSettleTransaction) === false)
+        if (is_null($existingPayoutTransaction) === false)
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
+            $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $transactionDTO->extID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime
+                transactionID: $payoutTransactionDTO->roundID,
+                gameCode: $payoutTransactionDTO->gameID,
+                betTime: $payoutTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->payout(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->winAmount,
+                playID: $payoutTransactionDTO->playID,
+                currency: $payoutTransactionDTO->currency,
+                transactionID: $payoutTransactionDTO->extID,
+                amount: $payoutTransactionDTO->winAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
@@ -202,58 +202,53 @@ class AixService
 
     public function bonus(AixRequestDTO $requestDTO)
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         if ($requestDTO->secretKey !== $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $settleTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$requestDTO->trxID}");
-
-        if (is_null($settleTransaction) == true)
-            throw new ProviderTransactionNotFoundException;
-
-        $transactionDTO = AixTransactionDTO::bonus(
-            extID: "bonus-{$requestDTO->trxID}",
+        $bonusTransactionDTO = AixTransactionDTO::bonus(
+            extID: "bonus-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            settleTransactionDTO: $settleTransaction
+            playerDTO: $player
         );
 
-        $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $bonusTransactionDTO->extID);
 
         if (is_null($existingBonusTransaction) == false)
             throw new DuplicateBonusException;
 
         try {
-            DB::connection('pgsql_report_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
+            $this->repository->createTransaction(transactionDTO: $bonusTransactionDTO);
 
             $report = $this->walletReport->makeBonusReport(
-                transactionID: $transactionDTO->roundID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime
+                transactionID: $bonusTransactionDTO->roundID,
+                gameCode: $bonusTransactionDTO->gameID,
+                betTime: $bonusTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->bonus(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->winAmount,
+                playID: $bonusTransactionDTO->playID,
+                currency: $bonusTransactionDTO->currency,
+                transactionID: $bonusTransactionDTO->extID,
+                amount: $bonusTransactionDTO->winAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 

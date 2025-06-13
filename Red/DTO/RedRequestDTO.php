@@ -1,15 +1,14 @@
 <?php
 
-namespace Providers\Aix\DTO;
+namespace Providers\Red\DTO;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class AixRequestDTO
+class RedRequestDTO
 {
     public function __construct(
         public readonly ?string $secretKey = null,
-        public readonly ?string $playID = null,
+        public readonly ?int $providerUserID = null,
         public readonly ?string $gameID = null,
         public readonly ?string $roundID = null,
         public readonly ?float $amount = null,
@@ -20,7 +19,7 @@ class AixRequestDTO
     {
         return new self(
             secretKey: $request->header('secret-key'),
-            playID: $request->user_id,
+            providerUserID: $request->user_id
         );
     }
 
@@ -28,8 +27,8 @@ class AixRequestDTO
     {
         return new self(
             secretKey: $request->header('secret-key'),
-            playID: str_replace('sbo_', '', $request->user_id),
-            gameID: $request->prd_id,
+            providerUserID: $request->user_id,
+            gameID: $request->game_id,
             roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: $request->debit_time
@@ -40,23 +39,11 @@ class AixRequestDTO
     {
         return new self(
             secretKey: $request->header('secret-key'),
-            playID: $request->user_id,
-            gameID: $request->prd_id,
+            providerUserID: $request->user_id,
+            gameID: $request->game_id,
             roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: $request->credit_time
-        );
-    }
-
-    public static function fromBonusRequest(Request $request): self
-    {
-        return new self(
-            secretKey: $request->header('secret-key'),
-            playID: $request->user_id,
-            gameID: $request->prd_id,
-            roundID: $request->txn_id,
-            amount: $request->amount,
-            dateTime: Carbon::now()->format('Y-m-d H:i:s')
         );
     }
 }

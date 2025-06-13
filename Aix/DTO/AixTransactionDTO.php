@@ -12,18 +12,11 @@ class AixTransactionDTO extends TransactionDTO
 
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
 
-    private static function convertProviderDateTime(string $dateTime): string
-    {
-        return Carbon::parse($dateTime, self::PROVIDER_API_TIMEZONE)
-            ->setTimezone('GMT+8')
-            ->format('Y-m-d H:i:s');
-    }
-
-    public static function bet(string $extID, AixRequestDTO $requestDTO, AixPlayerDTO $playerDTO): self
+    public static function wager(string $extID, AixRequestDTO $requestDTO, AixPlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,
-            roundID: $requestDTO->trxID,
+            roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
             webID: self::getWebID(playID: $playerDTO->playID),
@@ -31,37 +24,48 @@ class AixTransactionDTO extends TransactionDTO
             gameID: $requestDTO->gameID,
             betValid: $requestDTO->amount,
             betAmount: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
         );
     }
 
-    public static function settle(string $extID, AixRequestDTO $requestDTO, AixTransactionDTO $betTransactionDTO): self
+    public static function payout(string $extID, AixRequestDTO $requestDTO, AixTransactionDTO $wagerTransactionDTO): self
     {
         return new self(
             extID: $extID,
-            roundID: $betTransactionDTO->roundID,
-            playID: $betTransactionDTO->playID,
-            username: $betTransactionDTO->username,
-            webID: $betTransactionDTO->webID,
-            currency: $betTransactionDTO->currency,
-            gameID: $betTransactionDTO->gameID,
-            betWinlose: $requestDTO->amount - $betTransactionDTO->betAmount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            roundID: $wagerTransactionDTO->roundID,
+            playID: $wagerTransactionDTO->playID,
+            username: $wagerTransactionDTO->username,
+            webID: $wagerTransactionDTO->webID,
+            currency: $wagerTransactionDTO->currency,
+            gameID: $wagerTransactionDTO->gameID,
+            betWinlose: $requestDTO->amount - $wagerTransactionDTO->betAmount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $requestDTO->amount
         );
     }
 
-    public static function bonus(string $extID, AixRequestDTO $requestDTO, AixTransactionDTO $settleTransactionDTO): self
+    public static function bonus(string $extID, AixRequestDTO $requestDTO, AixPlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,
-            roundID: $settleTransactionDTO->roundID,
-            playID: $settleTransactionDTO->playID,
-            username: $settleTransactionDTO->username,
-            webID: $settleTransactionDTO->webID,
-            currency: $settleTransactionDTO->currency,
-            gameID: $settleTransactionDTO->gameID,
+            roundID: $requestDTO->roundID,
+            playID: $playerDTO->playID,
+            username: $playerDTO->username,
+            webID: self::getWebID(playID: $playerDTO->playID),
+            currency: $playerDTO->currency,
+            gameID: $requestDTO->gameID,
             betWinlose: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime($requestDTO->dateTime),
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $requestDTO->amount,
         );
     }
 }

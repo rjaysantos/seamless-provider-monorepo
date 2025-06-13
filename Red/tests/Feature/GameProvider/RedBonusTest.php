@@ -14,16 +14,15 @@ class RedBonusTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_bonus_validRequest_expected()
+    public function test_bonus_validRequest_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -32,7 +31,7 @@ class RedBonusTest extends TestCase
             'user_id' => 27,
             'amount' => 200.00,
             'txn_id' => 'testTransactionID',
-            'game_id' => 51
+            'game_id' => 1
         ];
 
         $wallet = new class extends TestWallet {
@@ -46,7 +45,7 @@ class RedBonusTest extends TestCase
         };
         app()->bind(IWallet::class, $wallet::class);
 
-        Carbon::setTestNow('2020-01-01 00:00:00');
+        Carbon::setTestNow('2025-01-01 08:00:00');
 
         $response = $this->post('/red/prov/bonus', $request, [
             'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
@@ -60,17 +59,21 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'win_amount' => 200.00,
-            'created_at' => '2020-01-01 00:00:00',
-            'updated_at' => '2020-01-01 00:00:00',
+            'ext_id' => 'bonus-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 200.0,
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00'
         ]);
-
-        Carbon::setTestNow();
     }
 
     #[DataProvider('bonusParams')]
-    public function test_bonus_incompleteRequest_expected($param)
+    public function test_bonus_incompleteRequest_expectedData($param)
     {
         $request = [
             'user_id' => 27,
@@ -93,17 +96,41 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
     }
 
+    #[DataProvider('bonusParams')]
+    public function test_bonus_invalidRequestParameters_expectedData($param, $value)
+    {
+        $request = [
+            'user_id' => 27,
+            'amount' => 200.00,
+            'txn_id' => 'testTransactionID',
+            'game_id' => 51
+        ];
+
+        $request[$param] = $value;
+
+        $response = $this->post('/red/prov/bonus', $request, [
+            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
+        ]);
+
+        $response->assertJson([
+            'status' => 0,
+            'error' => 'MISSING_PARAMETER'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public static function bonusParams()
     {
         return [
-            ['user_id'],
-            ['amount'],
-            ['txn_id'],
-            ['game_id']
+            ['user_id', 'test'],
+            ['amount', 'test'],
+            ['txn_id', 123],
+            ['game_id', 'test']
         ];
     }
 
-    public function test_bonus_invalidSecretKey_expected()
+    public function test_bonus_invalidSecretKey_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
@@ -131,21 +158,26 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_bonus_transactionAlreadyExists_expected()
+    public function test_bonus_transactionAlreadyExists_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 0.00,
-            'win_amount' => 200.00,
-            'updated_at' => null,
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'bonus-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
@@ -167,11 +199,11 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_bonus_invalidWalletResponse_expected()
+    public function test_bonus_invalidWalletResponse_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -191,9 +223,10 @@ class RedBonusTest extends TestCase
                 ];
             }
         };
+
         app()->bind(IWallet::class, $wallet::class);
 
-        Carbon::setTestNow('2020-01-01 00:00:00');
+        Carbon::setTestNow('2025-01-01 00:00:00');
 
         $response = $this->post('/red/prov/bonus', $request, [
             'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
@@ -207,10 +240,16 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'win_amount' => 2000.00,
-            'created_at' => '2020-01-01 00:00:00',
-            'updated_at' => '2020-01-01 00:00:00',
+            'ext_id' => 'bonus-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 200.0,
+            'created_at' => '2025-01-01 00:00:00',
+            'updated_at' => '2025-01-01 00:00:00'
         ]);
 
         Carbon::setTestNow();

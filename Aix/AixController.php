@@ -33,7 +33,7 @@ class AixController extends AbstractCasinoController
 
         $requestDTO = AixRequestDTO::fromBalanceRequest(request: $request);
 
-        $balance = $this->service->getBalance(requestDTO: $requestDTO);
+        $balance = $this->service->balance(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }
@@ -51,7 +51,7 @@ class AixController extends AbstractCasinoController
 
         $requestDTO = AixRequestDTO::fromDebitRequest(request: $request);
 
-        $balance = $this->service->bet(requestDTO: $requestDTO);
+        $balance = $this->service->wager(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }
@@ -68,7 +68,7 @@ class AixController extends AbstractCasinoController
 
         $requestDTO = AixRequestDTO::fromCreditRequest(request: $request);
 
-        $balance = $this->service->settle(requestDTO: $requestDTO);
+        $balance = $this->service->payout(requestDTO: $requestDTO);
 
         return $this->response->successResponse(balance: $balance);
     }

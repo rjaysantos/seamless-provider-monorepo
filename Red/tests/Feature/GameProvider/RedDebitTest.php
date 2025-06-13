@@ -13,12 +13,11 @@ class RedDebitTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_debit_validRequest_expected()
+    public function test_debit_validRequest_expectedData()
     {
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
@@ -41,7 +40,7 @@ class RedDebitTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -51,7 +50,7 @@ class RedDebitTest extends TestCase
             'amount' => 100.00,
             'txn_id' => 'testTransactionID',
             'game_id' => 2,
-            'debit_time' => '2020-01-01 00:00:00'
+            'debit_time' => '2025-01-01 00:00:00'
         ];
 
         $response = $this->post('/red/prov/debit', $request, [
@@ -66,16 +65,21 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('red.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '2',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2020-01-01 08:00:00',
-            'updated_at' => null
+            'bet_winlose' => 0,
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00'
         ]);
     }
 
     #[DataProvider('debitParams')]
-    public function test_debit_invalidRequest_expected($param)
+    public function test_debit_incompleteRequestParams_expectedData($param)
     {
         $request = [
             'user_id' => 27,
@@ -99,18 +103,43 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
+    #[DataProvider('debitParams')]
+    public function test_debit_invalidRequestParams_expectedData($param, $value)
+    {
+        $request = [
+            'user_id' => 27,
+            'amount' => 100.00,
+            'txn_id' => 'testTransactionID',
+            'game_id' => 2,
+            'debit_time' => '2020-01-01 00:00:00'
+        ];
+
+        $request[$param] = $value;
+
+        $response = $this->post('/red/prov/debit', $request, [
+            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
+        ]);
+
+        $response->assertJson([
+            'status' => 0,
+            'error' => 'MISSING_PARAMETER'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public static function debitParams()
     {
         return [
-            ['user_id'],
-            ['amount'],
-            ['txn_id'],
-            ['game_id'],
-            ['debit_time']
+            ['user_id', 'test'],
+            ['amount', 'test'],
+            ['txn_id', 123],
+            ['game_id', 'test'],
+            ['debit_time', 123]
         ];
     }
 
-    public function test_debit_invalidSecretKey_expected()
+    public function test_debit_invalidSecretKey_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
@@ -139,11 +168,11 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_playerNotFound_expected()
+    public function test_debit_playerNotFound_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayer001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -168,21 +197,26 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_transactionAlreadyExist_expected()
+    public function test_debit_transactionAlreadyExist_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayer001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'updated_at' => null,
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
@@ -205,11 +239,11 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_insufficientFunds_expected()
+    public function test_debit_insufficientFunds_expectedData()
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayer001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -231,6 +265,7 @@ class RedDebitTest extends TestCase
                 ];
             }
         };
+
         app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->post('/red/prov/debit', $request, [
@@ -245,7 +280,46 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_invalidWalletResponse_expected()
+    public function test_debit_invalidWalletBalanceResponse_expectedData()
+    {
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'status_code' => 'invalid'
+                ];
+            }
+        };
+        app()->bind(IWallet::class, $wallet::class);
+
+        DB::table('red.players')->insert([
+            'user_id_provider' => 27,
+            'play_id' => 'testPlayeru001',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $request = [
+            'user_id' => 27,
+            'amount' => 100.00,
+            'txn_id' => 'testTransactionID',
+            'game_id' => 2,
+            'debit_time' => '2020-01-01 00:00:00'
+        ];
+
+        $response = $this->post('/red/prov/debit', $request, [
+            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
+        ]);
+
+        $response->assertJson([
+            'error' => 'UNKNOWN_ERROR',
+            'status' => 0
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_debit_invalidWalletWagerResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
@@ -267,7 +341,7 @@ class RedDebitTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -292,11 +366,16 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('red.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '2',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2020-01-01 08:00:00',
-            'updated_at' => null
+            'bet_winlose' => 0,
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00'
         ]);
     }
 }

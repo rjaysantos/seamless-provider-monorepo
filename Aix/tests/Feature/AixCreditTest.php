@@ -39,6 +39,7 @@ class AixCreditTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -71,6 +72,7 @@ class AixCreditTest extends TestCase
 
         $this->assertDatabaseHas('aix.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -179,6 +181,7 @@ class AixCreditTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -221,6 +224,7 @@ class AixCreditTest extends TestCase
         DB::table('aix.reports')->insert([
             [
                 'ext_id' => 'wager-testTransactionID',
+                'round_id' => 'testTransactionID',
                 'username' => 'testUsername',
                 'play_id' => 'testPlayeru001',
                 'web_id' => 1,
@@ -233,6 +237,7 @@ class AixCreditTest extends TestCase
             ],
             [
                 'ext_id' => 'payout-testTransactionID',
+                'round_id' => 'testTransactionID',
                 'username' => 'testUsername',
                 'play_id' => 'testPlayeru001',
                 'web_id' => 1,
@@ -286,6 +291,7 @@ class AixCreditTest extends TestCase
 
         DB::table('aix.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -318,6 +324,7 @@ class AixCreditTest extends TestCase
 
         $this->assertDatabaseMissing('aix.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
