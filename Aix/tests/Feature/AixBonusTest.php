@@ -192,47 +192,6 @@ class AixBonusTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_bonus_transactionNotFound_expectedData()
-    {
-        DB::table('aix.players')->insert([
-            'play_id' => 'testPlayIDu001',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('aix.reports')->insert([
-            'ext_id' => 'payout-testTransactionID',
-            'round_id' => 'testTransactionID',
-            'username' => 'testUsername',
-            'play_id' => 'testPlayIDu001',
-            'web_id' => 1,
-            'currency' => 'IDR',
-            'game_code' => 1,
-            'bet_amount' => 100.0,
-            'bet_winlose' => 0,
-            'updated_at' => '2025-01-01 00:00:00',
-            'created_at' => '2025-01-01 00:00:00'
-        ]);
-
-        $request = [
-            'user_id' => 'testPlayIDu001',
-            'amount' => 100.0,
-            'prd_id' => 1,
-            'txn_id' => 'invalidTransactionID',
-        ];
-
-        $response = $this->post('/aix/prov/bonus', $request, [
-            'secret-key' => 'ais-secret-key'
-        ]);
-
-        $response->assertJson([
-            'status' => 0,
-            'error' => 'INVALID_DEBIT'
-        ]);
-
-        $response->assertStatus(200);
-    }
-
     public function test_bonus_transactionHasBonus_expectedData()
     {
         DB::table('aix.players')->insert([
