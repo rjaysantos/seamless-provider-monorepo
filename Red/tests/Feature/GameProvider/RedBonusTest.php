@@ -23,7 +23,7 @@ class RedBonusTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -60,8 +60,14 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'win_amount' => 200.00,
+            'ext_id' => 'bonus-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '51',
+            'bet_amount' => 0,
+            'bet_winlose' => 200.00,
             'created_at' => '2020-01-01 00:00:00',
             'updated_at' => '2020-01-01 00:00:00',
         ]);
@@ -107,7 +113,7 @@ class RedBonusTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -135,16 +141,21 @@ class RedBonusTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 0.00,
-            'win_amount' => 200.00,
-            'updated_at' => null,
+            'ext_id' => 'bonus-testTransactionID',
+            'play_id' => 'testPlayIDu1',
+            'username' => 'testUsername',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
 
@@ -171,7 +182,7 @@ class RedBonusTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -207,10 +218,16 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'win_amount' => 2000.00,
+            'ext_id' => 'bonus-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 200.0,
             'created_at' => '2020-01-01 00:00:00',
-            'updated_at' => '2020-01-01 00:00:00',
+            'updated_at' => '2020-01-01 00:00:00'
         ]);
 
         Carbon::setTestNow();

@@ -76,7 +76,7 @@ class RedService
             throw new PlayerNotFoundException;
 
         $transactionData = $this->repository->getTransactionByExtID(transactionID: $request->bet_id);
-        
+
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
 
@@ -134,7 +134,9 @@ class RedService
         if ($request->header('secret-key') != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->txn_id);
+        $extID = "wager-{$request->txn_id}";
+
+        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
@@ -145,20 +147,25 @@ class RedService
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = Carbon::parse($request->debit_time, self::PROVIDER_API_TIMEZONE)
                 ->setTimezone(8)
                 ->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                transactionID: $request->txn_id,
+                transactionID: $extID,
+                playID: $playerData->play_id,
+                username: $playerData->username,
+                currency: $playerData->currency,
+                gameCode: $request->game_id,
                 betAmount: $request->amount,
+                betWinLose: 0,
                 transactionDate: $transactionDate
             );
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $request->txn_id,
+                transactionID: $extID,
                 gameCode: $request->game_id,
                 betTime: $transactionDate
             );
@@ -167,7 +174,7 @@ class RedService
                 credentials: $credentials,
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
-                transactionID: "wager-{$request->txn_id}",
+                transactionID: $extID,
                 amount: $request->amount,
                 report: $report
             );
@@ -175,9 +182,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 
@@ -193,7 +200,9 @@ class RedService
         if ($request->header('secret-key') != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->txn_id);
+        $extID = "payout-{$request->txn_id}";
+
+        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
 
         if (is_null($transactionData) === true)
             throw new TransactionDoesNotExistException;
@@ -202,15 +211,20 @@ class RedService
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = Carbon::parse($request->credit_time, self::PROVIDER_API_TIMEZONE)
                 ->setTimezone(8)
                 ->format('Y-m-d H:i:s');
 
-            $this->repository->settleTransaction(
-                transactionID: $request->txn_id,
-                winAmount: $request->amount,
+            $this->repository->createTransaction(
+                transactionID: $extID,
+                username: $playerData->username,
+                playID: $playerData->play_id,
+                currency: $playerData->currency,
+                gameCode: $request->game_id,
+                betAmount: 0,
+                betWinLose: $request->bet_amount - $request->amount,
                 transactionDate: $transactionDate
             );
 
@@ -224,7 +238,7 @@ class RedService
                 credentials: $credentials,
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
-                transactionID: "payout-{$request->txn_id}",
+                transactionID: $extID,
                 amount: $request->amount,
                 report: $report
             );
@@ -232,9 +246,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 
@@ -250,19 +264,26 @@ class RedService
         if ($request->header('secret-key') != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->txn_id);
+        $extID = "bonus-{$request->txn_id}";
+
+        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
 
         if (is_null($transactionData) === false)
             throw new BonusTransactionAlreadyExists;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            DB::connection('pgsql_report_write')->beginTransaction();
 
             $transactionDate = Carbon::now()->format('Y-m-d H:i:s');
 
-            $this->repository->createBonusTransaction(
-                transactionID: $request->txn_id,
-                bonusAmount: $request->amount,
+            $this->repository->createTransaction(
+                transactionID: $extID,
+                playID: $playerData->play_id,
+                username: $playerData->username,
+                currency: $playerData->currency,
+                gameCode: $request->game_id,
+                betAmount: 0,
+                betWinLose: $request->amount,
                 transactionDate: $transactionDate
             );
 
@@ -276,7 +297,7 @@ class RedService
                 credentials: $credentials,
                 playID: $playerData->play_id,
                 currency: $playerData->currency,
-                transactionID: "bonus-{$request->txn_id}",
+                transactionID: $extID,
                 amount: $request->amount,
                 report: $report
             );
@@ -284,9 +305,9 @@ class RedService
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 

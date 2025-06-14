@@ -55,8 +55,8 @@ class RedRepository
         string $currency,
         string $gameCode,
         float $betAmount,
-        float $betWinlose,
-        string $transactionDate,
+        float $betWinLose,
+        string $transactionDate
     ): void {
         DB::connection('pgsql_report_write')
             ->table('red.reports')
@@ -69,58 +69,6 @@ class RedRepository
                 'game_code' => $gameCode,
                 'bet_amount' => $betAmount,
                 'bet_valid' => $betAmount,
-                'bet_winlose' => $betWinlose,
-                'updated_at' => $transactionDate,
-                'created_at' => $transactionDate
-            ]);
-    }
-
-    public function createSettleTransaction(
-        string $transactionID,
-        string $username,
-        string $playID,
-        string $currency,
-        string $gameCode,
-        float $betAmount,
-        float $betWinLose,
-        string $transactionDate
-    ): void {
-        DB::connection('pgsql_report_write')
-            ->table('red.reports')
-            ->insert([
-                'ext_id' => $transactionID,
-                'username' => $username,
-                'play_id' => $playID,
-                'web_id' => $this->getWebID($playID),
-                'currency' => $currency,
-                'game_code' => $gameCode,
-                'bet_amount' => 0,
-                'bet_valid' => $betAmount,
-                'bet_winlose' => $betAmount - $betWinLose,
-                'updated_at' => $transactionDate,
-                'created_at' => $transactionDate
-            ]);
-    }
-
-    public function createBonusTransaction(
-        string $transactionID,
-        string $username,
-        string $playID,
-        string $currency,
-        string $gameCode,
-        float $betWinLose,
-        string $transactionDate
-    ): void {
-        DB::connection('pgsql_report_write')
-            ->table('red.reports')
-            ->insert([
-                'ext_id' => $transactionID,
-                'username' => $username,
-                'play_id' => $playID,
-                'web_id' => $this->getWebID($playID),
-                'currency' => $currency,
-                'game_code' => $gameCode,
-                'bet_amount' => 0,
                 'bet_winlose' => $betWinLose,
                 'updated_at' => $transactionDate,
                 'created_at' => $transactionDate
