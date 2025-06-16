@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Illuminate\Http\Request;
 use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
+use Providers\Ors\DTO\OrsRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -15,8 +16,7 @@ class OrsController
     public function __construct(
         private OrsService $service,
         private OrsResponse $response
-    ) {
-    }
+    ) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -97,12 +97,14 @@ class OrsController
             ]
         );
 
-        $playerBalanceDetails = $this->service->getBalance(request: $request);
+        $requestDTO = OrsRequestDTO::fromBalanceRequest(request: $request);
+
+        $balance = $this->service->getBalance(requestDTO: $requestDTO);
 
         return $this->response->getBalance(
             playID: $request->player_id,
-            balance: $playerBalanceDetails->balance,
-            currency: $playerBalanceDetails->currency
+            balance: $balance->balance,
+            currency: $balance->currency
         );
     }
 

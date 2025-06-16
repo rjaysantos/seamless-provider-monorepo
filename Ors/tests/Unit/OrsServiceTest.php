@@ -9,6 +9,7 @@ use Providers\Ors\OrsService;
 use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
+use Providers\Ors\DTO\OrsRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
@@ -633,6 +634,8 @@ class OrsServiceTest extends TestCase
             ]
         );
 
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
+
         $mockRepository = $this->createMock(OrsRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
@@ -668,7 +671,7 @@ class OrsServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_nullPlayer_providerPlayerNotFoundException()
@@ -686,12 +689,14 @@ class OrsServiceTest extends TestCase
             ]
         );
 
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
+
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_mockCredentials_getCredentialsByCurrency()
@@ -706,6 +711,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -744,7 +751,7 @@ class OrsServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_invalidPublicKey_invalidPublicKeyException()
@@ -761,6 +768,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'invalidPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -780,7 +789,7 @@ class OrsServiceTest extends TestCase
             ->willReturn($stubProviderCredentials);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_mockEncryption_isSignatureValid()
@@ -795,6 +804,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -816,7 +827,7 @@ class OrsServiceTest extends TestCase
         $mockEncryption = $this->createMock(OgSignature::class);
         $mockEncryption->expects($this->once())
             ->method('isSignatureValid')
-            ->with(request: $request, credentials: $stubProviderCredentials)
+            ->with(requestDTO: $requestDTO, credentials: $stubProviderCredentials)
             ->willReturn(true);
 
         $stubWallet = $this->createMock(IWallet::class);
@@ -833,7 +844,7 @@ class OrsServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_stubEncryptionInvalidSignature_invalidSignatureException()
@@ -850,6 +861,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -878,7 +891,7 @@ class OrsServiceTest extends TestCase
             encryption: $stubEncryption
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_mockWallet_balance()
@@ -893,6 +906,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -931,7 +946,7 @@ class OrsServiceTest extends TestCase
             wallet: $mockWallet
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_invalidWalletResponse_walletErrorException()
@@ -948,6 +963,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -983,7 +1000,7 @@ class OrsServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_stubWallet_expectedData()
@@ -998,6 +1015,8 @@ class OrsServiceTest extends TestCase
                 'HTTP_KEY' => 'testPublicKey'
             ]
         );
+
+        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
 
         $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
 
@@ -1039,7 +1058,7 @@ class OrsServiceTest extends TestCase
             wallet: $stubWallet
         );
 
-        $response = $service->getBalance(request: $request);
+        $response = $service->getBalance(requestDTO: $requestDTO);
 
         $this->assertEquals(expected: $expected, actual: $response);
     }
