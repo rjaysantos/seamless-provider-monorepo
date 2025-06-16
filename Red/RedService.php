@@ -75,7 +75,7 @@ class RedService
         if (is_null($playerData) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(transactionID: $request->bet_id);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
 
         if (is_null($transactionData) === true)
             throw new TransactionNotFoundException;
@@ -136,7 +136,7 @@ class RedService
 
         $extID = "wager-{$request->txn_id}";
 
-        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
@@ -154,7 +154,7 @@ class RedService
                 ->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                transactionID: $extID,
+                extID: $extID,
                 playID: $playerData->play_id,
                 username: $playerData->username,
                 currency: $playerData->currency,
@@ -200,14 +200,16 @@ class RedService
         if ($request->header('secret-key') != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $extID = "payout-{$request->txn_id}";
+        $betTransactionData =  $this->repository->getTransactionByExtID(extID: "wager-{$request->txn_id}");
 
-        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
-
-        if (is_null($transactionData) === true)
+        if (is_null($betTransactionData) === true)
             throw new TransactionDoesNotExistException;
 
-        if ($transactionData->updated_at != null)
+        $extID = "payout-{$request->txn_id}";
+
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
+
+        if (is_null($transactionData) === false)
             throw new TransactionAlreadySettledException;
 
         try {
@@ -218,13 +220,13 @@ class RedService
                 ->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                transactionID: $extID,
-                username: $playerData->username,
-                playID: $playerData->play_id,
-                currency: $playerData->currency,
-                gameCode: $request->game_id,
+                extID: $extID,
+                username: $betTransactionData->username,
+                playID: $betTransactionData->play_id,
+                currency: $betTransactionData->currency,
+                gameCode: $betTransactionData->game_code,
                 betAmount: 0,
-                betWinLose: $request->bet_amount - $request->amount,
+                betWinLose: $request->amount - $betTransactionData->bet_amount,
                 transactionDate: $transactionDate
             );
 
@@ -266,7 +268,7 @@ class RedService
 
         $extID = "bonus-{$request->txn_id}";
 
-        $transactionData = $this->repository->getTransactionByExtID(transactionID: $extID);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
 
         if (is_null($transactionData) === false)
             throw new BonusTransactionAlreadyExists;
@@ -277,7 +279,7 @@ class RedService
             $transactionDate = Carbon::now()->format('Y-m-d H:i:s');
 
             $this->repository->createTransaction(
-                transactionID: $extID,
+                extID: $extID,
                 playID: $playerData->play_id,
                 username: $playerData->username,
                 currency: $playerData->currency,

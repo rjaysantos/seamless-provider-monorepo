@@ -32,16 +32,21 @@ class RedCreditTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'updated_at' => null,
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
 
@@ -49,7 +54,7 @@ class RedCreditTest extends TestCase
             'user_id' => 27,
             'amount' => 200.00,
             'txn_id' => 'testTransactionID',
-            'game_id' => 123,
+            'game_id' => 1,
             'credit_time' => '2021-01-01 00:00:00'
         ];
 
@@ -65,9 +70,16 @@ class RedCreditTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'win_amount' => 200.00,
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 100.0,
             'updated_at' => '2021-01-01 08:00:00',
+            'created_at' => '2021-01-01 08:00:00'
         ]);
     }
 
@@ -169,16 +181,21 @@ class RedCreditTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'updated_at' => null,
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 100.0,
+            'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
 
@@ -212,11 +229,30 @@ class RedCreditTest extends TestCase
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'updated_at' => '2021-01-01 01:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            [
+                'ext_id' => 'wager-testTransactionID',
+                'username' => 'testUsername',
+                'play_id' => 'testPlayIDu1',
+                'web_id' => 1,
+                'currency' => 'IDR',
+                'game_code' => 1,
+                'bet_amount' => 100.0,
+                'bet_winlose' => 0,
+                'created_at' => '2021-01-01 00:00:00',
+                'updated_at' => '2021-01-01 00:00:00',
+            ],
+            [
+                'ext_id' => 'payout-testTransactionID',
+                'username' => 'testUsername',
+                'play_id' => 'testPlayIDu1',
+                'web_id' => 1,
+                'currency' => 'IDR',
+                'game_code' => 1,
+                'bet_amount' => 0,
+                'bet_winlose' => 100,
+                'updated_at' => '2021-01-01 00:00:00',
+                'created_at' => '2021-01-01 00:00:00'
+            ]
         ]);
 
         $request = [
@@ -253,16 +289,21 @@ class RedCreditTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'updated_at' => null,
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 0,
+            'bet_winlose' => 100.0,
+            'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
 
@@ -286,10 +327,16 @@ class RedCreditTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('red.reports', [
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'updated_at' => '2020-01-02 08:00:00',
+            'ext_id' => 'payout-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2021-01-01 00:00:00',
+            'created_at' => '2021-01-01 00:00:00'
         ]);
     }
 }

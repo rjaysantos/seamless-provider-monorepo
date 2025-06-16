@@ -41,7 +41,7 @@ class RedDebitTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -66,11 +66,11 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('red.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'wager-testTransactionID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_winlose' => 0,
             'created_at' => '2020-01-01 08:00:00',
-            'updated_at' => null
+            'updated_at' => '2020-01-01 08:00:00'
         ]);
     }
 
@@ -172,17 +172,22 @@ class RedDebitTest extends TestCase
     {
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('red.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'updated_at' => null,
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'wager-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
@@ -190,7 +195,7 @@ class RedDebitTest extends TestCase
             'amount' => 100.00,
             'txn_id' => 'testTransactionID',
             'game_id' => 2,
-            'debit_time' => '2020-01-01 00:00:00'
+            'debit_time' => '2025-01-01 00:00:00'
         ];
 
         $response = $this->post('/red/prov/debit', $request, [
@@ -267,7 +272,7 @@ class RedDebitTest extends TestCase
 
         DB::table('red.players')->insert([
             'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu1',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -292,9 +297,9 @@ class RedDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('red.reports', [
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'wager-testTransactionID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_winlose' => 0,
             'created_at' => '2020-01-01 08:00:00',
             'updated_at' => null
         ]);

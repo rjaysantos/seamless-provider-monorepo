@@ -8,23 +8,25 @@ class RedRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::table('red.players')
+        return DB::connection('pgsql_report_read')
+            ->table('red.players')
             ->where('play_id', $playID)
             ->first();
     }
 
     public function getPlayerByUserIDProvider(int $userIDProvider): ?object
     {
-        return DB::table('red.players')
+        return DB::connection('pgsql_report_read')
+            ->table('red.players')
             ->where('user_id_provider', $userIDProvider)
             ->first();
     }
 
-    public function getTransactionByExtID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
         return DB::connection('pgsql_report_read')
             ->table('red.reports')
-            ->where('ext_id', $transactionID)
+            ->where('ext_id', $extID)
             ->first();
     }
 
@@ -49,7 +51,7 @@ class RedRepository
     }
 
     public function createTransaction(
-        string $transactionID,
+        string $extID,
         string $username,
         string $playID,
         string $currency,
@@ -61,7 +63,7 @@ class RedRepository
         DB::connection('pgsql_report_write')
             ->table('red.reports')
             ->insert([
-                'ext_id' => $transactionID,
+                'ext_id' => $extID,
                 'username' => $username,
                 'play_id' => $playID,
                 'web_id' => $this->getWebID($playID),
