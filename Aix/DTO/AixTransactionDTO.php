@@ -62,7 +62,7 @@ class AixTransactionDTO extends TransactionDTO
             gameID: $requestDTO->gameID,
             betWinlose: $requestDTO->amount,
             dateTime: self::convertProviderDateTime(
-                dateTime: $requestDTO->dateTime,
+                dateTime: Carbon::now(),
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
             winAmount: $requestDTO->amount,

@@ -55,8 +55,7 @@ class AixRequestDTO
             playID: $request->user_id,
             gameID: $request->prd_id,
             roundID: $request->txn_id,
-            amount: $request->amount,
-            dateTime: Carbon::now()->format('Y-m-d H:i:s')
+            amount: $request->amount
         );
     }
 }

@@ -416,6 +416,8 @@ class AixServiceTest extends TestCase
 
     public function test_bonus_mockWalletReport_makeSlotReport()
     {
+        Carbon::setTestNow('2026-01-01 00:00:00');
+
         $credentials = new Staging;
 
         $requestDTO = new AixRequestDTO(
@@ -424,7 +426,6 @@ class AixServiceTest extends TestCase
             playID: 'test-play-idu001',
             gameID: 'test-game-id',
             amount: 1000,
-            dateTime: '2026-01-01 00:00:00',
         );
 
         $playerDTO = new AixPlayerDTO(
