@@ -4,6 +4,7 @@ namespace Providers\Red\DTO;
 
 use App\DTO\TransactionDTO;
 use App\Traits\TransactionDTOTrait;
+use Carbon\Carbon;
 
 class RedTransactionDTO extends TransactionDTO
 {
@@ -11,7 +12,7 @@ class RedTransactionDTO extends TransactionDTO
 
     private const PROVIDER_API_TIMEZONE = 'GMT+0';
 
-    public static function bet(string $extID, RedRequestDTO $requestDTO, RedPlayerDTO $playerDTO): self
+    public static function wager(string $extID, RedRequestDTO $requestDTO, RedPlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,
@@ -30,22 +31,41 @@ class RedTransactionDTO extends TransactionDTO
         );
     }
 
-    public static function settle(string $extID, RedRequestDTO $requestDTO, RedTransactionDTO $betTransaction): self
+    public static function payout(string $extID, RedRequestDTO $requestDTO, RedTransactionDTO $wagerTransactionDTO): self
+    {
+        return new self(
+            extID: $extID,
+            roundID: $wagerTransactionDTO->roundID,
+            playID: $wagerTransactionDTO->playID,
+            username: $wagerTransactionDTO->username,
+            webID: $wagerTransactionDTO->webID,
+            currency: $wagerTransactionDTO->currency,
+            gameID: $wagerTransactionDTO->gameID,
+            betWinlose: $requestDTO->amount - $wagerTransactionDTO->betAmount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $requestDTO->amount
+        );
+    }
+
+    public static function bonus(string $extID, RedRequestDTO $requestDTO, RedPlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,
             roundID: $requestDTO->roundID,
-            playID: $betTransaction->playID,
-            username: $betTransaction->username,
-            webID: $betTransaction->webID,
-            currency: $betTransaction->currency,
-            gameID: $betTransaction->gameID,
-            winAmount: $requestDTO->amount,
-            betWinlose: $requestDTO->amount - $betTransaction->betAmount,
+            playID: $playerDTO->playID,
+            username: $playerDTO->username,
+            webID: self::getWebID(playID: $playerDTO->playID),
+            currency: $playerDTO->currency,
+            gameID: $requestDTO->gameID,
+            betWinlose: $requestDTO->amount,
             dateTime: self::convertProviderDateTime(
-                dateTime: $requestDTO->dateTime,
+                dateTime: Carbon::now(),
                 providerTimezone: self::PROVIDER_API_TIMEZONE
-            )
+            ),
+            winAmount: $requestDTO->amount
         );
     }
 }

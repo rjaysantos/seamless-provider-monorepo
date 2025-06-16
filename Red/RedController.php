@@ -85,7 +85,9 @@ class RedController extends AbstractCasinoController
             'game_id' => 'required|integer'
         ]);
 
-        $balance = $this->service->bonus(request: $request);
+        $requestDTO = RedRequestDTO::fromBonusRequest($request);
+
+        $balance = $this->service->bonus(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }

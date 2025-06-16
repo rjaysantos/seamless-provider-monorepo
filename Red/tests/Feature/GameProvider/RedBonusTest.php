@@ -60,6 +60,7 @@ class RedBonusTest extends TestCase
 
         $this->assertDatabaseHas('red.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -67,8 +68,8 @@ class RedBonusTest extends TestCase
             'game_code' => '1',
             'bet_amount' => 0,
             'bet_winlose' => 200.0,
-            'created_at' => '2025-01-01 08:00:00',
-            'updated_at' => '2025-01-01 08:00:00'
+            'created_at' => '2025-01-01 16:00:00',
+            'updated_at' => '2025-01-01 16:00:00'
         ]);
     }
 
@@ -158,6 +159,34 @@ class RedBonusTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_bonus_playerNotFound_expectedData()
+    {
+        DB::table('red.players')->insert([
+            'user_id_provider' => 27,
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $request = [
+            'user_id' => 48635,
+            'amount' => 200.00,
+            'txn_id' => 'testTransactionID',
+            'game_id' => 51
+        ];
+
+        $response = $this->post('/red/prov/bonus', $request, [
+            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
+        ]);
+
+        $response->assertJson([
+            'status' => 0,
+            'error' => 'INVALID_USER'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_bonus_transactionAlreadyExists_expectedData()
     {
         DB::table('red.players')->insert([
@@ -169,6 +198,7 @@ class RedBonusTest extends TestCase
 
         DB::table('red.reports')->insert([
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -241,6 +271,7 @@ class RedBonusTest extends TestCase
 
         $this->assertDatabaseMissing('red.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,

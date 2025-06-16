@@ -124,39 +124,39 @@ class RedService
         if ($requestDTO->secretKey != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $transactionDTO = RedTransactionDTO::bet(
+        $wagerTransactionDTO = RedTransactionDTO::wager(
             extID: "wager-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
 
-        $existingTransaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $existingWagerTransaction = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
 
-        if (is_null($existingTransaction) === false)
+        if (is_null($existingWagerTransaction) === false)
             throw new TransactionAlreadyExistsException;
 
         $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
-        if ($balance < $transactionDTO->betAmount)
+        if ($balance < $wagerTransactionDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
             $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
+            $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $transactionDTO->roundID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime
+                transactionID: $wagerTransactionDTO->roundID,
+                gameCode: $wagerTransactionDTO->gameID,
+                betTime: $wagerTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->betAmount,
+                playID: $wagerTransactionDTO->playID,
+                currency: $wagerTransactionDTO->currency,
+                transactionID: $wagerTransactionDTO->extID,
+                amount: $wagerTransactionDTO->betAmount,
                 report: $report
             );
 
@@ -184,39 +184,39 @@ class RedService
         if ($requestDTO->secretKey != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $betTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
+        $wagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
 
-        if (is_null($betTransaction) === true)
+        if (is_null($wagerTransaction) === true)
             throw new TransactionDoesNotExistException;
 
-        $transactionDTO = RedTransactionDTO::settle(
+        $payoutTransactionDTO = RedTransactionDTO::payout(
             extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            betTransaction: $betTransaction
+            wagerTransactionDTO: $wagerTransaction
         );
 
-        $settleTransaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $existingPayoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
 
-        if (is_null($settleTransaction) === false)
+        if (is_null($existingPayoutTransaction) === false)
             throw new TransactionAlreadySettledException;
 
         try {
             $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
+            $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
 
             $report = $this->walletReport->makeSlotReport(
-                transactionID: $transactionDTO->roundID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime
+                transactionID: $payoutTransactionDTO->roundID,
+                gameCode: $payoutTransactionDTO->gameID,
+                betTime: $payoutTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->payout(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->winAmount,
+                playID: $payoutTransactionDTO->playID,
+                currency: $payoutTransactionDTO->currency,
+                transactionID: $payoutTransactionDTO->extID,
+                amount: $payoutTransactionDTO->winAmount,
                 report: $report
             );
 
@@ -232,50 +232,46 @@ class RedService
         return $walletResponse['credit_after'];
     }
 
-    public function bonus(Request $request): float
+    public function bonus(RedRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDataByUserIDProvider(userID: $request->user_id);
+        $player = $this->repository->getPlayerByUserIDProvider(providerUserID: $requestDTO->providerUserID);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        if (is_null($player) === true)
+            throw new ProviderPlayerNotFoundException;
 
-        if ($request->header('secret-key') != $credentials->getSecretKey())
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        if ($requestDTO->secretKey != $credentials->getSecretKey())
             throw new InvalidSecretKeyException;
 
-        $extID = "bonus-{$request->txn_id}";
+        $bonusTransactionDTO = RedTransactionDTO::bonus(
+            extID: "bonus-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player
+        );
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $extID);
+        $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $bonusTransactionDTO->extID);
 
-        if (is_null($transactionData) === false)
+        if (is_null($existingBonusTransaction) === false)
             throw new BonusTransactionAlreadyExists;
 
         try {
             $this->repository->beginTransaction();
 
-            $transactionDate = Carbon::now()->format('Y-m-d H:i:s');
-
-            $this->repository->createTransaction(
-                extID: $extID,
-                playID: $playerData->play_id,
-                username: $playerData->username,
-                currency: $playerData->currency,
-                gameCode: $request->game_id,
-                betAmount: 0,
-                betWinlose: $request->amount,
-                transactionDate: $transactionDate
-            );
+            $this->repository->createTransaction(transactionDTO: $bonusTransactionDTO);
 
             $report = $this->walletReport->makeBonusReport(
-                transactionID: $request->txn_id,
-                gameCode: $request->game_id,
-                betTime: $transactionDate
+                transactionID: $bonusTransactionDTO->roundID,
+                gameCode: $bonusTransactionDTO->gameID,
+                betTime: $bonusTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->bonus(
                 credentials: $credentials,
-                playID: $playerData->play_id,
-                currency: $playerData->currency,
-                transactionID: $extID,
-                amount: $request->amount,
+                playID: $bonusTransactionDTO->playID,
+                currency: $bonusTransactionDTO->currency,
+                transactionID: $bonusTransactionDTO->extID,
+                amount: $bonusTransactionDTO->winAmount,
                 report: $report
             );
 

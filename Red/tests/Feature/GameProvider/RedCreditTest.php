@@ -5,6 +5,7 @@ use App\Contracts\V2\IWallet;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
+use App\Contracts\V2\IWalletCredentials;
 
 class RedCreditTest extends TestCase
 {
@@ -19,7 +20,7 @@ class RedCreditTest extends TestCase
     public function test_credit_validRequest_expectedData()
     {
         $wallet = new class extends TestWallet {
-            public function Payout(App\Contracts\V2\IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            public function Payout(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
             {
                 return [
                     'credit_after' => 900.00,
@@ -38,6 +39,7 @@ class RedCreditTest extends TestCase
 
         DB::table('red.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -70,6 +72,7 @@ class RedCreditTest extends TestCase
 
         $this->assertDatabaseHas('red.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -212,6 +215,7 @@ class RedCreditTest extends TestCase
 
         DB::table('red.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -255,6 +259,7 @@ class RedCreditTest extends TestCase
         DB::table('red.reports')->insert([
             [
                 'ext_id' => 'wager-testTransactionID',
+                'round_id' => 'testTransactionID',
                 'username' => 'testUsername',
                 'play_id' => 'testPlayeru001',
                 'web_id' => 1,
@@ -267,6 +272,7 @@ class RedCreditTest extends TestCase
             ],
             [
                 'ext_id' => 'payout-testTransactionID',
+                'round_id' => 'testTransactionID',
                 'username' => 'testUsername',
                 'play_id' => 'testPlayeru001',
                 'web_id' => 1,
@@ -302,7 +308,7 @@ class RedCreditTest extends TestCase
     public function test_credit_invalidWalletPayoutResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
-            public function Payout(App\Contracts\V2\IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            public function Payout(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
             {
                 return [
                     'status_code' => 'invalid'
@@ -320,6 +326,7 @@ class RedCreditTest extends TestCase
 
         DB::table('red.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,
@@ -352,6 +359,7 @@ class RedCreditTest extends TestCase
 
         $this->assertDatabaseMissing('red.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru001',
             'web_id' => 1,

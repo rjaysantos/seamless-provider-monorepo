@@ -46,4 +46,15 @@ class RedRequestDTO
             dateTime: $request->credit_time
         );
     }
+
+    public static function fromBonusRequest(Request $request): self
+    {
+        return new self(
+            secretKey: $request->header('secret-key'),
+            providerUserID: $request->user_id,
+            gameID: $request->game_id,
+            roundID: $request->txn_id,
+            amount: $request->amount
+        );
+    }
 }
