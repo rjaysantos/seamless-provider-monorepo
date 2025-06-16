@@ -48,4 +48,20 @@ class RedTransactionDTO extends TransactionDTO
             )
         );
     }
+
+    public static function bonus(string $extID, RedRequestDTO $requestDTO, RedPlayerDTO $playerDTO): self
+    {
+        return new self(
+            extID: $extID,
+            roundID: $requestDTO->roundID,
+            playID: $playerDTO->playID,
+            username: $playerDTO->username,
+            webID: self::getWebID(playID: $playerDTO->playID),
+            currency: $playerDTO->currency,
+            gameID: $requestDTO->gameID,
+            winAmount: $requestDTO->amount,
+            betWinlose: $requestDTO->amount,
+            dateTime: $requestDTO->dateTime
+        );
+    }
 }

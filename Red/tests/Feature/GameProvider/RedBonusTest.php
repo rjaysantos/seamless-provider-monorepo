@@ -130,6 +130,34 @@ class RedBonusTest extends TestCase
         ];
     }
 
+    public function test_bonus_playerNotFound_expectedData()
+    {
+        DB::table('red.players')->insert([
+            'user_id_provider' => 27,
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $request = [
+            'user_id' => 48635,
+            'amount' => 200.00,
+            'txn_id' => 'testTransactionID',
+            'game_id' => 51
+        ];
+
+        $response = $this->post('/red/prov/bonus', $request, [
+            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
+        ]);
+
+        $response->assertJson([
+            'status' => 0,
+            'error' => 'INVALID_USER'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_bonus_invalidSecretKey_expectedData()
     {
         DB::table('red.players')->insert([
