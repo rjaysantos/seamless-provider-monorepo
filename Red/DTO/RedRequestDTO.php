@@ -3,6 +3,7 @@
 namespace Providers\Red\DTO;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class RedRequestDTO
 {
@@ -44,6 +45,18 @@ class RedRequestDTO
             roundID: $request->txn_id,
             amount: $request->amount,
             dateTime: $request->credit_time
+        );
+    }
+
+    public static function fromBonusRequest(Request $request): self
+    {
+        return new self(
+            secretKey: $request->header('secret-key'),
+            providerUserID: $request->user_id,
+            gameID: $request->game_id,
+            roundID: $request->txn_id,
+            amount: $request->amount,
+            dateTime: Carbon::now()->format('Y-m-d H:i:s')
         );
     }
 }
