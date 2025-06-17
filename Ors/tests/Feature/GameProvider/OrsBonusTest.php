@@ -65,6 +65,7 @@ class OrsBonusTest extends TestCase
 
         $this->assertDatabaseHas('ors.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -215,6 +216,7 @@ class OrsBonusTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -289,6 +291,7 @@ class OrsBonusTest extends TestCase
 
         $this->assertDatabaseMissing('ors.reports', [
             'ext_id' => 'bonus-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,

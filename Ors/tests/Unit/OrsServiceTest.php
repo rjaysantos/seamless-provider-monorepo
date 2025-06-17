@@ -1791,6 +1791,7 @@ class OrsServiceTest extends TestCase
             ->method('createTransaction')
             ->with(
                 extID: "wager-test_transacID_1",
+                roundID: 'test_transacID_1',
                 playID: 'testPlayID',
                 username: 'testUsername',
                 currency: 'IDR',
@@ -2817,6 +2818,7 @@ class OrsServiceTest extends TestCase
             ->method('createTransaction')
             ->with(
                 extID: "cancel-test_transacID_1",
+                roundID: 'test_transacID_1',
                 playID: 'testPlayID',
                 username: 'testUsername',
                 currency: 'IDR',
@@ -3689,6 +3691,7 @@ class OrsServiceTest extends TestCase
             ->method('createTransaction')
             ->with(
                 extID: "payout-testTransactionID",
+                roundID: 'testTransactionID',
                 playID: 'testPlayID',
                 username: 'testUsername',
                 currency: 'IDR',
@@ -4574,6 +4577,7 @@ class OrsServiceTest extends TestCase
             ->method('createTransaction')
             ->with(
                 extID: "bonus-testTransactionID",
+                roundID: 'testTransactionID',
                 playID: 'testPlayID',
                 username: 'testUsername',
                 currency: 'IDR',

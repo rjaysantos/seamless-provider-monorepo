@@ -165,9 +165,10 @@ class OrsService
                 $betTime = Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
                     ->setTimezone('GMT+8')
                     ->format('Y-m-d H:i:s');
-                
+
                 $this->repository->createTransaction(
                     extID: "wager-{$record['transaction_id']}",
+                    roundID: $record['transaction_id'],
                     playID: $request->player_id,
                     username: $playerData->username,
                     currency: $playerData->currency,
@@ -233,6 +234,7 @@ class OrsService
 
                 $this->repository->createTransaction(
                     extID: "cancel-{$record['transaction_id']}",
+                    roundID: $record['transaction_id'],
                     playID: $request->player_id,
                     username: $playerData->username,
                     currency: $playerData->currency,
@@ -291,6 +293,7 @@ class OrsService
 
             $this->repository->createTransaction(
                 extID: "payout-{$request->transaction_id}",
+                roundID: $request->transaction_id,
                 playID: $request->player_id,
                 username: $playerData->username,
                 currency: $playerData->currency,
@@ -356,6 +359,7 @@ class OrsService
 
             $this->repository->createTransaction(
                 extID: "bonus-{$request->transaction_id}",
+                roundID: $request->transaction_id,
                 playID: $request->player_id,
                 username: $playerData->username,
                 currency: $playerData->currency,

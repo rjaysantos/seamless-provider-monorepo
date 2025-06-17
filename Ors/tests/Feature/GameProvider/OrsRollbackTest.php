@@ -42,6 +42,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -56,6 +57,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -141,6 +143,7 @@ class OrsRollbackTest extends TestCase
 
         $this->assertDatabaseHas('ors.reports', [
             'ext_id' => 'cancel-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -155,6 +158,7 @@ class OrsRollbackTest extends TestCase
 
         $this->assertDatabaseHas('ors.reports', [
             'ext_id' => 'cancel-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -178,6 +182,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -192,6 +197,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -264,6 +270,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -278,6 +285,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -402,6 +410,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -416,6 +425,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -499,6 +509,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -513,6 +524,7 @@ class OrsRollbackTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,

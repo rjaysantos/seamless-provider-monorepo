@@ -72,6 +72,7 @@ class OrsRepository
 
     public function createTransaction(
         string $extID,
+        string $roundID,
         string $playID,
         string $username,
         string $currency,
@@ -84,6 +85,7 @@ class OrsRepository
             ->table('ors.reports')
             ->insert([
                 'ext_id' => $extID,
+                'round_id' => $roundID,
                 'username' => $username,
                 'play_id' => $playID,
                 'web_id' => $this->getWebID($playID),

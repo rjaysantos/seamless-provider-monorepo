@@ -47,6 +47,7 @@ class OrsCreditTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -76,8 +77,8 @@ class OrsCreditTest extends TestCase
             "game_code": "pocketjungle",
             "timestamp": 1715052653,
             "player_id": "8dxw86xw6u027",
-            "game_id": '. $gameCode .',
-            "signature": "'. $signature .'"
+            "game_id": ' . $gameCode . ',
+            "signature": "' . $signature . '"
         }';
 
         $response = $this->call(
@@ -104,6 +105,7 @@ class OrsCreditTest extends TestCase
 
         $this->assertDatabaseHas('ors.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -117,7 +119,8 @@ class OrsCreditTest extends TestCase
         ]);
     }
 
-    public static function gameCodesAndSignature() {
+    public static function gameCodesAndSignature()
+    {
         return [
             [131, 'd78fc30d91330aa0b5c7324caf455167'],
             [123, '4a264d44d378311d86ab8c02dedbb2f1']
@@ -146,6 +149,7 @@ class OrsCreditTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -160,6 +164,7 @@ class OrsCreditTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -427,6 +432,7 @@ class OrsCreditTest extends TestCase
 
         DB::table('ors.reports')->insert([
             'ext_id' => 'wager-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
@@ -481,6 +487,7 @@ class OrsCreditTest extends TestCase
 
         $this->assertDatabaseMissing('ors.reports', [
             'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
