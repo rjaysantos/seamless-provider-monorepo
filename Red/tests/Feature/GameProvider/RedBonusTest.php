@@ -45,7 +45,7 @@ class RedBonusTest extends TestCase
         };
         app()->bind(IWallet::class, $wallet::class);
 
-        Carbon::setTestNow('2025-01-01 00:00:00');
+        Carbon::setTestNow('2025-01-01 08:00:00');
 
         $response = $this->post('/red/prov/bonus', $request, [
             'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'

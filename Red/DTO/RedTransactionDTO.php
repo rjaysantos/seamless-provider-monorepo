@@ -3,6 +3,7 @@
 namespace Providers\Red\DTO;
 
 use App\DTO\TransactionDTO;
+use Illuminate\Support\Carbon;
 use App\Traits\TransactionDTOTrait;
 
 class RedTransactionDTO extends TransactionDTO
@@ -60,10 +61,7 @@ class RedTransactionDTO extends TransactionDTO
             currency: $playerDTO->currency,
             gameID: $requestDTO->gameID,
             betWinlose: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime(
-                dateTime: $requestDTO->dateTime,
-                providerTimezone: self::PROVIDER_API_TIMEZONE
-            ),
+            dateTime: Carbon::now()->format('Y-m-d H:i:s'),
             winAmount: $requestDTO->amount,
         );
     }
