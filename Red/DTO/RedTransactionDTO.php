@@ -61,10 +61,7 @@ class RedTransactionDTO extends TransactionDTO
             currency: $playerDTO->currency,
             gameID: $requestDTO->gameID,
             betWinlose: $requestDTO->amount,
-            dateTime: self::convertProviderDateTime(
-                dateTime: Carbon::now(),
-                providerTimezone: self::PROVIDER_API_TIMEZONE
-            ),
+            dateTime: Carbon::now()->format('Y-m-d H:i:s'),
             winAmount: $requestDTO->amount
         );
     }
