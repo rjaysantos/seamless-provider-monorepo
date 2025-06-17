@@ -30,8 +30,6 @@ class RedPlayTest extends TestCase
             'gameId' => '1',
             'memberIp' => '127.0.0.1',
             'language' => 'en',
-            'memberIp' => '127.0.0.1',
-            'language' => 'en'
         ];
 
         $wallet = new class extends TestWallet {

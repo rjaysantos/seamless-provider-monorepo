@@ -351,7 +351,7 @@ class RedDebitTest extends TestCase
             'amount' => 100.00,
             'txn_id' => 'testTransactionID',
             'game_id' => 2,
-            'debit_time' => '2020-01-01 00:00:00'
+            'debit_time' => '2025-01-01 00:00:00'
         ];
 
         $response = $this->post('/red/prov/debit', $request, [
