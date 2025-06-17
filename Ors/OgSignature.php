@@ -20,7 +20,13 @@ class OgSignature
                 return true;
         }
 
-        $createdSignatureByArray = $this->createSignatureByArray(arrayData: $requestDTO->all, credentials: $credentials);
+        $arrayData = [
+            'player_id' => $requestDTO->playID,
+            'timestamp' => $requestDTO->timestamp,
+            'signature' => $requestDTO->signature,
+        ];
+
+        $createdSignatureByArray = $this->createSignatureByArray(arrayData: $arrayData, credentials: $credentials);
 
         if ($createdSignatureByArray === $requestDTO->signature)
             return true;

@@ -6,7 +6,6 @@ use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
 use Providers\Ors\OrsController;
 use Illuminate\Http\JsonResponse;
-use Providers\Ors\DTO\OrsRequestDTO;
 use PHPUnit\Framework\Attributes\DataProvider;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -430,8 +429,6 @@ class OrsControllerTest extends TestCase
             'signature' => 'testSignature'
         ]);
 
-        $requestDTO = OrsRequestDTO::fromBalanceRequest($request);
-
         $player = (object) [
             'balance' => 100,
             'currency' => 'IDR'
@@ -440,7 +437,7 @@ class OrsControllerTest extends TestCase
         $mockService = $this->createMock(OrsService::class);
         $mockService->expects($this->once())
             ->method('getBalance')
-            ->with(requestDTO: $requestDTO)
+            ->with(request: $request)
             ->willReturn($player);
 
         $controller = $this->makeController(service: $mockService);

@@ -99,12 +99,12 @@ class OrsController
 
         $requestDTO = OrsRequestDTO::fromBalanceRequest(request: $request);
 
-        $balance = $this->service->getBalance(requestDTO: $requestDTO);
+        $balanceDetails = $this->service->getBalance(requestDTO: $requestDTO);
 
         return $this->response->getBalance(
             playID: $request->player_id,
-            balance: $balance->balance,
-            currency: $balance->currency
+            balance: $balanceDetails->balance,
+            currency: $balanceDetails->currency
         );
     }
 
