@@ -232,6 +232,10 @@ class OrsService
             try {
                 DB::connection('pgsql_report_write')->beginTransaction();
 
+                $transactionDate = Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
+                    ->setTimezone('GMT+8')
+                    ->format('Y-m-d H:i:s');
+
                 $this->repository->createTransaction(
                     extID: "cancel-{$record['transaction_id']}",
                     roundID: $record['transaction_id'],
@@ -241,9 +245,7 @@ class OrsService
                     gameCode: $request->game_id,
                     betAmount: -$record['amount'],
                     betWinlose: 0,
-                    transactionDate: Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
-                        ->setTimezone('GMT+8')
-                        ->format('Y-m-d H:i:s')
+                    transactionDate: $transactionDate
                 );
 
                 $walletResponse = $this->wallet->cancel(

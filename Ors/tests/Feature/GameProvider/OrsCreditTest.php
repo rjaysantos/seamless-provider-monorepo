@@ -52,7 +52,7 @@ class OrsCreditTest extends TestCase
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
             'currency' => 'IDR',
-            'game_code' => "{$gameCode}",
+            'game_code' => $gameCode,
             'bet_amount' => 100.00,
             'bet_valid' => 100.00,
             'bet_winlose' => 0,
@@ -103,6 +103,8 @@ class OrsCreditTest extends TestCase
             'billing_at' => 1715052653,
         ]);
 
+        $response->assertStatus(200);
+
         $this->assertDatabaseHas('ors.reports', [
             'ext_id' => 'payout-testTransactionID',
             'round_id' => 'testTransactionID',
@@ -110,7 +112,7 @@ class OrsCreditTest extends TestCase
             'play_id' => '8dxw86xw6u027',
             'web_id' => 27,
             'currency' => 'IDR',
-            'game_code' => "{$gameCode}",
+            'game_code' => $gameCode,
             'bet_amount' => 0,
             'bet_valid' => 0,
             'bet_winlose' => -70.00,
@@ -219,6 +221,23 @@ class OrsCreditTest extends TestCase
             'updated_balance' => 200.0,
             'billing_at' => 1715052653,
         ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('ors.reports', [
+            'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => '123',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => -70.00,
+            'created_at' => '2024-05-07 11:30:53',
+            'updated_at' => '2024-05-07 11:30:53',
+        ]);
     }
 
     public function test_credit_playerNotFound_expectedData()
@@ -260,6 +279,8 @@ class OrsCreditTest extends TestCase
             'rs_code' => 'S-104',
             'rs_message' => 'player not available'
         ]);
+
+        $response->assertStatus(200);
     }
 
     public function test_credit_invalidSignature_expectedData()
@@ -356,6 +377,8 @@ class OrsCreditTest extends TestCase
             'rs_code' => 'E-102',
             'rs_message' => 'invalid public key in header',
         ]);
+
+        $response->assertStatus(200);
     }
 
     public function test_credit_transactionNotFound_expectedData()
@@ -403,6 +426,8 @@ class OrsCreditTest extends TestCase
             'rs_code' => 'S-119',
             'rs_message' => 'transaction does not existed'
         ]);
+
+        $response->assertStatus(200);
     }
 
     public function test_credit_invalidWalletResponse_expectedData()
@@ -521,6 +546,8 @@ class OrsCreditTest extends TestCase
             'rs_code' => 'E-104',
             'rs_message' => 'invalid parameter',
         ]);
+
+        $response->assertStatus(200);
     }
 
     public static function creditParams()
