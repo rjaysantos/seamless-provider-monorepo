@@ -54,8 +54,7 @@ class RedRequestDTO
             providerUserID: $request->user_id,
             gameID: $request->game_id,
             roundID: $request->txn_id,
-            amount: $request->amount,
-            dateTime: $request->bonus_time
+            amount: $request->amount
         );
     }
 }
