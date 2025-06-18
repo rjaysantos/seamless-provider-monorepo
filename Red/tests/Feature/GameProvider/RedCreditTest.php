@@ -334,8 +334,8 @@ class RedCreditTest extends TestCase
             'game_code' => '1',
             'bet_amount' => 0,
             'bet_winlose' => 100,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'updated_at' => '2021-01-01 08:00:00',
+            'created_at' => '2021-01-01 08:00:00'
         ]);
     }
 }
