@@ -10,6 +10,7 @@ use Providers\Red\Credentials\RedUSD;
 use Providers\Red\Credentials\RedVND;
 use Providers\Red\Contracts\ICredentials;
 use Providers\Red\Credentials\RedStaging;
+use Providers\Red\Exceptions\InvalidCurrencyException;
 
 class RedCredentials
 {
@@ -23,6 +24,7 @@ class RedCredentials
                 'VND' => new RedVND,
                 'BRL' => new RedBRL,
                 'USD' => new RedUSD,
+                default => throw new InvalidCurrencyException
             };
         }
 
