@@ -12,7 +12,6 @@ class RedCreditTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -300,9 +299,9 @@ class RedCreditTest extends TestCase
             'play_id' => 'testPlayIDu1',
             'web_id' => 1,
             'currency' => 'IDR',
-            'game_code' => '1',
-            'bet_amount' => 0,
-            'bet_winlose' => 100.0,
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
             'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
@@ -311,7 +310,7 @@ class RedCreditTest extends TestCase
             'user_id' => 27,
             'amount' => 200.00,
             'txn_id' => 'testTransactionID',
-            'game_id' => 123,
+            'game_id' => 1,
             'credit_time' => '2021-01-01 00:00:00'
         ];
 
@@ -333,8 +332,8 @@ class RedCreditTest extends TestCase
             'web_id' => 1,
             'currency' => 'IDR',
             'game_code' => '1',
-            'bet_amount' => 100.0,
-            'bet_winlose' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
             'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);

@@ -13,7 +13,6 @@ class RedDebitTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -67,10 +66,15 @@ class RedDebitTest extends TestCase
 
         $this->assertDatabaseHas('red.reports', [
             'ext_id' => 'wager-testTransactionID',
-            'bet_amount' => 100.00,
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '2',
+            'bet_amount' => 100.0,
             'bet_winlose' => 0,
-            'created_at' => '2020-01-01 08:00:00',
-            'updated_at' => '2020-01-01 08:00:00'
+            'updated_at' => '2020-01-01 08:00:00',
+            'created_at' => '2020-01-01 08:00:00'
         ]);
     }
 
@@ -298,10 +302,15 @@ class RedDebitTest extends TestCase
 
         $this->assertDatabaseMissing('red.reports', [
             'ext_id' => 'wager-testTransactionID',
-            'bet_amount' => 100.00,
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '2',
+            'bet_amount' => 100.0,
             'bet_winlose' => 0,
-            'created_at' => '2020-01-01 08:00:00',
-            'updated_at' => null
+            'updated_at' => '2020-01-01 08:00:00',
+            'created_at' => '2020-01-01 08:00:00'
         ]);
     }
 }
