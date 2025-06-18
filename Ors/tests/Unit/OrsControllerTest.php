@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
 use Providers\Ors\OrsController;
-use Illuminate\Http\JsonResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
