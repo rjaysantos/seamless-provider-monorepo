@@ -12,6 +12,8 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsRequestDTO;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
@@ -79,18 +81,18 @@ class OrsService
         );
     }
 
-    private function verifyPlayerAccess(Request $request, ICredentials $credentials): void
+    private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void
     {
-        if ($request->header('key') !== $credentials->getPublicKey())
+        if ($requestDTO->key !== $credentials->getPublicKey())
             throw new InvalidPublicKeyException;
 
-        if ($this->encryption->isSignatureValid(request: $request, credentials: $credentials) === false)
+        if ($this->encryption->isSignatureValid(requestDTO: $requestDTO, credentials: $credentials) === false)
             throw new InvalidSignatureException;
     }
 
-    private function getPlayerDetails(Request $request): object
+    private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->player_id);
+        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($playerData) === true)
             throw new ProviderPlayerNotFoundException;
@@ -138,68 +140,69 @@ class OrsService
         ];
     }
 
-    public function bet(Request $request): float
+    public function bet(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
 
-        if ($request->total_amount > $balance)
+        if ($requestDTO->totalAmount > $balance)
             throw new InsufficientFundException;
 
-        foreach ($request->records as $record) {
-            $transactionData = $this->repository->getTransactionByTrxID(transactionID: $record['transaction_id']);
+        foreach ($requestDTO->records as $record) {
+            $existingTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$record['transaction_id']}");
 
-            if (is_null($transactionData) === false)
+            if (is_null($existingTransaction) === false)
                 throw new TransactionAlreadyExistsException;
         }
 
-        foreach ($request->records as $record) {
+        foreach ($requestDTO->records as $record) {
+
+            $transactionDTO = OrsTransactionDTO::bet(
+                extID: "wager-{$record['transaction_id']}",
+                roundID: $record['transaction_id'],
+                amount: $record['amount'],
+                requestDTO: $requestDTO,
+                playerDTO: $playerData
+            );
+
             try {
-                DB::connection('pgsql_write')->beginTransaction();
+                $this->repository->beginTransaction();
 
-                $betTime = Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
-                    ->setTimezone('GMT+8')
-                    ->format('Y-m-d H:i:s');
+                $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
-                $this->repository->createBetTransaction(
-                    transactionID: $record['transaction_id'],
-                    betAmount: $record['amount'],
-                    betTime: $betTime
-                );
-
-                if (in_array($request->game_id, $credentials->getArcadeGameList()) === true)
+                if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
                     $report = $this->report->makeArcadeReport(
-                        transactionID: $record['transaction_id'],
-                        gameCode: $request->game_id,
-                        betTime: $betTime
+                        transactionID: $transactionDTO->roundID,
+                        gameCode: $transactionDTO->gameID,
+                        betTime: $transactionDTO->dateTime
                     );
                 else
                     $report = $this->report->makeSlotReport(
-                        transactionID: $record['transaction_id'],
-                        gameCode: $request->game_id,
-                        betTime: $betTime
+                        transactionID: $transactionDTO->roundID,
+                        gameCode: $transactionDTO->gameID,
+                        betTime: $transactionDTO->dateTime
                     );
 
                 $walletResponse = $this->wallet->wager(
                     credentials: $credentials,
-                    playID: $request->player_id,
-                    currency: $playerData->currency,
-                    transactionID: "wager-{$record['transaction_id']}",
-                    amount: $record['amount'],
+                    playID: $transactionDTO->playID,
+                    currency: $transactionDTO->currency,
+                    transactionID: $transactionDTO->extID,
+                    amount: $transactionDTO->betAmount,
                     report: $report
                 );
 
                 if ($walletResponse['status_code'] !== 2100)
                     throw new WalletErrorException;
 
-                DB::connection('pgsql_write')->commit();
+                DB::connection('pgsql_report_write')->commit();
             } catch (Exception $e) {
-                DB::connection('pgsql_write')->rollBack();
+                DB::connection('pgsql_report_write')->rollBack();
                 throw $e;
             }
         }
