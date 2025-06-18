@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Illuminate\Http\Request;
 use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
+use Providers\Ors\DTO\OrsRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -15,8 +16,7 @@ class OrsController
     public function __construct(
         private OrsService $service,
         private OrsResponse $response
-    ) {
-    }
+    ) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -124,10 +124,12 @@ class OrsController
             ]
         );
 
+        $requestDTO = OrsRequestDTO::fromDebitRequest(request: $request);
+
         if ($request->transaction_type === 'debit')
-            $balance = $this->service->bet(request: $request);
+            $balance = $this->service->bet(requestDTO: $requestDTO);
         else
-            $balance = $this->service->rollback(request: $request);
+            $balance = $this->service->rollback(requestDTO: $requestDTO);
 
         return $this->response->debit(request: $request, balance: $balance);
     }

@@ -1,7 +1,6 @@
 <?php
 
 use Tests\TestCase;
-use App\Models\OrsReport;
 use App\Contracts\V2\IWallet;
 use Illuminate\Support\Facades\DB;
 use Wallet\V1\ProvSys\Transfer\Report;

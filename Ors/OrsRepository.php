@@ -4,17 +4,24 @@ namespace Providers\Ors;
 
 use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsPlayerDTO;
+use Providers\Ors\DTO\OrsTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class OrsRepository
+class OrsRepository extends AbstractProviderRepository
 {
-    public function __construct(private Randomizer $randomizer) {}
+    public function __construct(private Randomizer $randomizer)
+    {
+        parent::__construct();
+    }
 
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::connection('pgsql_report_read')
-            ->table('ors.players')
+        $data = $this->read->table('ors.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void
@@ -62,40 +69,22 @@ class OrsRepository
             ->first();
     }
 
-    private function getWebID(string $playID)
+    public function createTransaction(OrsTransactionDTO $transactionDTO): void
     {
-        if (preg_match_all('/u(\d+)/', $playID, $matches)) {
-            $lastNumber = end($matches[1]);
-            return $lastNumber;
-        }
-    }
-
-    public function createTransaction(
-        string $extID,
-        string $roundID,
-        string $playID,
-        string $username,
-        string $currency,
-        string $gameCode,
-        float $betAmount,
-        float $betWinlose,
-        string $transactionDate,
-    ): void {
-        DB::connection('pgsql_report_write')
-            ->table('ors.reports')
+        $this->write->table('ors.reports')
             ->insert([
-                'ext_id' => $extID,
-                'round_id' => $roundID,
-                'username' => $username,
-                'play_id' => $playID,
-                'web_id' => $this->getWebID($playID),
-                'currency' => $currency,
-                'game_code' => $gameCode,
-                'bet_amount' => $betAmount,
-                'bet_valid' => $betAmount,
-                'bet_winlose' => $betWinlose,
-                'updated_at' => $transactionDate,
-                'created_at' => $transactionDate
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 }
