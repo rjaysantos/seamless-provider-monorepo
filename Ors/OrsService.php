@@ -12,6 +12,8 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsRequestDTO;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
@@ -79,18 +81,18 @@ class OrsService
         );
     }
 
-    private function verifyPlayerAccess(Request $request, ICredentials $credentials): void
+    private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void
     {
-        if ($request->header('key') !== $credentials->getPublicKey())
+        if ($requestDTO->key !== $credentials->getPublicKey())
             throw new InvalidPublicKeyException;
 
-        if ($this->encryption->isSignatureValid(request: $request, credentials: $credentials) === false)
+        if ($this->encryption->isSignatureValid(requestDTO: $requestDTO, credentials: $credentials) === false)
             throw new InvalidSignatureException;
     }
 
-    private function getPlayerDetails(Request $request): object
+    private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->player_id);
+        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($playerData) === true)
             throw new ProviderPlayerNotFoundException;
@@ -253,54 +255,57 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function settle(Request $request): float
+    public function settle(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+
+        if (is_null($playerData) === true)
+            throw new ProviderPlayerNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->transaction_id);
+        $wagerTransactionData = $this->repository->getTransactionByExtID(extID: $requestDTO->extID);
 
-        if (is_null($transactionData) === true)
+        if (is_null($wagerTransactionData) === true)
             throw new ProviderTransactionNotFoundException;
 
-        if (is_null($transactionData->updated_at) === false)
-            return $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+        if (is_null($wagerTransactionData->updated_at) === false)
+            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
+
+        $payoutTransactionDTO = OrsTransactionDTO::payout(
+            extID: "payout-{$requestDTO->extID}",
+            roundID: $requestDTO->extID,
+            amount: $requestDTO->amount,
+            requestDTO: $requestDTO,
+            transactionDTO: $wagerTransactionData
+        );
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $settleTime = Carbon::createFromTimestamp($request->called_at, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
+            $this->repository->settleBetTransaction(transactionDTO: $payoutTransactionDTO);
 
-            $this->repository->settleBetTransaction(
-                transactionID: $request->transaction_id,
-                winAmount: $request->amount,
-                settleTime: $settleTime
-            );
-
-            if (in_array($request->game_id, $credentials->getArcadeGameList()) === true)
+            if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
                 $report = $this->report->makeArcadeReport(
-                    transactionID: $request->transaction_id,
-                    gameCode: $request->game_id,
-                    betTime: $settleTime
+                    transactionID: $payoutTransactionDTO->roundID,
+                    gameCode: $payoutTransactionDTO->gameID,
+                    betTime: $payoutTransactionDTO->dateTime
                 );
             else
                 $report = $this->report->makeSlotReport(
-                    transactionID: $request->transaction_id,
-                    gameCode: $request->game_id,
-                    betTime: $settleTime
+                    transactionID: $payoutTransactionDTO->roundID,
+                    gameCode: $payoutTransactionDTO->gameID,
+                    betTime: $payoutTransactionDTO->dateTime
                 );
 
             $walletResponse = $this->wallet->payout(
                 credentials: $credentials,
-                playID: $request->player_id,
-                currency: $playerData->currency,
-                transactionID: "payout-{$request->transaction_id}",
-                amount: $request->amount,
+                playID: $payoutTransactionDTO->playID,
+                currency: $payoutTransactionDTO->currency,
+                transactionID: $payoutTransactionDTO->extID,
+                amount: $payoutTransactionDTO->betWinlose,
                 report: $report
             );
 
