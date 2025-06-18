@@ -1331,15 +1331,17 @@ class RedServiceTest extends TestCase
             ]);
 
         $mockRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'wager-testTransactionID',
-                'bet_amount' => 100,
-                'play_id' => 'testPlayIDu1',
-                'username' => 'username',
-                'currency' => 'IDR',
-                'game_code' => 'testGameCode',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'wager-testTransactionID',
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'username' => 'username',
+                    'currency' => 'IDR',
+                    'game_code' => 'gameCode',
+                ],
+                null
+            );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
@@ -1404,10 +1406,17 @@ class RedServiceTest extends TestCase
             ->with(currency: 'IDR');
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'testTransactionID',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'wager-testTransactionID',
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'username' => 'testUsername',
+                    'currency' => 'IDR',
+                    'game_code' => 'gameCode',
+                ],
+                null
+            );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
@@ -1464,7 +1473,7 @@ class RedServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_mockRepository_getTransactionByTrxID()
+    public function test_settle_mockRepository_getTransactionByExtID()
     {
         $request = new Request([
             'user_id' => 123,
@@ -1482,12 +1491,18 @@ class RedServiceTest extends TestCase
                 'currency' => 'IDR'
             ]);
 
-        $mockRepository->expects($this->once())
+        $mockRepository->expects($this->exactly(2))
             ->method('getTransactionByExtID')
-            ->with(transactionID: 'payout-testTransactionID')
-            ->willReturn((object) [
-                'ext_id' => 'payout-testTransactionID',
-                'updated_at' => null
+            ->willReturnMap([
+                ['wager-testTransactionID', (object) [
+                    'ext_id' => 'wager-testTransactionID',
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayeru001',
+                    'username' => 'username',
+                    'currency' => 'IDR',
+                    'game_code' => 'gameCode'
+                ]],
+                ['payout-testTransactionID', null]
             ]);
 
         $stubWalletReport = $this->createMock(WalletReport::class);
@@ -1608,7 +1623,7 @@ class RedServiceTest extends TestCase
                 currency: 'IDR',
                 gameCode: 456,
                 betAmount: 0,
-                betWinlose: 900,
+                betWinlose: 0,
                 transactionDate: '2021-01-01 08:00:00'
             );
 
@@ -1650,10 +1665,18 @@ class RedServiceTest extends TestCase
             ]);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'payout-testTransactionID',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'payout-testTransactionID',
+                    'username' => 'testUsername',
+                    'updated_at' => null,
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'currency' => 'IDR',
+                    'game_code' => '456',
+                ],
+                null
+            );
 
         $mockWalletReport = $this->createMock(WalletReport::class);
         $mockWalletReport->expects($this->once())
@@ -1704,10 +1727,18 @@ class RedServiceTest extends TestCase
             ->willReturn($stubProviderCredentials);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'payout-testTransactionID',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'payout-testTransactionID',
+                    'username' => 'testUsername',
+                    'updated_at' => null,
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'currency' => 'IDR',
+                    'game_code' => '456',
+                ],
+                null
+            );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
@@ -1759,10 +1790,18 @@ class RedServiceTest extends TestCase
             ]);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'testTransactionID',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'payout-testTransactionID',
+                    'username' => 'testUsername',
+                    'updated_at' => null,
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'currency' => 'IDR',
+                    'game_code' => '456',
+                ],
+                null
+            );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
@@ -1801,10 +1840,18 @@ class RedServiceTest extends TestCase
             ]);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) [
-                'ext_id' => 'payout-testTransactionID',
-                'updated_at' => null
-            ]);
+            ->willReturnOnConsecutiveCalls(
+                (object) [
+                    'ext_id' => 'payout-testTransactionID',
+                    'username' => 'testUsername',
+                    'updated_at' => null,
+                    'bet_amount' => 100,
+                    'play_id' => 'testPlayIDu1',
+                    'currency' => 'IDR',
+                    'game_code' => '456',
+                ],
+                null
+            );
 
         $stubWalletReport = $this->createMock(WalletReport::class);
         $stubWalletReport->method('makeSlotReport')
