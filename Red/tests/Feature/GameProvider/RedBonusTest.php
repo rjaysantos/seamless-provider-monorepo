@@ -14,7 +14,6 @@ class RedBonusTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE red.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE red.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE red.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -152,8 +151,8 @@ class RedBonusTest extends TestCase
             'username' => 'testUsername',
             'web_id' => 1,
             'currency' => 'IDR',
-            'game_code' => '1',
-            'bet_amount' => 100.0,
+            'game_code' => '51',
+            'bet_amount' => 200.0,
             'bet_winlose' => 0,
             'updated_at' => '2025-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
