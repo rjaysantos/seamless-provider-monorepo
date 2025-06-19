@@ -131,7 +131,7 @@ class OrsController
         else
             $balance = $this->service->rollback(request: $request);
 
-        return $this->response->debit(request: $request, balance: $balance);
+        return $this->response->debit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function credit(Request $request)
