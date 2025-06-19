@@ -31,7 +31,7 @@ class OrsTransactionDTO extends TransactionDTO
             betAmount: $amount,
             betWinlose: $requestDTO->amount - $transactionDTO->betAmount,
             dateTime: self::convertProviderDateTime(
-                dateTime: $requestDTO->timestamp,
+                dateTime: Carbon::createFromTimestamp($requestDTO->timestamp)->toDateTimeString(),
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
             winAmount: $requestDTO->amount

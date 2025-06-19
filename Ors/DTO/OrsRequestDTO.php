@@ -10,12 +10,11 @@ class OrsRequestDTO
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
         public readonly ?string $signature = null,
-        public readonly ?string $extID = null,
         public readonly ?float  $amount = null,
         public readonly ?int    $gameID = null,
-        public readonly ?string $content = null,
+        public readonly ?array  $records = [],
         public readonly ?int    $timestamp = null,
-        public readonly ?array  $all = [],
+        public readonly ?object $rawRequest = null
     ) {}
 
     public static function fromCreditRequest(Request $request): self
@@ -26,9 +25,9 @@ class OrsRequestDTO
             signature: $request->signature,
             gameID: $request->game_id,
             amount: $request->total_amount,
-            content: $request->getContent(),
+            records: $request->records,
             timestamp: $request->called_at,
-            all: $request->all()
+            rawRequest: $request
         );
     }
 }
