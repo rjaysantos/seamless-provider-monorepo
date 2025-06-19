@@ -26,16 +26,13 @@ class YgrService
         private YgrRepository $repository,
         private YgrCredentials $credentials,
         private YgrApi $api,
-        private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $walletReport
     ) {}
 
     public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $token = $this->randomizer->createToken();
-
-        $player = YgrPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest, token: $token);
+        $player = YgrPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
         $credentials = $this->credentials->getCredentials(currency: $player->currency);
 
@@ -43,11 +40,7 @@ class YgrService
 
         $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player, gameID: $casinoRequest->gameID);
 
-        return $this->api->launch(
-            credentials: $credentials,
-            playerDTO: $player,
-            language: $casinoRequest->lang
-        );
+        return $this->api->launch(credentials: $credentials, playerDTO: $player, language: $casinoRequest->lang);
     }
 
     public function getBetDetailUrl(CasinoRequestDTO $casinoRequestDTO): string
