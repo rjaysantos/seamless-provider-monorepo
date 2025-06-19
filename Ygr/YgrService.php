@@ -54,20 +54,16 @@ class YgrService
         );
     }
 
-    public function getBetDetail(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequestDTO): string
     {
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequestDTO->extID);
 
-        if (is_null($transactionData) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentials();
+        $credentials = $this->credentials->getCredentials(currency: $transaction->currency);
 
-        return $this->api->getBetDetailUrl(
-            credentials: $credentials,
-            transactionID: $request->bet_id,
-            currency: $request->currency
-        );
+        return $this->api->getBetDetailUrl(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function getPlayerBalance(ICredentials $credentials, string $playID): float

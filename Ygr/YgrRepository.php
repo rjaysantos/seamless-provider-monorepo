@@ -4,6 +4,7 @@ namespace Providers\Ygr;
 
 use Illuminate\Support\Facades\DB;
 use Providers\Ygr\DTO\YgrPlayerDTO;
+use Providers\Ygr\DTO\YgrTransactionDTO;
 use App\Repositories\AbstractProviderRepository;
 
 class YgrRepository extends AbstractProviderRepository
@@ -25,11 +26,13 @@ class YgrRepository extends AbstractProviderRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?YgrTransactionDTO
     {
-        return DB::table('ygr.reports')
-            ->where('trx_id', $transactionID)
+        $data = $this->read->table('ygr.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : YgrTransactionDTO::fromDB(dbData: $data);
     }
 
     public function createOrIgnorePlayer(YgrPlayerDTO $playerDTO): void
