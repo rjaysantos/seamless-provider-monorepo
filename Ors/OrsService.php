@@ -86,7 +86,7 @@ class OrsService
         if ($requestDTO->key !== $credentials->getPublicKey())
             throw new InvalidPublicKeyException;
 
-        if ($this->encryption->isSignatureValid(requestDTO: $requestDTO, credentials: $credentials) === false)
+        if ($this->encryption->isSignatureValid(request: $requestDTO->rawRequest, credentials: $credentials) === false)
             throw new InvalidSignatureException;
     }
 
@@ -148,7 +148,7 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
+        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $playerData->playID);
 
         if ($requestDTO->totalAmount > $balance)
             throw new InsufficientFundException;

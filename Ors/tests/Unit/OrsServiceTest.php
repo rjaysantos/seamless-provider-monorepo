@@ -1048,6 +1048,20 @@ class OrsServiceTest extends TestCase
 
     public function test_bet_mockWallet_balance()
     {
+        $request = new Request([
+            'player_id' => 'testPlayID',
+            'signature' => 'testSignature',
+            'gameID' => 123,
+            'totalAmount' => 150,
+            'records' => [
+                [
+                    'transaction_id' => 'testTransactionID1',
+                    'amount' => 150
+                ]
+            ],
+            'dateTime' => 1715071526,
+        ]);
+
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
@@ -1061,6 +1075,7 @@ class OrsServiceTest extends TestCase
                 ]
             ],
             dateTime: 1715071526,
+            rawRequest: $request
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -1114,6 +1129,20 @@ class OrsServiceTest extends TestCase
 
     public function test_bet_mockReport_makeSlotReport()
     {
+        $request = new Request([
+            'player_id' => 'testPlayID',
+            'signature' => 'testSignature',
+            'gameID' => 123,
+            'totalAmount' => 150,
+            'records' => [
+                [
+                    'transaction_id' => 'testTransactionID1',
+                    'amount' => 150
+                ]
+            ],
+            'dateTime' => 1715071526,
+        ]);
+
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
@@ -1127,6 +1156,7 @@ class OrsServiceTest extends TestCase
                 ]
             ],
             dateTime: 1715071526,
+            rawRequest: $request
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -1187,6 +1217,20 @@ class OrsServiceTest extends TestCase
 
     public function test_bet_mockReport_makeArcadeReport()
     {
+        $request = new Request([
+            'player_id' => 'testPlayID',
+            'signature' => 'testSignature',
+            'gameID' => 123,
+            'totalAmount' => 150,
+            'records' => [
+                [
+                    'transaction_id' => 'testTransactionID1',
+                    'amount' => 150
+                ]
+            ],
+            'dateTime' => 1715071526,
+        ]);
+
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
@@ -1200,6 +1244,7 @@ class OrsServiceTest extends TestCase
                 ]
             ],
             dateTime: 1715071526,
+            rawRequest: $request
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -1260,6 +1305,20 @@ class OrsServiceTest extends TestCase
 
     public function test_bet_mockWallet_wager()
     {
+        $request = new Request([
+            'player_id' => 'testPlayID',
+            'signature' => 'testSignature',
+            'gameID' => 123,
+            'totalAmount' => 150,
+            'records' => [
+                [
+                    'transaction_id' => 'testTransactionID1',
+                    'amount' => 150
+                ]
+            ],
+            'dateTime' => 1715071526,
+        ]);
+
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
@@ -1273,6 +1332,7 @@ class OrsServiceTest extends TestCase
                 ]
             ],
             dateTime: 1715071526,
+            rawRequest: $request
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -1281,9 +1341,6 @@ class OrsServiceTest extends TestCase
                 playID: 'testPlayIDu001',
                 currency: 'IDR'
             ));
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubProviderCredentials->method('getPublicKey')

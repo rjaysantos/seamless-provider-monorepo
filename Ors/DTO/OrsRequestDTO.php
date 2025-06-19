@@ -12,10 +12,9 @@ class OrsRequestDTO
         public readonly ?string $signature = null,
         public readonly ?int $gameID = null,
         public readonly ?float $totalAmount = null,
-        public readonly ?string $content = null,
         public readonly ?array $records = [],
         public readonly ?int $dateTime = null,
-        public readonly ?array $all = [],
+        public readonly ?object $rawRequest = null,
     ) {}
 
     public static function fromDebitRequest(Request $request): self
@@ -26,10 +25,9 @@ class OrsRequestDTO
             signature: $request->signature,
             gameID: $request->game_id,
             totalAmount: $request->total_amount,
-            content: $request->getContent(),
             records: $request->records,
             dateTime: $request->called_at,
-            all: $request->all()
+            rawRequest: $request
         );
     }
 }
