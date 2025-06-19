@@ -10,12 +10,13 @@ class YgrPlayerDTO extends PlayerDTO
 {
     use PlayerDTOTrait;
 
-    public static function fromPlayRequestDTO(CasinoRequestDTO $casinoRequestDTO): self
+    public static function fromPlayRequestDTO(CasinoRequestDTO $casinoRequestDTO, string $token): self
     {
         return new self(
             playID: $casinoRequestDTO->playID,
             username: $casinoRequestDTO->username,
-            currency: $casinoRequestDTO->currency
+            currency: $casinoRequestDTO->currency,
+            token: $token
         );
     }
 }
