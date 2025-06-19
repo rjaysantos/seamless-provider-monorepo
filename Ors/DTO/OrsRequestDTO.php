@@ -10,9 +10,7 @@ class OrsRequestDTO
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
         public readonly ?string $signature = null,
-        public readonly ?string $content = null,
-        public readonly ?int $timestamp = null,
-        public readonly ?array $all = [],
+        public readonly ?object $rawRequest = null,
     ) {}
 
     public static function fromBalanceRequest(Request $request): self
@@ -21,8 +19,7 @@ class OrsRequestDTO
             key: $request->header('key'),
             playID: $request->player_id,
             signature: $request->signature,
-            content: $request->getContent(),
-            all: $request->all()
+            rawRequest: $request
         );
     }
 }

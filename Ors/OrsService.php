@@ -131,7 +131,7 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
+        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $playerData->playID);
 
         return (object) [
             'balance' => $balance,

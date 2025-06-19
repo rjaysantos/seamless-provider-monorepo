@@ -2,7 +2,6 @@
 
 namespace Providers\Ors;
 
-use Illuminate\Http\Request;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\Contracts\ICredentials;
 
@@ -10,9 +9,11 @@ class OgSignature
 {
     public function isSignatureValid(OrsRequestDTO $requestDTO, ICredentials $credentials): bool
     {
-        if (empty($requestDTO->content) === false) {
+        $request = $requestDTO->rawRequest;
+
+        if (empty($request->getContent()) === false) {
             $createdSignatureByObject = $this->createSignatureByObject(
-                objectData: json_decode($requestDTO->content),
+                objectData: json_decode($request->getContent()),
                 credentials: $credentials
             );
 
@@ -20,7 +21,7 @@ class OgSignature
                 return true;
         }
 
-        $createdSignatureByArray = $this->createSignatureByArray(arrayData: $requestDTO->all, credentials: $credentials);
+        $createdSignatureByArray = $this->createSignatureByArray(arrayData: $request->all(), credentials: $credentials);
 
         if ($createdSignatureByArray === $requestDTO->signature)
             return true;
