@@ -85,7 +85,7 @@ class OrsService
         if ($requestDTO->key !== $credentials->getPublicKey())
             throw new InvalidPublicKeyException;
 
-        if ($this->encryption->isSignatureValid(requestDTO: $requestDTO, credentials: $credentials) === false)
+        if ($this->encryption->isSignatureValid(request: $requestDTO->rawRequest, credentials: $credentials) === false)
             throw new InvalidSignatureException;
     }
 

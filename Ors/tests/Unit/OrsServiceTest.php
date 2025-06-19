@@ -624,9 +624,16 @@ class OrsServiceTest extends TestCase
 
     public function test_getBalance_mockWallet_balance()
     {
+        $request = new Request([
+            'player_id' => 'testPlayID',
+            'signature' => 'testSignature',
+        ]);
+
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
-            playID: 'testPlayID'
+            playID: 'testPlayID',
+            signature: 'testSignature',
+            rawRequest: $request
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
