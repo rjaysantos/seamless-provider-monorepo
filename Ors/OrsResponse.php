@@ -28,16 +28,16 @@ class OrsResponse
         ]);
     }
 
-    public function getBalance(string $playID, float $balance, string $currency): JsonResponse
+    public function getBalance(float $balance, object $playerDTO): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',
             'rs_message' => 'success',
-            'player_id' => $playID,
+            'player_id' => $playerDTO->playID,
             'player_status' => 'activate',
             'balance' => $balance,
             'timestamp' => Carbon::now()->setTimezone('GMT+8')->timestamp,
-            'currency' => $currency,
+            'currency' => $playerDTO->currency,
         ]);
     }
 

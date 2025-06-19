@@ -135,7 +135,7 @@ class OrsService
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $playerData
         ];
     }
 
