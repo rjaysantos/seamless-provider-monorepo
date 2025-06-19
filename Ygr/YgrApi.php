@@ -6,6 +6,7 @@ use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Ygr\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Ygr\DTO\YgrPlayerDTO;
 use Providers\Ygr\DTO\YgrTransactionDTO;
 
 class YgrApi
@@ -35,10 +36,10 @@ class YgrApi
         };
     }
 
-    public function launch(ICredentials $credentials, string $token, string $language): string
+    public function launch(ICredentials $credentials, YgrPlayerDTO $playerDTO, string $language): string
     {
         $apiRequest = [
-            'token' => $token,
+            'token' => $playerDTO->token,
             'language' => $this->getProviderLanguage(lang: $language)
         ];
 

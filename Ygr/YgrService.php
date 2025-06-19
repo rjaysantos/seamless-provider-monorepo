@@ -33,23 +33,19 @@ class YgrService
 
     public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $player = YgrPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
+        $token = $this->randomizer->createToken();
 
-        $credentials = $this->credentials->getCredentials(currency: $casinoRequest->currency);
+        $player = YgrPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest, token: $token);
+
+        $credentials = $this->credentials->getCredentials(currency: $player->currency);
 
         $this->repository->createOrIgnorePlayer(playerDTO: $player);
 
-        $token = $this->randomizer->createToken();
-
-        $this->repository->updatePlayerTokenAndGameID(
-            playerDTO: $player,
-            token: $token,
-            gameID: $casinoRequest->gameID
-        );
+        $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player, gameID: $casinoRequest->gameID);
 
         return $this->api->launch(
             credentials: $credentials,
-            token: $token,
+            playerDTO: $player,
             language: $casinoRequest->lang
         );
     }

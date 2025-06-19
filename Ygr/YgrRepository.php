@@ -45,13 +45,13 @@ class YgrRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function updatePlayerTokenAndGameID(YgrPlayerDTO $playerDTO, string $token, string $gameID): void
+    public function updateOrInsertPlayerTokenAndGameID(YgrPlayerDTO $playerDTO, string $gameID): void
     {
         $this->write->table('ygr.players')
             ->updateOrInsert(
                 ['play_id' => $playerDTO->playID],
                 [
-                    'token' => $token,
+                    'token' => $playerDTO->token,
                     'game_code' => $gameID
                 ]
             );
