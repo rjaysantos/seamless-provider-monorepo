@@ -3,14 +3,18 @@
 namespace Providers\Ygr;
 
 use Illuminate\Support\Facades\DB;
+use Providers\Ygr\DTO\YgrPlayerDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class YgrRepository
+class YgrRepository extends AbstractProviderRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
-        return DB::table('ygr.players')
+        $data = $this->read->table('ygr.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : YgrPlayerDTO::fromDB(dbData: $data);
     }
 
     public function getPlayerByToken(string $token): ?object
@@ -28,27 +32,24 @@ class YgrRepository
             ->first();
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createOrIgnorePlayer(YgrPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('ygr.players')
-            ->insert([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency
+        $this->write->table('ygr.players')
+            ->insertOrIgnore([
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
             ]);
     }
 
-    public function createOrUpdatePlayGame(string $playID, string $token, string $gameID): void
+    public function updatePlayerTokenAndGameID(YgrPlayerDTO $playerDTO, string $token, string $gameID): void
     {
-        DB::connection('pgsql_write')
-            ->table('ygr.playgame')
+        $this->write->table('ygr.players')
             ->updateOrInsert(
-                ['play_id' => $playID],
+                ['play_id' => $playerDTO->playID],
                 [
                     'token' => $token,
-                    'expired' => 'FALSE',
-                    'status' => $gameID // saving GameID to status for verifyToken
+                    'game_code' => $gameID
                 ]
             );
     }
