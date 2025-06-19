@@ -87,7 +87,7 @@ class OrsController
         return $this->response->authenticate(token: $request->token);
     }
 
-    public function getBalance(Request $request)
+    public function balance(Request $request)
     {
         $this->validateProviderRequest(
             request: $request,
@@ -99,9 +99,9 @@ class OrsController
 
         $requestDTO = OrsRequestDTO::fromBalanceRequest(request: $request);
 
-        $balanceDetails = $this->service->getBalance(requestDTO: $requestDTO);
+        $balanceDetails = $this->service->balance(requestDTO: $requestDTO);
 
-        return $this->response->getBalance(
+        return $this->response->balance(
             balance: $balanceDetails->balance,
             playerDTO: $balanceDetails->player
         );

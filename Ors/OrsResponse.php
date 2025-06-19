@@ -29,7 +29,7 @@ class OrsResponse
         ]);
     }
 
-    public function getBalance(float $balance, OrsPlayerDTO $playerDTO): JsonResponse
+    public function balance(float $balance, OrsPlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',

@@ -622,7 +622,7 @@ class OrsServiceTest extends TestCase
         $service->authenticate(request: $request);
     }
 
-    public function test_getBalance_mockWallet_balance()
+    public function test_balance_mockWallet_balance()
     {
         $request = new Request([
             'player_id' => 'testPlayID',
@@ -674,7 +674,7 @@ class OrsServiceTest extends TestCase
             wallet: $mockWallet
         );
 
-        $service->getBalance(requestDTO: $requestDTO);
+        $service->balance(requestDTO: $requestDTO);
     }
 
     public function test_bet_mockRepository_getPlayerByPlayID()

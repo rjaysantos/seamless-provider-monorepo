@@ -99,7 +99,7 @@ class OrsService
         return $playerData;
     }
 
-    private function getBalanceFromWallet(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, string $playID): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
@@ -123,7 +123,7 @@ class OrsService
             throw new InvalidTokenException;
     }
 
-    public function getBalance(OrsRequestDTO $requestDTO): object
+    public function balance(OrsRequestDTO $requestDTO): object
     {
         $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
 
@@ -131,7 +131,7 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $playerData->playID);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $playerData->playID);
 
         return (object) [
             'balance' => $balance,
