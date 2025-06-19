@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Ors\DTO\OrsPlayerDTO;
 
 class OrsResponse
 {
@@ -28,7 +29,7 @@ class OrsResponse
         ]);
     }
 
-    public function getBalance(float $balance, object $playerDTO): JsonResponse
+    public function getBalance(float $balance, OrsPlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',
