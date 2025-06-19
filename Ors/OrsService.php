@@ -12,6 +12,8 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsRequestDTO;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
@@ -79,18 +81,18 @@ class OrsService
         );
     }
 
-    private function verifyPlayerAccess(Request $request, ICredentials $credentials): void
+    private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void
     {
-        if ($request->header('key') !== $credentials->getPublicKey())
+        if ($requestDTO->key !== $credentials->getPublicKey())
             throw new InvalidPublicKeyException;
 
-        if ($this->encryption->isSignatureValid(request: $request, credentials: $credentials) === false)
+        if ($this->encryption->isSignatureValid(request: $requestDTO->rawRequest, credentials: $credentials) === false)
             throw new InvalidSignatureException;
     }
 
-    private function getPlayerDetails(Request $request): object
+    private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->player_id);
+        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($playerData) === true)
             throw new ProviderPlayerNotFoundException;
@@ -253,64 +255,69 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function settle(Request $request): float
+    public function settle(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->transaction_id);
+        
 
-        if (is_null($transactionData) === true)
-            throw new ProviderTransactionNotFoundException;
+        foreach ($requestDTO->records as $record) {
+            $existingTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$record['ext_id']}");
 
-        if (is_null($transactionData->updated_at) === false)
-            return $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+            if (is_null($existingTransaction) === false)
+                throw new TransactionAlreadyExistsException;   
+        }
 
-        try {
-            DB::connection('pgsql_write')->beginTransaction();
+        foreach ($requestDTO->records as $records) {
+            $transactionData = $this->repository->getTransactionByExtID(extID: $records['ext_id']);
 
-            $settleTime = Carbon::createFromTimestamp($request->called_at, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
-
-            $this->repository->settleBetTransaction(
-                transactionID: $request->transaction_id,
-                winAmount: $request->amount,
-                settleTime: $settleTime
+            $payoutTransactionDTO = OrsTransactionDTO::payout(
+                extID: "payout-{$records['ext_id']}",
+                roundID: $records['ext_id'],
+                amount: $records['amount'],
+                requestDTO: $requestDTO,
+                transactionDTO: $transactionData
             );
 
-            if (in_array($request->game_id, $credentials->getArcadeGameList()) === true)
-                $report = $this->report->makeArcadeReport(
-                    transactionID: $request->transaction_id,
-                    gameCode: $request->game_id,
-                    betTime: $settleTime
+            try {
+                $this->repository->beginTransaction();
+
+                $this->repository->settleBetTransaction(transactionDTO: $payoutTransactionDTO);
+
+                if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
+                    $report = $this->report->makeArcadeReport(
+                        transactionID: $payoutTransactionDTO->roundID,
+                        gameCode: $payoutTransactionDTO->gameID,
+                        betTime: $payoutTransactionDTO->dateTime
+                    );
+                else
+                    $report = $this->report->makeSlotReport(
+                        transactionID: $payoutTransactionDTO->roundID,
+                        gameCode: $payoutTransactionDTO->gameID,
+                        betTime: $payoutTransactionDTO->dateTime
+                    );
+
+                $walletResponse = $this->wallet->payout(
+                    credentials: $credentials,
+                    playID: $payoutTransactionDTO->playID,
+                    currency: $payoutTransactionDTO->currency,
+                    transactionID: $payoutTransactionDTO->extID,
+                    amount: $payoutTransactionDTO->betWinlose,
+                    report: $report
                 );
-            else
-                $report = $this->report->makeSlotReport(
-                    transactionID: $request->transaction_id,
-                    gameCode: $request->game_id,
-                    betTime: $settleTime
-                );
 
-            $walletResponse = $this->wallet->payout(
-                credentials: $credentials,
-                playID: $request->player_id,
-                currency: $playerData->currency,
-                transactionID: "payout-{$request->transaction_id}",
-                amount: $request->amount,
-                report: $report
-            );
+                if ($walletResponse['status_code'] !== 2100)
+                    throw new WalletErrorException;
 
-            if ($walletResponse['status_code'] !== 2100)
-                throw new WalletErrorException;
-
-            DB::connection('pgsql_write')->commit();
-        } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
-            throw $e;
+                DB::connection('pgsql_write')->commit();
+            } catch (Exception $e) {
+                DB::connection('pgsql_write')->rollback();
+                throw $e;
+            }
         }
 
         return $walletResponse['credit_after'];

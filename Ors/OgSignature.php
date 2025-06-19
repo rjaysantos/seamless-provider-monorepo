@@ -4,6 +4,7 @@ namespace Providers\Ors;
 
 use Illuminate\Http\Request;
 use Providers\Ors\Contracts\ICredentials;
+use Providers\Ors\DTO\OrsRequestDTO;
 
 class OgSignature
 {
