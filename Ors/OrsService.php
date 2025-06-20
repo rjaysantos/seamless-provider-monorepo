@@ -12,6 +12,7 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
@@ -92,19 +93,19 @@ class OrsService
 
     private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        return $playerData;
+        return $player;
     }
 
-    private function getBalanceFromWallet(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, OrsPlayerDTO $playerDTO): float
     {
-        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
-        if ($walletResponse['status_code'] !== 2100)
+        if ($walletResponse['status_code'] != 2100)
             throw new WalletErrorException;
 
         return $walletResponse['credit'];
@@ -124,19 +125,19 @@ class OrsService
             throw new InvalidTokenException;
     }
 
-    public function getBalance(Request $request): object
+    public function balance(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $player
         ];
     }
 

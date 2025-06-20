@@ -2,25 +2,19 @@
 
 namespace Providers\Ors;
 
-use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
-use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Repositories\AbstractProviderRepository;
+use Providers\Ors\DTO\OrsTransactionDTO;
 
 class OrsRepository extends AbstractProviderRepository
 {
-    public function __construct(private Randomizer $randomizer)
-    {
-        parent::__construct();
-    }
-
     public function getPlayerByPlayID(string $playID): ?OrsPlayerDTO
     {
         $data = $this->read->table('ors.players')
             ->where('play_id', $playID)
             ->first();
-        
+
         return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
