@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Illuminate\Http\Request;
 use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
+use Providers\Ors\DTO\OrsRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -168,7 +169,9 @@ class OrsController
             ]
         );
 
-        $balance = $this->service->bonus(request: $request);
+        $requestDTO = OrsRequestDTO::fromBonusRequest(request: $request);
+
+        $balance = $this->service->bonus(requestDTO: $requestDTO);
 
         return $this->response->payout(request: $request, balance: $balance);
     }
