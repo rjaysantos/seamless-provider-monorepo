@@ -10,7 +10,7 @@ class OrsRequestDTO
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
         public readonly ?string $signature = null,
-        public readonly ?object $rawRequest = null,
+        public readonly ?Request $rawRequest = null,
     ) {}
 
     public static function fromBalanceRequest(Request $request): self
