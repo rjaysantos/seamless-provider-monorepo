@@ -8,12 +8,12 @@ use Illuminate\Http\JsonResponse;
 
 class YgrResponse
 {
-    public function casinoSuccess(string $data): JsonResponse
+    public function casinoSuccess(string $url): JsonResponse
     {
         return response()->json([
             'success' => true,
             'code' => 200,
-            'data' => $data,
+            'data' => $url,
             'error' => null
         ]);
     }

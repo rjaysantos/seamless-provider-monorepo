@@ -6,6 +6,7 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\WalletReport;
@@ -13,6 +14,7 @@ use Providers\Ygr\Contracts\ICredentials;
 use Providers\Ygr\Exceptions\WalletErrorException;
 use Providers\Ygr\Exceptions\TokenNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException;
+use Providers\Ygr\DTO\YgrPlayerDTO;
 use Providers\Ygr\Exceptions\InsufficientFundException;
 use Providers\Ygr\Exceptions\TransactionAlreadyExistsException;
 
@@ -24,53 +26,33 @@ class YgrService
         private YgrRepository $repository,
         private YgrCredentials $credentials,
         private YgrApi $api,
-        private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $walletReport
     ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = YgrPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        if (is_null($player) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                username: $request->username,
-                currency: $request->currency
-            );
+        $credentials = $this->credentials->getCredentials(currency: $player->currency);
 
-        $token = $this->randomizer->createToken();
+        $this->repository->createOrIgnorePlayer(playerDTO: $player);
 
-        $this->repository->createOrUpdatePlayGame(
-            playID: $request->playId,
-            token: $token,
-            gameID: $request->gameId
-        );
+        $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player, gameID: $casinoRequest->gameID);
 
-        $credentials = $this->credentials->getCredentials();
-
-        return $this->api->launch(
-            credentials: $credentials,
-            token: $token,
-            language: $request->language
-        );
+        return $this->api->launch(credentials: $credentials, playerDTO: $player, language: $casinoRequest->lang);
     }
 
-    public function getBetDetail(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequestDTO): string
     {
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequestDTO->extID);
 
-        if (is_null($transactionData) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentials();
+        $credentials = $this->credentials->getCredentials(currency: $transaction->currency);
 
-        return $this->api->getBetDetailUrl(
-            credentials: $credentials,
-            transactionID: $request->bet_id,
-            currency: $request->currency
-        );
+        return $this->api->getBetDetailUrl(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function getPlayerBalance(ICredentials $credentials, string $playID): float

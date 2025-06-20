@@ -3,6 +3,8 @@
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
 use App\Libraries\Randomizer;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -12,8 +14,6 @@ class YgrPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ygr.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -21,10 +21,14 @@ class YgrPlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         $randomizer = new class extends Randomizer {
@@ -60,13 +64,9 @@ class YgrPlayTest extends TestCase
         $this->assertDatabaseHas('ygr.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('ygr.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID',
         ]);
 
         Http::assertSent(function ($request) {
@@ -82,22 +82,21 @@ class YgrPlayTest extends TestCase
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'oldToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'game_code' => 'oldGameID'
         ]);
 
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         $randomizer = new class extends Randomizer {
@@ -130,16 +129,20 @@ class YgrPlayTest extends TestCase
 
         $response->assertStatus(200);
 
+        $this->assertDatabaseMissing('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => 'oldToken',
+            'game_code' => 'oldGameID',
+        ]);
+
         $this->assertDatabaseHas('ygr.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('ygr.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         Http::assertSent(function ($request) {
@@ -155,10 +158,14 @@ class YgrPlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         unset($request[$parameter]);
@@ -192,10 +199,14 @@ class YgrPlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         $response = $this->post('ygr/in/play', $request, [
@@ -212,27 +223,56 @@ class YgrPlayTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_play_invalidCurrency_expectedData()
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        $request = [
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
+            'currency' => 'invalidCurrency',
+            'device' => 1,
+            'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
+        ];
+
+        $response = $this->post('ygr/in/play', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'error' => 'Currency not supported!',
+            'data' => null
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_play_thirdPartyApiErrorException_expectedData()
     {
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'oldToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'game_code' => 'oldGameID'
         ]);
 
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         $randomizer = new class extends Randomizer {
@@ -264,16 +304,20 @@ class YgrPlayTest extends TestCase
 
         $response->assertStatus(200);
 
+        $this->assertDatabaseMissing('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => 'oldToken',
+            'game_code' => 'oldGameID',
+        ]);
+
         $this->assertDatabaseHas('ygr.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('ygr.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         Http::assertSent(function ($request) {
@@ -290,22 +334,21 @@ class YgrPlayTest extends TestCase
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'oldToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'game_code' => 'oldGameID'
         ]);
 
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
-            'language' => 'id'
+            'memberIp' => '127.0.0.1',
+            'language' => 'id',
         ];
 
         $randomizer = new class extends Randomizer {
@@ -345,16 +388,20 @@ class YgrPlayTest extends TestCase
 
         $response->assertStatus(200);
 
+        $this->assertDatabaseMissing('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => 'oldToken',
+            'game_code' => 'oldGameID',
+        ]);
+
         $this->assertDatabaseHas('ygr.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('ygr.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         Http::assertSent(function ($request) {

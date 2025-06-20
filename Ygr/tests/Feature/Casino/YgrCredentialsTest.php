@@ -3,7 +3,9 @@
 use Tests\TestCase;
 use Providers\Ygr\YgrCredentials;
 use Providers\Ygr\Contracts\ICredentials;
+use Providers\Ygr\Credentials\YgrProduction;
 use PHPUnit\Framework\Attributes\DataProvider;
+use App\Exceptions\Casino\InvalidCurrencyException;
 
 class YgrCredentialsTest extends TestCase
 {
@@ -28,7 +30,7 @@ class YgrCredentialsTest extends TestCase
         ];
 
         $credentialSetter = $this->makeCredentialSetter();
-        $credentials = $credentialSetter->getCredentials();
+        $credentials = $credentialSetter->getCredentials(currency: 'IDR');
 
         $this->assertSame(
             expected: $expectedData[$field],
@@ -61,5 +63,40 @@ class YgrCredentialsTest extends TestCase
             'vendorID' => $credentials->getVendorID(),
             default => null
         };
+    }
+
+    #[DataProvider('validCurrencies')]
+    public function test_getCredentials_productionValidCurrencies_expectedData($currency)
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        $expectedData = new YgrProduction;
+
+        $credentialSetter = $this->makeCredentialSetter();
+        $credentials = $credentialSetter->getCredentials(currency: $currency);
+
+        $this->assertEquals(expected: $expectedData, actual: $credentials);
+    }
+
+    public static function validCurrencies()
+    {
+        return [
+            ['IDR'],
+            ['PHP'],
+            ['THB'],
+            ['VND'],
+            ['BRL'],
+            ['USD']
+        ];
+    }
+
+    public function test_GetCredentials_productionInvalidCurrency_InvalidCurrencyException()
+    {
+        $this->expectException(InvalidCurrencyException::class);
+
+        config(['app.env' => 'PRODUCTION']);
+
+        $credentialSetter = $this->makeCredentialSetter();
+        $credentialSetter->getCredentials(currency: 'invalidCurrency');
     }
 }
