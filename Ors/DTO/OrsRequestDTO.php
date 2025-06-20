@@ -27,7 +27,7 @@ class OrsRequestDTO
         );
     }
 
-    public static function fromBonusRequest(Request $request): self
+    public static function fromRewardRequest(Request $request): self
     {
         return new self(
             key: $request->header('key'), 

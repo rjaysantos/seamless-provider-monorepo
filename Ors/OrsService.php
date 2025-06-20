@@ -321,16 +321,16 @@ class OrsService
 
     public function bonus(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
         $bonusTransactionDTO = OrsTransactionDTO::bonus(
             extID: "bonus-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            playerDTO: $playerData
+            playerDTO: $player
         );
 
         $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $bonusTransactionDTO->extID);

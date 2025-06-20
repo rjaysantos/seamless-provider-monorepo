@@ -169,7 +169,7 @@ class OrsController
             ]
         );
 
-        $requestDTO = OrsRequestDTO::fromBonusRequest(request: $request);
+        $requestDTO = OrsRequestDTO::fromRewardRequest(request: $request);
 
         $balance = $this->service->bonus(requestDTO: $requestDTO);
 
