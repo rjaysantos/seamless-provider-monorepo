@@ -12,6 +12,7 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
@@ -92,19 +93,19 @@ class OrsService
 
     private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        return $playerData;
+        return $player;
     }
 
-    private function getBalanceFromWallet(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, OrsPlayerDTO $playerDTO): float
     {
-        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
-        if ($walletResponse['status_code'] !== 2100)
+        if ($walletResponse['status_code'] != 2100)
             throw new WalletErrorException;
 
         return $walletResponse['credit'];
@@ -140,17 +141,17 @@ class OrsService
         ];
     }
 
-    public function bet(OrsRequestDTO $requestDTO): float
+    public function wager(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $playerData->playID);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
-        if ($requestDTO->totalAmount > $balance)
+        if ($balance < $requestDTO->totalAmount)
             throw new InsufficientFundException;
 
         foreach ($requestDTO->records as $record) {
@@ -161,39 +162,38 @@ class OrsService
         }
 
         foreach ($requestDTO->records as $record) {
-
-            $transactionDTO = OrsTransactionDTO::bet(
+            $wagerTransactionDTO = OrsTransactionDTO::wager(
                 extID: "wager-{$record['transaction_id']}",
                 roundID: $record['transaction_id'],
                 amount: $record['amount'],
                 requestDTO: $requestDTO,
-                playerDTO: $playerData
+                playerDTO: $player
             );
 
             try {
                 $this->repository->beginTransaction();
 
-                $this->repository->createTransaction(transactionDTO: $transactionDTO);
+                $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
                 if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
                     $report = $this->report->makeArcadeReport(
-                        transactionID: $transactionDTO->roundID,
-                        gameCode: $transactionDTO->gameID,
-                        betTime: $transactionDTO->dateTime
+                        transactionID: $wagerTransactionDTO->roundID,
+                        gameCode: $wagerTransactionDTO->gameID,
+                        betTime: $wagerTransactionDTO->dateTime
                     );
                 else
                     $report = $this->report->makeSlotReport(
-                        transactionID: $transactionDTO->roundID,
-                        gameCode: $transactionDTO->gameID,
-                        betTime: $transactionDTO->dateTime
+                        transactionID: $wagerTransactionDTO->roundID,
+                        gameCode: $wagerTransactionDTO->gameID,
+                        betTime: $wagerTransactionDTO->dateTime
                     );
 
                 $walletResponse = $this->wallet->wager(
                     credentials: $credentials,
-                    playID: $transactionDTO->playID,
-                    currency: $transactionDTO->currency,
-                    transactionID: $transactionDTO->extID,
-                    amount: $transactionDTO->betAmount,
+                    playID: $wagerTransactionDTO->playID,
+                    currency: $wagerTransactionDTO->currency,
+                    transactionID: $wagerTransactionDTO->extID,
+                    amount: $wagerTransactionDTO->betAmount,
                     report: $report
                 );
 

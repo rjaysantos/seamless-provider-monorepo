@@ -468,7 +468,76 @@ class OrsDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_invalidWalletResponse_expectedData()
+    public function test_debit_invalidWalletBalanceResponse_expectedData()
+    {
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'status_code' => 'invalid'
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
+        DB::table('ors.players')->insert([
+            'play_id' => '8dxw86xw6u027',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $request = '{
+            "player_id": "8dxw86xw6u027",
+            "timestamp": 1715071526,
+            "total_amount": 250,
+            "transaction_type": "debit",
+            "game_id": 123,
+            "round_id": "182xk5xvw5az7j",
+            "currency": "IDR",
+            "called_at": 1715071526,
+            "records": [
+                {
+                    "transaction_id": "testTransactionID1",
+                    "secondary_info": {},
+                    "amount": 150,
+                    "other_info": {},
+                    "remark": {},
+                    "bet_place": "BASEGAME"
+                },
+                {
+                    "transaction_id": "testTransactionID2",
+                    "secondary_info": {},
+                    "amount": 100,
+                    "other_info": {},
+                    "remark": {},
+                    "bet_place": "BASEGAME"
+                }
+            ],
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
+        }';
+
+        $response = $this->call(
+            'POST',
+            '/ors/prov/api/v2/operator/transaction/bulk/debit',
+            json_decode($request, true),
+            [],
+            [],
+            [
+                'HTTP_KEY' => 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x',
+            ],
+            $request
+        );
+
+        $response->assertJson([
+            'rs_message' => 'internal error on the operator',
+            'rs_code' => 'S-113'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_debit_invalidWalletWagerResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
@@ -576,7 +645,7 @@ class OrsDebitTest extends TestCase
     }
 
     #[DataProvider('debitParams')]
-    public function test_debit_invalidRequest_expectedData($param)
+    public function test_debit_invalidRequestParams_expectedData($param)
     {
         $response = $this->call(
             'POST',

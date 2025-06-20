@@ -14,7 +14,7 @@ class OrsRequestDTO
         public readonly ?float $totalAmount = null,
         public readonly ?array $records = [],
         public readonly ?int $dateTime = null,
-        public readonly ?object $rawRequest = null,
+        public readonly ?Request $rawRequest = null,
     ) {}
 
     public static function fromDebitRequest(Request $request): self

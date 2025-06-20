@@ -1046,7 +1046,7 @@ class OrsServiceTest extends TestCase
         $this->assertEquals(expected: $expected, actual: $response);
     }
 
-    public function test_bet_mockWallet_balance()
+    public function test_wager_mockWallet_balance()
     {
         $request = new Request([
             'player_id' => 'testPlayID',
@@ -1124,10 +1124,10 @@ class OrsServiceTest extends TestCase
             report: $stubReport
         );
 
-        $service->bet(requestDTO: $requestDTO);
+        $service->wager(requestDTO: $requestDTO);
     }
 
-    public function test_bet_mockReport_makeSlotReport()
+    public function test_wager_mockReport_makeSlotReport()
     {
         $request = new Request([
             'player_id' => 'testPlayID',
@@ -1212,10 +1212,10 @@ class OrsServiceTest extends TestCase
             report: $mockReport
         );
 
-        $service->bet(requestDTO: $requestDTO);
+        $service->wager(requestDTO: $requestDTO);
     }
 
-    public function test_bet_mockReport_makeArcadeReport()
+    public function test_wager_mockReport_makeArcadeReport()
     {
         $request = new Request([
             'player_id' => 'testPlayID',
@@ -1300,10 +1300,10 @@ class OrsServiceTest extends TestCase
             report: $mockReport
         );
 
-        $service->bet(requestDTO: $requestDTO);
+        $service->wager(requestDTO: $requestDTO);
     }
 
-    public function test_bet_mockWallet_wager()
+    public function test_wager_mockWallet_wager()
     {
         $request = new Request([
             'player_id' => 'testPlayID',
@@ -1388,7 +1388,7 @@ class OrsServiceTest extends TestCase
             report: $stubReport
         );
 
-        $service->bet(requestDTO: $requestDTO);
+        $service->wager(requestDTO: $requestDTO);
     }
 
     public function test_rollback_mockRepository_getPlayerByPlayID()

@@ -13,7 +13,7 @@ class OrsTransactionDTO extends TransactionDTO
 
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
 
-    public static function bet(
+    public static function wager(
         string $extID,
         string $roundID,
         float $amount,
