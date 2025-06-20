@@ -125,19 +125,19 @@ class OrsService
             throw new InvalidTokenException;
     }
 
-    public function getBalance(Request $request): object
+    public function balance(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $player
         ];
     }
 

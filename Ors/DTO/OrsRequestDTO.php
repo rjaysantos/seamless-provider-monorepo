@@ -10,12 +10,22 @@ class OrsRequestDTO
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
         public readonly ?string $signature = null,
+        public readonly ?Request $rawRequest = null,
         public readonly ?int $gameID = null,
         public readonly ?float $totalAmount = null,
         public readonly ?array $records = [],
         public readonly ?int $dateTime = null,
-        public readonly ?Request $rawRequest = null,
     ) {}
+
+    public static function fromBalanceRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            signature: $request->signature,
+            rawRequest: $request
+        );
+    }
 
     public static function fromDebitRequest(Request $request): self
     {

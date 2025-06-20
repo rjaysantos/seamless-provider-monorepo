@@ -45,7 +45,7 @@ class RedBonusTest extends TestCase
         };
         app()->bind(IWallet::class, $wallet::class);
 
-        Carbon::setTestNow('2025-01-01 08:00:00');
+        Carbon::setTestNow('2025-01-01 00:00:00');
 
         $response = $this->post('/red/prov/bonus', $request, [
             'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
@@ -68,8 +68,8 @@ class RedBonusTest extends TestCase
             'game_code' => '1',
             'bet_amount' => 0,
             'bet_winlose' => 200.0,
-            'created_at' => '2025-01-01 16:00:00',
-            'updated_at' => '2025-01-01 16:00:00'
+            'created_at' => '2025-01-01 00:00:00',
+            'updated_at' => '2025-01-01 00:00:00'
         ]);
     }
 
@@ -276,13 +276,11 @@ class RedBonusTest extends TestCase
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
             'currency' => 'IDR',
-            'game_code' => '1',
+            'game_code' => '51',
             'bet_amount' => 0,
             'bet_winlose' => 200.0,
             'created_at' => '2025-01-01 00:00:00',
             'updated_at' => '2025-01-01 00:00:00'
         ]);
-
-        Carbon::setTestNow();
     }
 }
