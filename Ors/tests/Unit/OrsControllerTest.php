@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
 use Providers\Ors\OrsController;

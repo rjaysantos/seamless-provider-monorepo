@@ -17,7 +17,7 @@ class OrsBalanceTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_getBalance_validRequest_expectedData()
+    public function test_balance_validRequest_expected()
     {
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
@@ -65,7 +65,7 @@ class OrsBalanceTest extends TestCase
     }
 
     #[DataProvider('balanceParameters')]
-    public function test_getBalance_incompleteParameter_expectedData($param)
+    public function test_balance_incompleteParameter_expected($param)
     {
         $request = [
             'player_id' => 'player_id',
@@ -95,7 +95,7 @@ class OrsBalanceTest extends TestCase
         ];
     }
 
-    public function test_getBalance_invalidSignature_expectedData()
+    public function test_balance_invalidSignature_expected()
     {
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
@@ -121,7 +121,7 @@ class OrsBalanceTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_getBalance_invalidPublicKeyHeader_expectedData()
+    public function test_balance_invalidPublicKeyHeader_expected()
     {
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
@@ -155,7 +155,7 @@ class OrsBalanceTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_getBalance_playNotFound_expectedData()
+    public function test_balance_playerNotFound_expected()
     {
         $request = [
             'player_id' => 'test_player',
@@ -175,7 +175,7 @@ class OrsBalanceTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_getBalance_emptyWalletResponse_expectedData()
+    public function test_balance_invalidWalletResponse_expected()
     {
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
