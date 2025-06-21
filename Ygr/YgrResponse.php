@@ -49,7 +49,7 @@ class YgrResponse
         ]);
     }
 
-    public function getBalance(object $data): JsonResponse
+    public function balance(object $data): JsonResponse
     {
         return $this->providerSuccessResponse(data: [
             'currency' => $data->currency,

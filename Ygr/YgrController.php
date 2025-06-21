@@ -39,15 +39,17 @@ class YgrController extends AbstractCasinoController
         return $this->response->authorizationConnectToken(data: $data);
     }
 
-    public function getBalance(Request $request)
+    public function balance(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->getBalance(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->balance(data: $data);
     }
 
     public function deleteToken(Request $request)
