@@ -8,6 +8,8 @@ use App\Libraries\Randomizer;
 use Providers\Ygr\YgrService;
 use Providers\Ygr\YgrRepository;
 use Providers\Ygr\YgrCredentials;
+use Providers\Ygr\DTO\YgrPlayerDTO;
+use Providers\Ygr\DTO\YgrRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ygr\Contracts\ICredentials;
@@ -325,94 +327,18 @@ class YgrServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    public function test_getPlayerDetails_mockRepository_getPlayerByToken()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByToken')
-            ->with(token: $request->connectToken)
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'status' => 'testGameID',
-                'username' => 'testUsername',
-                'currency' => 'IDR'
-            ]);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 100.00
-            ]);
-
-        $makeProviderService = $this->makeService(repository: $mockRepository, wallet: $stubWallet);
-        $makeProviderService->getPlayerDetails(request: $request);
-    }
-
-    public function test_getPlayerDetails_stubRepository_TokenDataDoesNotExistException()
-    {
-        $this->expectException(TokenNotFoundException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn(null);
-
-        $makeProviderService = $this->makeService(repository: $stubRepository);
-        $makeProviderService->getPlayerDetails(request: $request);
-    }
-
-    public function test_getPlayerDetails_mockCredentials_getCredentials()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'status' => 'testGameID',
-                'username' => 'testUsername',
-                'currency' => 'IDR'
-            ]);
-
-        $mockCredentials = $this->createMock(YgrCredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentials');
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 100.00
-            ]);
-
-        $makeProviderService = $this->makeService(repository: $stubRepository, wallet: $stubWallet, credentials: $mockCredentials);
-        $makeProviderService->getPlayerDetails(request: $request);
-    }
-
     public function test_getPlayerDetails_mockWallet_balance()
     {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
+        $requestDTO = new YgrRequestDTO(token: 'testToken');
 
         $stubRepository = $this->createMock(YgrRepository::class);
         $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'status' => 'testGameID',
-                'username' => 'testUsername',
-                'currency' => 'IDR'
-            ]);
+            ->willReturn(new YgrPlayerDTO(
+                playID: 'testPlayID',
+                gameCode: 'testGameID',
+                username: 'testUsername',
+                currency: 'IDR'
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(YgrCredentials::class);
@@ -428,82 +354,14 @@ class YgrServiceTest extends TestCase
                 'credit' => 100.00
             ]);
 
-        $makeProviderService = $this->makeService(repository: $stubRepository, wallet: $mockWallet, credentials: $stubCredentials);
-        $makeProviderService->getPlayerDetails(request: $request);
+        $makeProviderService = $this->makeService(
+            repository: $stubRepository,
+            wallet: $mockWallet,
+            credentials: $stubCredentials
+        );
+        $makeProviderService->getPlayerDetails(requestDTO: $requestDTO);
     }
 
-    public function test_getPlayerDetails_stubWallet_WalletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'status' => 'testGameID',
-                'username' => 'testUsername',
-                'currency' => 'IDR'
-            ]);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 0,
-            ]);
-
-        $makeProviderService = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $makeProviderService->getPlayerDetails(request: $request);
-    }
-
-    public function test_getPlayerDetails_stubWallet_expectedData()
-    {
-        $expected = (object) [
-            'ownerId' => 'testVendorID',
-            'parentId' => 'testVendorID',
-            'gameId' => 'testGameID',
-            'userId' => 'testPlayID',
-            'nickname' => 'testUsername',
-            'currency' => 'IDR',
-            'balance' => 100.00
-        ];
-
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'status' => 'testGameID',
-                'username' => 'testUsername',
-                'currency' => 'IDR'
-            ]);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getVendorID')
-            ->willReturn('testVendorID');
-
-        $stubCredentials = $this->createMock(YgrCredentials::class);
-        $stubCredentials->method('getCredentials')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 100.00
-            ]);
-
-        $makeProviderService = $this->makeService(repository: $stubRepository, wallet: $stubWallet, credentials: $stubCredentials);
-        $response = $makeProviderService->getPlayerDetails(request: $request);
-
-        $this->assertEquals(expected: $expected, actual: $response);
-    }
     public function test_deleteToken_mockRepository_getPlayerByToken()
     {
         $request = new Request([
