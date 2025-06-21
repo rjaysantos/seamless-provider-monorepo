@@ -27,9 +27,6 @@ use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundExcepti
 use Providers\Ors\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
-use Providers\Red\Exceptions\TransactionDoesNotExistException;
-
-use function PHPSTORM_META\type;
 
 class OrsService
 {
@@ -278,10 +275,10 @@ class OrsService
             transactionDTO: $wagerTransactionData
         );
 
-        $existingTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
+        $payoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
 
-        if (is_null($existingTransaction) === false)
-            throw new TransactionAlreadyExistsException();
+        if (is_null($payoutTransaction) === false)
+            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
 
         try {
             $this->repository->beginTransaction();
