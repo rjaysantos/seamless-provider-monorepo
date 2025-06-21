@@ -4,8 +4,8 @@ namespace Providers\Ors;
 
 use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
-use App\Repositories\AbstractProviderRepository;
 use Providers\Ors\DTO\OrsTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class OrsRepository extends AbstractProviderRepository
 {
@@ -55,14 +55,6 @@ class OrsRepository extends AbstractProviderRepository
         return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
     }
 
-    public function getBetTransactionByTrxID(string $transactionID): ?object
-    {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->first();
-    }
-
     public function getPlayGameByPlayIDToken(string $playID, string $token): ?object
     {
         return DB::table('ors.playgame')
@@ -80,17 +72,6 @@ class OrsRepository extends AbstractProviderRepository
                 'bet_amount' => $betAmount,
                 'created_at' => $betTime,
                 'updated_at' => null
-            ]);
-    }
-
-    public function cancelBetTransaction(string $transactionID, string $cancelTme): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->update([
-                'updated_at' => $cancelTme
             ]);
     }
 
