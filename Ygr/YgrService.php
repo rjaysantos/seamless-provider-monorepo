@@ -9,6 +9,7 @@ use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
+use Providers\Ygr\DTO\YgrRequestDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ygr\Contracts\ICredentials;
 use Providers\Ygr\Exceptions\WalletErrorException;
@@ -65,23 +66,23 @@ class YgrService
         return $balanceResponse['credit'];
     }
 
-    public function getPlayerDetails(Request $request): object
+    public function getPlayerDetails(YgrRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->connectToken);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $credentials = $this->credentials->getCredentials();
+        $credentials = $this->credentials->getCredentials(currency: $player->currency);
 
         return (object) [
             'ownerId' => $credentials->getVendorID(),
             'parentId' => $credentials->getVendorID(),
-            'gameId' => $playerData->status, // gameID inserted in status column of playgame table
-            'userId' => $playerData->play_id,
-            'nickname' => $playerData->username,
-            'currency' => $playerData->currency,
-            'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $playerData->play_id)
+            'gameId' => $player->gameCode,
+            'userId' => $player->playID,
+            'nickname' => $player->username,
+            'currency' => $player->currency,
+            'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $player->playID)
         ];
     }
 

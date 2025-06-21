@@ -5,6 +5,7 @@ namespace Providers\Ygr;
 use Illuminate\Http\Request;
 use Providers\Ygr\YgrService;
 use Providers\Ygr\YgrResponse;
+use Providers\Ygr\DTO\YgrRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\AbstractCasinoController;
 use Providers\Ygr\Exceptions\InvalidProviderRequestException;
@@ -25,15 +26,17 @@ class YgrController extends AbstractCasinoController
             throw new InvalidProviderRequestException;
     }
 
-    public function verifyToken(Request $request)
+    public function authorizationConnectToken(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->verifyToken(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->authorizationConnectToken(data: $data);
     }
 
     public function getBalance(Request $request)

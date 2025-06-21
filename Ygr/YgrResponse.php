@@ -36,7 +36,7 @@ class YgrResponse
         return (float) number_format($balance, 2, '.', '');
     }
 
-    public function verifyToken(object $data): JsonResponse
+    public function authorizationConnectToken(object $data): JsonResponse
     {
         return $this->providerSuccessResponse(data: [
             'ownerId' => $data->ownerId,
