@@ -3,8 +3,10 @@
 namespace Providers\Ygr;
 
 use Illuminate\Support\Facades\DB;
+use Providers\Ygr\DTO\YgrPlayerDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class YgrRepository
+class YgrRepository extends AbstractProviderRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -15,10 +17,11 @@ class YgrRepository
 
     public function getPlayerByToken(string $token): ?object
     {
-        return DB::table('ygr.playgame')
-            ->join('ygr.players', 'ygr.playgame.play_id', '=', 'ygr.players.play_id')
-            ->where('ygr.playgame.token', $token)
+        $data = $this->read->table('ygr.players')
+            ->where('token', $token)
             ->first();
+
+        return $data == null ? null : YgrPlayerDTO::fromDB(dbData: $data);
     }
 
     public function getTransactionByTrxID(string $transactionID): ?object
