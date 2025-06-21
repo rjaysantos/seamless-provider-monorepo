@@ -22,14 +22,8 @@ class OrsCreditTest extends TestCase
     public function test_credit_validData_expectedData($gameCode, $signature)
     {
         $wallet = new class extends TestWallet {
-            public function payout(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Report $report
-            ): array {
+            public function payout(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Report $report): array
+            {
                 return [
                     'credit_after' => 900.0,
                     'status_code' => 2100
@@ -52,7 +46,7 @@ class OrsCreditTest extends TestCase
             'play_id' => 'testPlayeru1',
             'web_id' => 1,
             'currency' => 'IDR',
-            'game_code' => 131,
+            'game_code' => $gameCode,
             'bet_amount' => 100.0,
             'bet_winlose' => 0,
             'created_at' => '2025-01-01 00:00:00',
@@ -122,7 +116,7 @@ class OrsCreditTest extends TestCase
     {
         return [
             [131, 'bf5e10adc7157d61a51ef16f215c9c09'],
-            // [123, '8e1d0fb0c10064ebdb35f80edb50c624']
+            [123, '3ce6f6af77a0a888acb238b567c3a9d7']
         ];
     }
 

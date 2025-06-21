@@ -313,9 +313,9 @@ class OrsService
             if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            DB::connection('pgsql_report_write')->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            DB::connection('pgsql_report_write')->rollback();
             throw $e;
         }
 
