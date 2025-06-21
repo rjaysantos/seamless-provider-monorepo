@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Ors\Exceptions\InvalidProviderRequestException;
+use Providers\Red\DTO\RedRequestDTO;
 
 class OrsController
 {
@@ -83,9 +84,11 @@ class OrsController
             ]
         );
 
-        $this->service->authenticate(request: $request);
+        $requestDTO = OrsRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(token: $request->token);
+        $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(token: $requestDTO->token);
     }
 
     public function getBalance(Request $request)

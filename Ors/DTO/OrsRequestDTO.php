@@ -10,14 +10,27 @@ class OrsRequestDTO
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
         public readonly ?string $extID = null,
+        public readonly ?string $username = null,
         public readonly ?string $roundID = null,
         public readonly ?string $signature = null,
         public readonly ?string $currency = null,
+        public readonly ?string $token = null,
         public readonly ?float  $amount = null,
         public readonly ?int    $gameID = null,
         public readonly ?int    $timestamp = null,
         public readonly ?object $rawRequest = null
     ) {}
+
+    public static function fromAuthenticateRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            token: $request->token,
+            signature: $request->signature,
+            rawRequest: $request
+        );
+    }
 
     public static function fromCreditRequest(Request $request): self
     {
