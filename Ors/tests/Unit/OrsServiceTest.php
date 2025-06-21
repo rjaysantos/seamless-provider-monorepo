@@ -681,19 +681,26 @@ class OrsServiceTest extends TestCase
 
     public function test_wager_mockWallet_balance()
     {
-        $request = new Request([
-            'player_id' => 'testPlayID',
-            'signature' => 'testSignature',
-            'gameID' => 123,
-            'totalAmount' => 150,
-            'records' => [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'testTransactionID1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
             ],
-            'dateTime' => 1715071526,
-        ]);
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
 
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -762,19 +769,26 @@ class OrsServiceTest extends TestCase
 
     public function test_wager_mockReport_makeSlotReport()
     {
-        $request = new Request([
-            'player_id' => 'testPlayID',
-            'signature' => 'testSignature',
-            'gameID' => 123,
-            'totalAmount' => 150,
-            'records' => [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'testTransactionID1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
             ],
-            'dateTime' => 1715071526,
-        ]);
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
 
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -850,19 +864,26 @@ class OrsServiceTest extends TestCase
 
     public function test_wager_mockReport_makeArcadeReport()
     {
-        $request = new Request([
-            'player_id' => 'testPlayID',
-            'signature' => 'testSignature',
-            'gameID' => 123,
-            'totalAmount' => 150,
-            'records' => [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'testTransactionID1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
             ],
-            'dateTime' => 1715071526,
-        ]);
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
 
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -938,19 +959,26 @@ class OrsServiceTest extends TestCase
 
     public function test_wager_mockWallet_wager()
     {
-        $request = new Request([
-            'player_id' => 'testPlayID',
-            'signature' => 'testSignature',
-            'gameID' => 123,
-            'totalAmount' => 150,
-            'records' => [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
+        $request = new Request(
+            query: [
+                'player_id' => 'testPlayID',
+                'total_amount' => 150,
+                'transaction_type' => 'debit',
+                'game_id' => 123,
+                'round_id' => 'testRoundID',
+                'called_at' => 1234567891,
+                'records' => [
+                    [
+                        'transaction_id' => 'testTransactionID1',
+                        'amount' => 150
+                    ]
+                ],
+                'signature' => 'testSignature'
             ],
-            'dateTime' => 1715071526,
-        ]);
+            server: [
+                'HTTP_KEY' => 'testPublicKey'
+            ]
+        );
 
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -2824,7 +2852,7 @@ class OrsServiceTest extends TestCase
     }
 
     public function test_bonus_mockWalletReport_makeBonusReport()
-    { 
+    {
         $date = Carbon::now()->setTimezone('GMT+8');
 
         $request = new Request(
@@ -2861,7 +2889,7 @@ class OrsServiceTest extends TestCase
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($playerDTO);
-        
+
         $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
@@ -2988,6 +3016,4 @@ class OrsServiceTest extends TestCase
 
         $service->bonus(requestDTO: $requestDTO);
     }
-
-
 }
