@@ -14,24 +14,22 @@ class OrsTransactionDTO extends TransactionDTO
 
     public static function payout(
         string $extID,
-        string $roundID,
-        float $amount,
         OrsRequestDTO $requestDTO,
         OrsTransactionDTO $transactionDTO
     ): self {
         return new self(
             extID: $extID,
-            roundID: $roundID,
+            roundID: $transactionDTO->roundID,
             playID: $transactionDTO->playID,
             username: $transactionDTO->username,
             webID: self::getWebID(playID: $transactionDTO->playID),
             currency: $transactionDTO->currency,
             gameID: $transactionDTO->gameID,
-            betValid: $amount,
-            betAmount: $amount,
+            betValid: $requestDTO->amount,
+            betAmount: $requestDTO->amount,
             betWinlose: $requestDTO->amount - $transactionDTO->betAmount,
             dateTime: self::convertProviderDateTime(
-                dateTime: Carbon::createFromTimestamp($requestDTO->timestamp)->toDateTimeString(),
+                dateTime: Carbon::createFromTimestamp($requestDTO->timestamp),
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
             winAmount: $requestDTO->amount

@@ -10,7 +10,10 @@ use App\Repositories\AbstractProviderRepository;
 
 class OrsRepository extends AbstractProviderRepository
 {
-    public function __construct(private Randomizer $randomizer) {}
+    public function __construct(private Randomizer $randomizer)
+    {
+        parent::__construct();
+    }
 
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -49,12 +52,13 @@ class OrsRepository extends AbstractProviderRepository
         return $token;
     }
 
-    public function getTransactionByExtID(string $extID): ?object
+    public function getTransactionByExtID(string $extID): ?OrsTransactionDTO
     {
-        return DB::connection('pgsql_report_read')
-            ->table('ors.reports')
+        $data = $this->read->table('ors.reports')
             ->where('ext_id', $extID)
             ->first();
+            
+        return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
     }
 
     public function getBetTransactionByTrxID(string $transactionID): ?object
