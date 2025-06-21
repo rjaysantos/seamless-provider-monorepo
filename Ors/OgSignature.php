@@ -15,14 +15,13 @@ class OgSignature
                 objectData: json_decode($request->getContent()),
                 credentials: $credentials
             );
-            // dd($createdSignatureByObject);
 
             if ($createdSignatureByObject === $request->signature)
                 return true;
         }
 
         $createdSignatureByArray = $this->createSignatureByArray(arrayData: $request->all(), credentials: $credentials);
-        // dd($createdSignatureByArray);
+
         if ($createdSignatureByArray === $request->signature)
             return true;
 
