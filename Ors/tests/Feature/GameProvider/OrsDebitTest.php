@@ -1,7 +1,6 @@
 <?php
 
 use Tests\TestCase;
-use App\Models\OrsReport;
 use App\Contracts\V2\IWallet;
 use Illuminate\Support\Facades\DB;
 use Wallet\V1\ProvSys\Transfer\Report;
@@ -31,14 +30,8 @@ class OrsDebitTest extends TestCase
                 ];
             }
 
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Report $report): array
+            {
                 return [
                     'credit_after' => 0,
                     'status_code' => 2100
@@ -59,13 +52,13 @@ class OrsDebitTest extends TestCase
             "timestamp": 1715071526,
             "total_amount": 250,
             "transaction_type": "debit",
-            "game_id": '. $gameCode .',
+            "game_id": ' . $gameCode . ',
             "round_id": "182xk5xvw5az7j",
             "currency": "IDR",
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -73,7 +66,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -81,7 +74,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "'. $signature .'"
+            "signature": "' . $signature . '"
         }';
 
         $response = $this->call(
@@ -105,7 +98,7 @@ class OrsDebitTest extends TestCase
             'billing_at' => 1715071526,
             'records' => [
                 [
-                    'transaction_id' => 'test_transacID_1',
+                    'transaction_id' => 'testTransactionID1',
                     'secondary_info' => [],
                     'amount' => 150,
                     'other_info' => [],
@@ -113,7 +106,7 @@ class OrsDebitTest extends TestCase
                     'bet_place' => 'BASEGAME'
                 ],
                 [
-                    'transaction_id' => 'test_transacID_2',
+                    'transaction_id' => 'testTransactionID2',
                     'secondary_info' => [],
                     'amount' => 100,
                     'other_info' => [],
@@ -126,39 +119,54 @@ class OrsDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ors.reports', [
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "{$gameCode}",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
             'created_at' => '2024-05-07 16:45:26',
-            'updated_at' => null,
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
 
         $this->assertDatabaseHas('ors.reports', [
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "{$gameCode}",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2024-05-07 16:45:26',
-            'updated_at' => null,
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
     }
 
-    public static function gameCodesAndSignature() {
+    public static function gameCodesAndSignature()
+    {
         return [
-            [131, '85da7ac6933df0490ff4c0d3e3bab81e'],
-            [123, 'dac1104daa5906efdf32e16918f553b0']
+            [131, '525848e3f3058672b412a0f98333818c'],
+            [123, '6d82066dc968c7c9488a6132b4c5b128']
         ];
     }
 
     public function test_debit_invalidSignature_expectedData()
     {
         DB::table('ors.players')->insert([
-            'play_id' => 'test_playerID_01',
+            'play_id' => '8dxw86xw6u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = '{
-            "player_id": "test_playerID_01",
+            "player_id": "8dxw86xw6u027",
             "timestamp": 1715071526,
             "total_amount": 250,
             "transaction_type": "debit",
@@ -168,7 +176,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 50,
                     "other_info": {},
@@ -176,7 +184,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -184,7 +192,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "invalid signature"
+            "signature": "invalidSignature"
         }';
 
         $response = $this->call(
@@ -226,7 +234,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -234,7 +242,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -242,7 +250,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
         }';
 
         $response = $this->call(
@@ -278,7 +286,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -286,7 +294,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -294,7 +302,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
         }';
 
         $response = $this->call(
@@ -348,7 +356,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -356,7 +364,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -364,7 +372,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
         }';
 
         $response = $this->call(
@@ -396,11 +404,18 @@ class OrsDebitTest extends TestCase
         ]);
 
         DB::table('ors.reports')->insert([
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 00:00:00',
-            'updated_at' => null
+            'updated_at' => '2021-01-01 00:00:00',
         ]);
 
         $request = '{
@@ -414,7 +429,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -422,7 +437,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -430,7 +445,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
         }';
 
         $response = $this->call(
@@ -453,25 +468,11 @@ class OrsDebitTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_debit_invalidWalletResponse_expectedData()
+    public function test_debit_invalidWalletBalanceResponse_expectedData()
     {
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
-                return [
-                    'credit' => 1000.0,
-                    'status_code' => 2100
-                ];
-            }
-
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Report $report
-            ): array {
                 return [
                     'status_code' => 'invalid'
                 ];
@@ -497,7 +498,7 @@ class OrsDebitTest extends TestCase
             "called_at": 1715071526,
             "records": [
                 {
-                    "transaction_id": "test_transacID_1",
+                    "transaction_id": "testTransactionID1",
                     "secondary_info": {},
                     "amount": 150,
                     "other_info": {},
@@ -505,7 +506,7 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 },
                 {
-                    "transaction_id": "test_transacID_2",
+                    "transaction_id": "testTransactionID2",
                     "secondary_info": {},
                     "amount": 100,
                     "other_info": {},
@@ -513,7 +514,84 @@ class OrsDebitTest extends TestCase
                     "bet_place": "BASEGAME"
                 }
             ],
-            "signature": "dac1104daa5906efdf32e16918f553b0"
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
+        }';
+
+        $response = $this->call(
+            'POST',
+            '/ors/prov/api/v2/operator/transaction/bulk/debit',
+            json_decode($request, true),
+            [],
+            [],
+            [
+                'HTTP_KEY' => 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x',
+            ],
+            $request
+        );
+
+        $response->assertJson([
+            'rs_message' => 'internal error on the operator',
+            'rs_code' => 'S-113'
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_debit_invalidWalletWagerResponse_expectedData()
+    {
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 1000.0,
+                    'status_code' => 2100
+                ];
+            }
+
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Report $report): array
+            {
+                return [
+                    'status_code' => 'invalid'
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
+        DB::table('ors.players')->insert([
+            'play_id' => '8dxw86xw6u027',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $request = '{
+            "player_id": "8dxw86xw6u027",
+            "timestamp": 1715071526,
+            "total_amount": 250,
+            "transaction_type": "debit",
+            "game_id": 123,
+            "round_id": "182xk5xvw5az7j",
+            "currency": "IDR",
+            "called_at": 1715071526,
+            "records": [
+                {
+                    "transaction_id": "testTransactionID1",
+                    "secondary_info": {},
+                    "amount": 150,
+                    "other_info": {},
+                    "remark": {},
+                    "bet_place": "BASEGAME"
+                },
+                {
+                    "transaction_id": "testTransactionID2",
+                    "secondary_info": {},
+                    "amount": 100,
+                    "other_info": {},
+                    "remark": {},
+                    "bet_place": "BASEGAME"
+                }
+            ],
+            "signature": "6d82066dc968c7c9488a6132b4c5b128"
         }';
 
         $response = $this->call(
@@ -536,24 +614,38 @@ class OrsDebitTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('ors.reports', [
-            'trx_id' => 'test_transacID_1',
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 150.00,
-            'win_amount' => 0,
+            'bet_valid' => 150.00,
+            'bet_winlose' => 0,
             'created_at' => '2024-05-07 16:45:26',
-            'updated_at' => null,
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
 
         $this->assertDatabaseMissing('ors.reports', [
-            'trx_id' => 'test_transacID_2',
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => '8dxw86xw6u027',
+            'web_id' => 27,
+            'currency' => 'IDR',
+            'game_code' => "123",
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2024-05-07 16:45:26',
-            'updated_at' => null,
+            'updated_at' => '2024-05-07 16:45:26',
         ]);
     }
 
     #[DataProvider('debitParams')]
-    public function test_debit_invalidRequest_expectedData($param)
+    public function test_debit_invalidRequestParams_expectedData($param)
     {
         $response = $this->call(
             'POST',
@@ -589,7 +681,7 @@ class OrsDebitTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -597,7 +689,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},
@@ -619,7 +711,7 @@ class OrsDebitTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -627,7 +719,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},
@@ -649,7 +741,7 @@ class OrsDebitTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -657,7 +749,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},
@@ -679,7 +771,7 @@ class OrsDebitTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -687,7 +779,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},
@@ -709,7 +801,7 @@ class OrsDebitTest extends TestCase
                     "called_at": 1715071526,
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -717,7 +809,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},
@@ -739,7 +831,7 @@ class OrsDebitTest extends TestCase
                     "currency": "IDR",
                     "records": [
                         {
-                            "transaction_id": "test_transacID_1",
+                            "transaction_id": "testTransactionID1",
                             "secondary_info": {},
                             "amount": 150,
                             "other_info": {},
@@ -747,7 +839,7 @@ class OrsDebitTest extends TestCase
                             "bet_place": "BASEGAME"
                         },
                         {
-                            "transaction_id": "test_transacID_2",
+                            "transaction_id": "testTransactionID2",
                             "secondary_info": {},
                             "amount": 100,
                             "other_info": {},

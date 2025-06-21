@@ -13,7 +13,9 @@ class OrsRequestDTO
         public readonly ?Request $rawRequest = null,
         public readonly ?int $gameID = null,
         public readonly ?float $amount = null,
+        public readonly ?float $totalAmount = null,
         public readonly ?string $roundID = null,
+        public readonly ?array $records = [],
         public readonly ?int $dateTime = null
     ) {}
 
@@ -30,12 +32,26 @@ class OrsRequestDTO
     public static function fromRewardRequest(Request $request): self
     {
         return new self(
-            key: $request->header('key'), 
+            key: $request->header('key'),
             playID: $request->player_id,
             signature: $request->signature,
             gameID: $request->game_code,
             amount: $request->amount,
             roundID: $request->transaction_id,
+            dateTime: $request->called_at,
+            rawRequest: $request
+        );
+    }
+
+    public static function fromDebitRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            signature: $request->signature,
+            gameID: $request->game_id,
+            totalAmount: $request->total_amount,
+            records: $request->records,
             dateTime: $request->called_at,
             rawRequest: $request
         );
