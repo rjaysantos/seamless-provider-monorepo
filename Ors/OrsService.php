@@ -269,6 +269,9 @@ class OrsService
         if (is_null($wagerTransactionData) === true)
             throw new ProviderTransactionNotFoundException;
 
+        if (is_null($wagerTransactionData) === true)
+            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);;
+
         $payoutTransactionDTO = OrsTransactionDTO::payout(
             extID: "payout-{$requestDTO->extID}",
             requestDTO: $requestDTO,
@@ -278,7 +281,7 @@ class OrsService
         $payoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
 
         if (is_null($payoutTransaction) === false)
-            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);
+            throw new TransactionAlreadyExistsException();
 
         try {
             $this->repository->beginTransaction();
