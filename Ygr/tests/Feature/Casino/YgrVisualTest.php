@@ -50,7 +50,7 @@ class YgrVisualTest extends TestCase
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -82,7 +82,7 @@ class YgrVisualTest extends TestCase
         unset($request[$parameter]);
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -151,7 +151,7 @@ class YgrVisualTest extends TestCase
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -195,7 +195,7 @@ class YgrVisualTest extends TestCase
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([

@@ -49,7 +49,7 @@ class YgrPlayTest extends TestCase
         ]);
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -117,7 +117,7 @@ class YgrPlayTest extends TestCase
         ]);
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -171,7 +171,7 @@ class YgrPlayTest extends TestCase
         unset($request[$parameter]);
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -240,7 +240,7 @@ class YgrPlayTest extends TestCase
         ];
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -292,7 +292,7 @@ class YgrPlayTest extends TestCase
         ]);
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -376,7 +376,7 @@ class YgrPlayTest extends TestCase
         ]);
 
         $response = $this->post('ygr/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
