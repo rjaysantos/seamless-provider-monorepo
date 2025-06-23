@@ -54,7 +54,7 @@ class OrsResponse
         ]);
     }
 
-    public function payout(Request $request, float $balance): JsonResponse
+    public function payout(Request $request, float $credit): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',
@@ -62,7 +62,7 @@ class OrsResponse
             'player_id' => $request->player_id,
             'amount' => $request->amount,
             'transaction_id' => $request->transaction_id,
-            'updated_balance' => $balance,
+            'updated_balance' => $credit,
             'billing_at' => $request->called_at
         ]);
     }

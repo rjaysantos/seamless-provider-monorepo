@@ -100,7 +100,7 @@ class OrsRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function settleBetTransaction(OrsTransactionDTO $transactionDTO): void
+    public function createTransaction(OrsTransactionDTO $transactionDTO): void
     {
         $this->write->table('ors.reports')
             ->insert([

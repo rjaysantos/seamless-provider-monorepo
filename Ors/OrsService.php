@@ -2,7 +2,6 @@
 
 namespace Providers\Ors;
 
-use App\Exceptions\Casino\TransactionNotFoundException;
 use Exception;
 use Carbon\Carbon;
 use Providers\Ors\OrsApi;
@@ -269,9 +268,6 @@ class OrsService
         if (is_null($wagerTransactionData) === true)
             throw new ProviderTransactionNotFoundException;
 
-        if (is_null($wagerTransactionData) === true)
-            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);;
-
         $payoutTransactionDTO = OrsTransactionDTO::payout(
             extID: "payout-{$requestDTO->extID}",
             requestDTO: $requestDTO,
@@ -279,14 +275,15 @@ class OrsService
         );
 
         $payoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
+        // dd($payoutTransaction);
 
         if (is_null($payoutTransaction) === false)
-            throw new TransactionAlreadyExistsException();
+            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);;
 
         try {
             $this->repository->beginTransaction();
 
-            $this->repository->settleBetTransaction(transactionDTO: $payoutTransactionDTO);
+            $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
 
             if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
                 $report = $this->report->makeArcadeReport(
@@ -313,9 +310,9 @@ class OrsService
             if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_report_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_report_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 

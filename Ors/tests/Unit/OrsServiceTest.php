@@ -3086,10 +3086,10 @@ class OrsServiceTest extends TestCase
             ), null);
 
         $mockRepository->expects($this->once())
-            ->method('settleBetTransaction');
+            ->method('beginTransaction');
 
         $mockRepository->expects($this->once())
-            ->method('beginTransaction');
+            ->method('createTransaction');
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubProviderCredentials->method('getPublicKey')
@@ -3203,8 +3203,8 @@ class OrsServiceTest extends TestCase
                 winAmount: 150
             ), null);
 
-        $mockRepository->method('settleBetTransaction');
         $mockRepository->method('beginTransaction');
+        $mockRepository->method('createTransaction');
 
         $mockProviderCredentials = $this->createMock(ICredentials::class);
         $mockProviderCredentials->method('getPublicKey')
@@ -3764,7 +3764,7 @@ class OrsServiceTest extends TestCase
             ->willReturnOnConsecutiveCalls($wagerTransaction, null);
 
         $mockRepository->expects($this->once())
-            ->method('settleBetTransaction');
+            ->method('createTransaction');
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubProviderCredentials->method('getPublicKey')
