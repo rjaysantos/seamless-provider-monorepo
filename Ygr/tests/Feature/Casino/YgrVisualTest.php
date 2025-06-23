@@ -13,7 +13,6 @@ class YgrVisualTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ygr.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE ygr.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -21,11 +20,17 @@ class YgrVisualTest extends TestCase
     public function test_visual_validRequest_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -39,13 +44,13 @@ class YgrVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -69,7 +74,7 @@ class YgrVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -77,7 +82,7 @@ class YgrVisualTest extends TestCase
         unset($request[$parameter]);
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -103,7 +108,7 @@ class YgrVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -125,11 +130,17 @@ class YgrVisualTest extends TestCase
     public function test_visual_transactionNotFound_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
@@ -140,7 +151,7 @@ class YgrVisualTest extends TestCase
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
@@ -156,11 +167,17 @@ class YgrVisualTest extends TestCase
     public function test_visual_thirdPartyApiError_expectedData()
     {
         DB::table('ygr.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -172,13 +189,13 @@ class YgrVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
 
         $response = $this->post('ygr/in/visual', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([

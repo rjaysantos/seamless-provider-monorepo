@@ -9,17 +9,25 @@ class OrsRequestDTO
     public function __construct(
         public readonly ?string $key = null,
         public readonly ?string $playID = null,
-        public readonly ?string $extID = null,
         public readonly ?string $username = null,
         public readonly ?string $roundID = null,
         public readonly ?string $signature = null,
-        public readonly ?string $currency = null,
         public readonly ?string $token = null,
         public readonly ?float  $amount = null,
         public readonly ?int    $gameID = null,
-        public readonly ?int    $timestamp = null,
+        public readonly ?int    $dateTime = null,
         public readonly ?object $rawRequest = null
     ) {}
+
+    public static function fromBalanceRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            signature: $request->signature,
+            rawRequest: $request
+        );
+    }
 
     public static function fromAuthenticateRequest(Request $request): self
     {
@@ -32,18 +40,16 @@ class OrsRequestDTO
         );
     }
 
-    public static function fromCreditRequest(Request $request): self
+    public static function fromRewardRequest(Request $request): self
     {
         return new self(
-            key: $request->header('key'),
+            key: $request->header('key'), 
             playID: $request->player_id,
-            amount: $request->winlose_amount,
-            extID: $request->transaction_id,
-            roundID: $request->round_id,
-            gameID: $request->game_id,
-            currency: $request->currency,
-            timestamp: $request->called_at,
             signature: $request->signature,
+            gameID: $request->game_code,
+            amount: $request->amount,
+            roundID: $request->transaction_id,
+            dateTime: $request->called_at,
             rawRequest: $request
         );
     }

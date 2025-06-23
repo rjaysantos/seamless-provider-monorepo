@@ -17,8 +17,7 @@ class OrsController
     public function __construct(
         private OrsService $service,
         private OrsResponse $response
-    ) {
-    }
+    ) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -91,7 +90,7 @@ class OrsController
         return $this->response->authenticate(token: $requestDTO->token);
     }
 
-    public function getBalance(Request $request)
+    public function balance(Request $request)
     {
         $this->validateProviderRequest(
             request: $request,
@@ -101,12 +100,13 @@ class OrsController
             ]
         );
 
-        $playerBalanceDetails = $this->service->getBalance(request: $request);
+        $requestDTO = OrsRequestDTO::fromBalanceRequest(request: $request);
 
-        return $this->response->getBalance(
-            playID: $request->player_id,
-            balance: $playerBalanceDetails->balance,
-            currency: $playerBalanceDetails->currency
+        $balanceResponse = $this->service->balance(requestDTO: $requestDTO);
+
+        return $this->response->balance(
+            balance: $balanceResponse->balance,
+            playerDTO: $balanceResponse->player
         );
     }
 
@@ -174,7 +174,9 @@ class OrsController
             ]
         );
 
-        $balance = $this->service->bonus(request: $request);
+        $requestDTO = OrsRequestDTO::fromRewardRequest(request: $request);
+
+        $balance = $this->service->bonus(requestDTO: $requestDTO);
 
         return $this->response->payout(request: $request, balance: $balance);
     }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Providers\Ors\DTO;
 
@@ -14,7 +14,7 @@ class OrsPlayerDTO extends PlayerDTO
     {
         return new self(
             playID: $casinoRequestDTO->playID,
-            username: $casinoRequestDTO->username,
+            username: $casinoRequestDTO->playID,
             currency: $casinoRequestDTO->currency
         );
     }
