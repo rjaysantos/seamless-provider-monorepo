@@ -226,10 +226,12 @@ class OrsService
         }
 
         foreach ($requestDTO->records as $record) {
+
+            $transactionID = $record['transaction_id'];
+
             $rollbackTransactionDTO = OrsTransactionDTO::cancel(
-                extID: "cancel-{$record['transaction_id']}",
-                roundID: $record['transaction_id'],
-                amount: -$record['amount'],
+                extID: "cancel-{$transactionID}",
+                record: $record,
                 requestDTO: $requestDTO,
                 playerDTO: $player
             );
@@ -243,7 +245,7 @@ class OrsService
                     credentials: $credentials,
                     transactionID: $rollbackTransactionDTO->extID,
                     amount: abs($rollbackTransactionDTO->betAmount),
-                    transactionIDToCancel: "wager-{$record['transaction_id']}"
+                    transactionIDToCancel: "wager-{$transactionID}"
                 );
 
                 if ($walletResponse['status_code'] !== 2100)
