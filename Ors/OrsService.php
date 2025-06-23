@@ -164,8 +164,7 @@ class OrsService
         foreach ($requestDTO->records as $record) {
             $wagerTransactionDTO = OrsTransactionDTO::wager(
                 extID: "wager-{$record['transaction_id']}",
-                roundID: $record['transaction_id'],
-                amount: $record['amount'],
+                record: $record,
                 requestDTO: $requestDTO,
                 playerDTO: $player
             );
