@@ -63,12 +63,14 @@ class OrsRepository extends AbstractProviderRepository
             ->first();
     }
 
-    public function getPlayGameByPlayIDToken(string $playID, string $token): ?object
+    public function getPlayGameByPlayIDToken(string $playID, string $token): ?OrsPlayerDTO
     {
-        return DB::table('ors.playgame')
+        $data = $this->read->table('ors.players')
             ->where('play_id', $playID)
             ->where('token', $token)
             ->first();
+
+        return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
     public function createBetTransaction(string $transactionID, float $betAmount, string $betTime): void
