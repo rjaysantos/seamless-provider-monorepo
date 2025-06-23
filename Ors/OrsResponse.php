@@ -5,6 +5,7 @@ namespace Providers\Ors;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Ors\DTO\OrsPlayerDTO;
 
 class OrsResponse
 {
@@ -28,16 +29,16 @@ class OrsResponse
         ]);
     }
 
-    public function getBalance(string $playID, float $balance, string $currency): JsonResponse
+    public function balance(float $balance, OrsPlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',
             'rs_message' => 'success',
-            'player_id' => $playID,
+            'player_id' => $playerDTO->playID,
             'player_status' => 'activate',
             'balance' => $balance,
             'timestamp' => Carbon::now()->setTimezone('GMT+8')->timestamp,
-            'currency' => $currency,
+            'currency' => $playerDTO->currency,
         ]);
     }
 

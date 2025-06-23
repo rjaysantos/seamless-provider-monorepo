@@ -2,20 +2,14 @@
 
 namespace Providers\Ors;
 
-use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
-use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Repositories\AbstractProviderRepository;
+use Providers\Ors\DTO\OrsTransactionDTO;
 
 class OrsRepository extends AbstractProviderRepository
 {
-    public function __construct(private Randomizer $randomizer)
-    {
-        parent::__construct();
-    }
-
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?OrsPlayerDTO
     {
         $data = $this->read->table('ors.players')
             ->where('play_id', $playID)
@@ -57,7 +51,7 @@ class OrsRepository extends AbstractProviderRepository
         $data = $this->read->table('ors.reports')
             ->where('ext_id', $extID)
             ->first();
-            
+
         return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
     }
 
@@ -100,7 +94,20 @@ class OrsRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function createTransaction(OrsTransactionDTO $transactionDTO): void
+    public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
+    {
+        DB::connection('pgsql_write')
+            ->table('ors.reports')
+            ->updateOrInsert(
+                ['trx_id' => $transactionID],
+                [
+                    'win_amount' => $winAmount,
+                    'updated_at' => $settleTime
+                ]
+            );
+    }
+
+    public function createTransaction(OrsTransactionDTO $transactionDTO)
     {
         $this->write->table('ors.reports')
             ->insert([
@@ -116,19 +123,6 @@ class OrsRepository extends AbstractProviderRepository
                 'bet_winlose' => $transactionDTO->betWinlose,
                 'updated_at' => $transactionDTO->dateTime,
                 'created_at' => $transactionDTO->dateTime
-            ]);
-    }
-
-    public function createBonusTransaction(string $transactionID, float $bonusAmount, string $bonusTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->insert([
-                'trx_id' => $transactionID,
-                'bet_amount' => 0,
-                'win_amount' => $bonusAmount,
-                'created_at' => $bonusTime,
-                'updated_at' => $bonusTime
             ]);
     }
 }

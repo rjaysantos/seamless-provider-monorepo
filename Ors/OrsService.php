@@ -12,6 +12,7 @@ use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
@@ -37,7 +38,7 @@ class OrsService
         private OrsApi $api,
         private OgSignature $encryption,
         private IWallet $wallet,
-        private WalletReport $report
+        private WalletReport $walletReport
     ) {}
 
     public function getLaunchUrl(Request $request): string
@@ -92,19 +93,19 @@ class OrsService
 
     private function getPlayerDetails(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        return $playerData;
+        return $player;
     }
 
-    private function getBalanceFromWallet(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, OrsPlayerDTO $playerDTO): float
     {
-        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
-        if ($walletResponse['status_code'] !== 2100)
+        if ($walletResponse['status_code'] != 2100)
             throw new WalletErrorException;
 
         return $walletResponse['credit'];
@@ -124,19 +125,19 @@ class OrsService
             throw new InvalidTokenException;
     }
 
-    public function getBalance(Request $request): object
+    public function balance(OrsRequestDTO $requestDTO): object
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getBalanceFromWallet(credentials: $credentials, playID: $request->player_id);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $player
         ];
     }
 
@@ -275,10 +276,9 @@ class OrsService
         );
 
         $payoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
-        // dd($payoutTransaction);
 
         if (is_null($payoutTransaction) === false)
-            return $this->getBalanceFromWallet(credentials: $credentials, playID: $requestDTO->playID);;
+            return $this->getPlayerBalance(credentials: $credentials, playerDTO: $requestDTO->playID);
 
         try {
             $this->repository->beginTransaction();
@@ -286,13 +286,13 @@ class OrsService
             $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
 
             if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
-                $report = $this->report->makeArcadeReport(
+                $report = $this->walletReport->makeArcadeReport(
                     transactionID: $payoutTransactionDTO->roundID,
                     gameCode: $payoutTransactionDTO->gameID,
                     betTime: $payoutTransactionDTO->dateTime
                 );
             else
-                $report = $this->report->makeSlotReport(
+                $report = $this->walletReport->makeSlotReport(
                     transactionID: $payoutTransactionDTO->roundID,
                     gameCode: $payoutTransactionDTO->gameID,
                     betTime: $payoutTransactionDTO->dateTime
@@ -319,53 +319,51 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function bonus(Request $request): float
+    public function bonus(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->transaction_id);
+        $bonusTransactionDTO = OrsTransactionDTO::bonus(
+            extID: "bonus-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player
+        );
 
-        if (is_null($transactionData) === false)
+        $existingBonusTransaction = $this->repository->getTransactionByExtID(extID: $bonusTransactionDTO->extID);
+
+        if (is_null($existingBonusTransaction) === false)
             throw new TransactionAlreadyExistsException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $bonusTime = Carbon::createFromTimestamp($request->called_at, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
+            $this->repository->createTransaction(transactionDTO: $bonusTransactionDTO);
 
-            $this->repository->createBonusTransaction(
-                transactionID: $request->transaction_id,
-                bonusAmount: $request->amount,
-                bonusTime: $bonusTime
-            );
-
-            $report = $this->report->makeBonusReport(
-                transactionID: $request->transaction_id,
-                gameCode: $request->game_code,
-                betTime: $bonusTime
+            $report = $this->walletReport->makeBonusReport(
+                transactionID: $bonusTransactionDTO->roundID,
+                gameCode: $bonusTransactionDTO->gameID,
+                betTime: $bonusTransactionDTO->dateTime
             );
 
             $walletResponse = $this->wallet->bonus(
                 credentials: $credentials,
-                playID: $request->player_id,
-                currency: $playerData->currency,
-                transactionID: "bonus-{$request->transaction_id}",
-                amount: $request->amount,
+                playID: $bonusTransactionDTO->playID,
+                currency: $bonusTransactionDTO->currency,
+                transactionID: $bonusTransactionDTO->extID,
+                amount: $bonusTransactionDTO->winAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollBack();
+            $this->repository->rollback();
             throw $e;
         }
 

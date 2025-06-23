@@ -158,7 +158,8 @@ class AixServiceTest extends TestCase
                 'test-round',
                 'test-game-id',
                 '2026-01-01 00:00:00'
-            );
+            )
+            ->willReturn(new Report);
 
         $stubRepository = $this->createMock(AixRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -299,7 +300,8 @@ class AixServiceTest extends TestCase
                 'test-round',
                 'test-game-id',
                 '2026-01-01 00:00:00'
-            );
+            )
+            ->willReturn(new Report);
 
         $stubRepository = $this->createMock(AixRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -441,7 +443,8 @@ class AixServiceTest extends TestCase
                 'test-round',
                 'test-game-id',
                 '2026-01-01 00:00:00'
-            );
+            )
+            ->willReturn(new Report);
 
         $stubRepository = $this->createMock(AixRepository::class);
         $stubRepository->method('getPlayerByPlayID')
