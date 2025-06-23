@@ -2684,11 +2684,9 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: new Request()
         );
@@ -2696,10 +2694,10 @@ class OrsServiceTest extends TestCase
         $mockRepository = $this->createMock(OrsRepository::class);
         $mockRepository->method('getPlayerByPlayID')
             ->with('testPlayIDu1')
-            ->willReturn((object)[
-                'play_id' => 'testPlayIDu1',
-                'currency' => 'IDR'
-            ]);
+            ->willReturn(new OrsPlayerDTO(
+                playID: 'testPlayIDu1',
+                currency: 'IDR'
+            ));
 
         $mockRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(new OrsTransactionDTO(
@@ -2767,11 +2765,9 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: new Request()
         );
@@ -2803,21 +2799,19 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: new Request()
         );
 
         $mockRepository = $this->createMock(OrsRepository::class);
         $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object)[
-                'currency' => 'IDR',
-                'play_id' => 'testPlayIDu1'
-            ]);
+            ->willReturn(new OrsPlayerDTO(
+                playID: 'testPlayIDu1',
+                currency: 'IDR'
+            ));
 
         $mockRepository->method('getTransactionByExtID')
             ->willReturnOnConsecutiveCalls(new OrsTransactionDTO(
@@ -2884,19 +2878,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: new Request()
         );
 
-        $player = (object) [
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -2929,19 +2921,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'invalidSignature',
             rawRequest: $request
         );
 
-        $player = (object) [
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $betTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3010,19 +3000,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'wager-testTransactionID',
-            roundID: 'testTransactionID',
+            roundID: 'wager-testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'invalidSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'player_id' => '1',
-            'currency' => 'IDR'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -3060,19 +3048,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3146,19 +3132,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -3201,19 +3185,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3283,19 +3265,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3360,19 +3340,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3439,19 +3417,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3523,19 +3499,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3607,19 +3581,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3695,19 +3667,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: $request
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3769,19 +3739,17 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu1',
             amount: 150,
-            extID: 'testTransactionID',
             roundID: 'testTransactionID',
             gameID: 999,
-            currency: 'IDR',
-            timestamp: time(),
+            dateTime: time(),
             signature: 'testSignature',
             rawRequest: new Request()
         );
 
-        $player = (object)[
-            'currency' => 'IDR',
-            'play_id' => 'testPlayIDu1'
-        ];
+        $player = (new OrsPlayerDTO(
+            playID: 'testOPlayIDu1',
+            currency: 'IDR'
+        ));
 
         $wagerTransaction = new OrsTransactionDTO(
             extID: 'wager-testTransactionID',
@@ -3842,7 +3810,7 @@ class OrsServiceTest extends TestCase
     }
 
     public function test_bonus_mockWalletReport_makeBonusReport()
-    { 
+    {
         $date = Carbon::now()->setTimezone('GMT+8');
 
         $request = new Request(
@@ -3879,7 +3847,7 @@ class OrsServiceTest extends TestCase
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($playerDTO);
-        
+
         $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
@@ -4006,6 +3974,4 @@ class OrsServiceTest extends TestCase
 
         $service->bonus(requestDTO: $requestDTO);
     }
-
-
 }
