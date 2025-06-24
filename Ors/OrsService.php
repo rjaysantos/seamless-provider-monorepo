@@ -154,18 +154,17 @@ class OrsService
         if ($balance < $requestDTO->totalAmount)
             throw new InsufficientFundException;
 
-        foreach ($requestDTO->records as $record) {
-            $existingTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$record['transaction_id']}");
+        foreach ($requestDTO->transactions as $transaction) {
+            $existingTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$transaction->roundID}");
 
             if (is_null($existingTransaction) === false)
                 throw new TransactionAlreadyExistsException;
         }
 
-        foreach ($requestDTO->records as $record) {
+        foreach ($requestDTO->transactions as $transaction) {
             $wagerTransactionDTO = OrsTransactionDTO::wager(
-                extID: "wager-{$record['transaction_id']}",
-                record: $record,
-                requestDTO: $requestDTO,
+                extID: "wager-{$transaction->roundID}",
+                requestDTO: $transaction,
                 playerDTO: $player
             );
 

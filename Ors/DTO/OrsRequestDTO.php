@@ -16,8 +16,8 @@ class OrsRequestDTO
         public readonly ?float $amount = null,
         public readonly ?float $totalAmount = null,
         public readonly ?string $roundID = null,
-        public readonly ?array $records = [],
-        public readonly ?int $dateTime = null
+        public readonly ?int $dateTime = null,
+        public readonly ?array $transactions = []
     ) {}
 
     public static function fromBalanceRequest(Request $request): self
@@ -46,16 +46,23 @@ class OrsRequestDTO
 
     public static function fromDebitRequest(Request $request): self
     {
+        foreach ($request->records as $record) {
+            $transactions[] = new self(
+                gameID: $request->game_id,
+                amount: $record['amount'],
+                roundID: $record['transaction_id'],
+                dateTime: $request->called_at,
+            );
+        }
+
         return new self(
             key: $request->header('key'),
             playID: $request->player_id,
             signature: $request->signature,
             transactionType: $request->transaction_type,
-            gameID: $request->game_id,
             totalAmount: $request->total_amount,
-            records: $request->records,
-            dateTime: $request->called_at,
-            rawRequest: $request
+            rawRequest: $request,
+            transactions: $transactions
         );
     }
 }
