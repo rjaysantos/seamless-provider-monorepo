@@ -4,6 +4,7 @@ namespace Providers\Ors;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\DTO\CasinoRequestDTO;
 use Providers\Ors\OgSignature;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use App\Libraries\LaravelHttpClient;
@@ -30,16 +31,15 @@ class OrsApi
     public function enterGame(
         ICredentials $credentials,
         OrsPlayerDTO $playerDTO,
-        string $language,
-        string $gameID
+        CasinoRequestDTO $casinoRequest,
     ): string {
         $apiRequest = [
             'player_id' => $playerDTO->playID,
             'timestamp' => Carbon::now()->timestamp,
             'nickname' => $playerDTO->playID,
             'token' => $playerDTO->token,
-            'lang' => $language,
-            'game_id' => $gameID,
+            'lang' => $casinoRequest->lang,
+            'game_id' => $casinoRequest->gameID,
             'betlimit' => 164,
         ];
 

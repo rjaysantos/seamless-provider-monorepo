@@ -54,8 +54,7 @@ class OrsService
         return $this->api->enterGame(
             credentials: $credentials,
             playerDTO: $player,
-            language: $casinoRequest->lang,
-            gameID: $casinoRequest->gameID
+            casinoRequest: $casinoRequest
         );
     }
 
