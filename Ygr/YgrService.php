@@ -76,12 +76,8 @@ class YgrService
         $credentials = $this->credentials->getCredentials(currency: $player->currency);
 
         return (object) [
-            'ownerId' => $credentials->getVendorID(),
-            'parentId' => $credentials->getVendorID(),
-            'gameId' => $player->gameCode,
-            'userId' => $player->playID,
-            'nickname' => $player->username,
-            'currency' => $player->currency,
+            'credentials' => $credentials,
+            'player' => $player,
             'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $player->playID)
         ];
     }

@@ -36,10 +36,14 @@ class YgrController extends AbstractCasinoController
 
         $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
 
-        return $this->response->authorizationConnectToken(data: $data);
+        return $this->response->authorizationConnectToken(
+            credentials: $data->credentials,
+            player: $data->player,
+            balance: $data->balance
+        );
     }
 
-    public function balance(Request $request)
+    public function getConnectTokenAmount(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
@@ -49,7 +53,7 @@ class YgrController extends AbstractCasinoController
 
         $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
 
-        return $this->response->balance(data: $data);
+        return $this->response->getConnectTokenAmount(player: $data->player, balance: $data->balance);
     }
 
     public function deleteToken(Request $request)

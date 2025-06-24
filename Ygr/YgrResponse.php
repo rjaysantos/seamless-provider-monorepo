@@ -5,6 +5,8 @@ namespace Providers\Ygr;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
+use Providers\Ygr\DTO\YgrPlayerDTO;
+use Providers\Ygr\Contracts\ICredentials;
 
 class YgrResponse
 {
@@ -36,24 +38,27 @@ class YgrResponse
         return (float) number_format($balance, 2, '.', '');
     }
 
-    public function authorizationConnectToken(object $data): JsonResponse
-    {
+    public function authorizationConnectToken(
+        ICredentials $credentials,
+        YgrPlayerDTO $player,
+        float $balance
+    ): JsonResponse {
         return $this->providerSuccessResponse(data: [
-            'ownerId' => $data->ownerId,
-            'parentId' => $data->parentId,
-            'gameId' => $data->gameId,
-            'userId' => $data->userId,
-            'nickname' => $data->nickname,
-            'currency' => $data->currency,
-            'amount' => $this->formatToTwoDecimals(balance: $data->balance)
+            'ownerId' => $credentials->getVendorID(),
+            'parentId' => $credentials->getVendorID(),
+            'gameId' => $player->gameCode,
+            'userId' => $player->playID,
+            'nickname' => $player->username,
+            'currency' => $player->currency,
+            'amount' => $this->formatToTwoDecimals(balance: $balance)
         ]);
     }
 
-    public function balance(object $data): JsonResponse
+    public function getConnectTokenAmount(YgrPlayerDTO $player, float $balance): JsonResponse
     {
         return $this->providerSuccessResponse(data: [
-            'currency' => $data->currency,
-            'amount' => $this->formatToTwoDecimals(balance: $data->balance)
+            'currency' => $player->currency,
+            'amount' => $this->formatToTwoDecimals(balance: $balance)
         ]);
     }
 
