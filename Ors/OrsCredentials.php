@@ -10,6 +10,7 @@ use Providers\Ors\Credentials\OrsUSD;
 use Providers\Ors\Credentials\OrsVND;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Credentials\OrsStaging;
+use App\Exceptions\Casino\InvalidCurrencyException;
 
 class OrsCredentials
 {
@@ -23,6 +24,7 @@ class OrsCredentials
                 'VND' => new OrsVND,
                 'BRL' => new OrsBRL,
                 'USD' => new OrsUSD,
+                default => throw new InvalidCurrencyException
             };
         }
 

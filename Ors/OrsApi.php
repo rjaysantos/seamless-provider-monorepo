@@ -5,16 +5,16 @@ namespace Providers\Ors;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Providers\Ors\OgSignature;
+use Providers\Ors\DTO\OrsPlayerDTO;
 use App\Libraries\LaravelHttpClient;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Ors\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class OrsApi
 {
-    public function __construct(private LaravelHttpClient $http, private OgSignature $encryption)
-    {
-    }
+    public function __construct(private LaravelHttpClient $http, private OgSignature $encryption) {}
 
     public function validateResponse(object $response, array $rules): void
     {
@@ -27,15 +27,19 @@ class OrsApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function enterGame(ICredentials $credentials, Request $request, string $token): string
-    {
+    public function enterGame(
+        ICredentials $credentials,
+        OrsPlayerDTO $playerDTO,
+        string $language,
+        string $gameID
+    ): string {
         $apiRequest = [
-            'player_id' => $request->playId,
+            'player_id' => $playerDTO->playID,
             'timestamp' => Carbon::now()->timestamp,
-            'nickname' => $request->playId,
-            'token' => $token,
-            'lang' => $request->language,
-            'game_id' => $request->gameId,
+            'nickname' => $playerDTO->playID,
+            'token' => $playerDTO->token,
+            'lang' => $language,
+            'game_id' => $gameID,
             'betlimit' => 164,
         ];
 
@@ -64,11 +68,11 @@ class OrsApi
         return $response->game_link;
     }
 
-    public function getBettingRecords(ICredentials $credentials, string $transactionID, string $playID): string
+    public function getBettingRecords(ICredentials $credentials, OrsTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'transaction_id' => $transactionID,
-            'player_id' => $playID,
+            'transaction_id' => $transactionDTO->roundID,
+            'player_id' => $transactionDTO->playID,
             'game_type_id' => 2,
         ];
 
