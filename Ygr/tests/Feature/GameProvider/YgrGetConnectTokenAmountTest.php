@@ -3,35 +3,29 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 
-class YgrGetBalanceTest extends TestCase
+class YgrGetConnectTokenAmountTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ygr.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_getBalance_validRequest_expectedData()
+    public function test_GetConnectTokenAmount_validRequest_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         $wallet = new class extends TestWallet {
@@ -43,7 +37,6 @@ class YgrGetBalanceTest extends TestCase
                 ];
             }
         };
-
         app()->bind(IWallet::class, $wallet::class);
 
         $response = $this->get('ygr/prov/token/getConnectTokenAmount?connectToken=testToken');
@@ -62,26 +55,11 @@ class YgrGetBalanceTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 
-    public function test_getBalance_invalidRequest_expectedData()
+    public function test_GetConnectTokenAmount_invalidRequest_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
-
-        DB::table('ygr.players')->insert([
-            'play_id' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
-        ]);
 
         $response = $this->get('ygr/prov/token/getConnectTokenAmount?connectToken=' . null);
 
@@ -96,25 +74,18 @@ class YgrGetBalanceTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 
-    public function test_getBalance_tokenNotFoundException_expectedData()
+    public function test_GetConnectTokenAmount_tokenNotFoundException_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         $response = $this->get('ygr/prov/token/getConnectTokenAmount?connectToken=invalidToken');
@@ -130,25 +101,18 @@ class YgrGetBalanceTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 
-    public function test_getBalance_walletErrorException_expectedData()
+    public function test_GetConnectTokenAmount_walletErrorException_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'game_code' => 'testGameID'
         ]);
 
         $wallet = new class extends TestWallet {
@@ -175,7 +139,5 @@ class YgrGetBalanceTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 }
