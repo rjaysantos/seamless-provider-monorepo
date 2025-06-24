@@ -16,22 +16,28 @@ class HcgVisualTest extends TestCase
     public function test_visual_validRequest_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hcg.reports')->insert([
-            'trx_id' => '154216315916480001',
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
-            'created_at' => '2024-08-14 14:47:42',
-            'updated_at' => '2024-08-14 14:47:42'
+            'ext_id' => 'wagerpayout-1-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => '154216315916480001',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'wagerpayout-1-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -42,32 +48,38 @@ class HcgVisualTest extends TestCase
         $response->assertJson([
             'success' => true,
             'code' => 200,
-            'data' => 'https://order.hcgame888.com/#/order_details/en/1560/' . $request['bet_id'],
+            'data' => 'https://order.hcgame888.com/#/order_details/en/1560/' . 'testTransactionID',
             'error' => null
         ]);
 
         $response->assertStatus(200);
     }
 
-    public function test_visual_validRequestFormattedTrxID_expectedData()
+    public function test_visual_validRequestFormattedExtID_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hcg.reports')->insert([
-            'trx_id' => '1-154216315916480001',
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
-            'created_at' => '2024-08-14 14:47:42',
-            'updated_at' => '2024-08-14 14:47:42'
+            'ext_id' => 'wagerpayout-1-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => '1-154216315916480001',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'wagerpayout-1-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -78,7 +90,7 @@ class HcgVisualTest extends TestCase
         $response->assertJson([
             'success' => true,
             'code' => 200,
-            'data' => 'https://order.hcgame888.com/#/order_details/en/1560/154216315916480001',
+            'data' => 'https://order.hcgame888.com/#/order_details/en/1560/testTransactionID',
             'error' => null
         ]);
 
@@ -88,8 +100,8 @@ class HcgVisualTest extends TestCase
     public function test_visual_invalidBearerToken_expectedData()
     {
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransacID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'wagerpayout-1-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -109,14 +121,14 @@ class HcgVisualTest extends TestCase
     public function test_visual_playerNotFound_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testTransacID',
+            'bet_id' => 'wagerpayout-1-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -135,22 +147,28 @@ class HcgVisualTest extends TestCase
     public function test_visual_transactionNotFound_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hcg.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
-            'created_at' => '2024-08-14 14:47:42',
-            'updated_at' => '2024-08-14 14:47:42'
+            'ext_id' => 'wagerpayout-1-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'invalidTransacID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'invalidTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -170,8 +188,8 @@ class HcgVisualTest extends TestCase
     public function test_visual_invalidRequest_expectedData($param)
     {
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransacID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'wagerpayout-1-testTransactionID',
             'currency' => 'IDR'
         ];
 
