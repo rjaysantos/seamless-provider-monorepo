@@ -218,21 +218,20 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        foreach ($requestDTO->records as $record) {
-            $existingWagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$record['transaction_id']}");
+        foreach ($requestDTO->transactions as $transaction) {
+            $existingWagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$transaction->roundID}");
 
             if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
         }
 
-        foreach ($requestDTO->records as $record) {
+        foreach ($requestDTO->transactions as $transaction) {
 
-            $transactionID = $record['transaction_id'];
+            $transactionID = $transaction->roundID;
 
             $rollbackTransactionDTO = OrsTransactionDTO::cancel(
                 extID: "cancel-{$transactionID}",
-                record: $record,
-                requestDTO: $requestDTO,
+                requestDTO: $transaction,
                 playerDTO: $player
             );
 
