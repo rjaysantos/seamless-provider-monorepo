@@ -173,7 +173,7 @@ class OrsService
 
                 $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
-                if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
+                if (in_array($wagerTransactionDTO->gameID, $credentials->getArcadeGameList()) === true)
                     $report = $this->walletReport->makeArcadeReport(
                         transactionID: $wagerTransactionDTO->roundID,
                         gameCode: $wagerTransactionDTO->gameID,

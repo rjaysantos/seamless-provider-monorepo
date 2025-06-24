@@ -706,16 +706,16 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
             signature: 'testSignature',
-            gameID: 123,
             totalAmount: 150,
-            records: [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
-            ],
-            dateTime: 1715071526,
-            rawRequest: $request
+            rawRequest: $request,
+            transactions: [
+                new OrsRequestDTO(
+                    gameID: 123,
+                    amount: 150,
+                    roundID: 'testTransactionID1',
+                    dateTime: 1715071526
+                )
+            ]
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -794,16 +794,16 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
             signature: 'testSignature',
-            gameID: 123,
             totalAmount: 150,
-            records: [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
-            ],
-            dateTime: 1715071526,
-            rawRequest: $request
+            rawRequest: $request,
+            transactions: [
+                new OrsRequestDTO(
+                    gameID: 123,
+                    amount: 150,
+                    roundID: 'testTransactionID1',
+                    dateTime: 1715071526
+                )
+            ]
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -869,7 +869,7 @@ class OrsServiceTest extends TestCase
                 'player_id' => 'testPlayID',
                 'total_amount' => 150,
                 'transaction_type' => 'debit',
-                'game_id' => 123,
+                'game_id' => 131,
                 'round_id' => 'testRoundID',
                 'called_at' => 1234567891,
                 'records' => [
@@ -889,16 +889,16 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
             signature: 'testSignature',
-            gameID: 131,
             totalAmount: 150,
-            records: [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
-            ],
-            dateTime: 1715071526,
-            rawRequest: $request
+            rawRequest: $request,
+            transactions: [
+                new OrsRequestDTO(
+                    gameID: 131,
+                    amount: 150,
+                    roundID: 'testTransactionID1',
+                    dateTime: 1715071526
+                )
+            ]
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
@@ -984,16 +984,16 @@ class OrsServiceTest extends TestCase
             key: 'testPublicKey',
             playID: 'testPlayIDu001',
             signature: 'testSignature',
-            gameID: 123,
             totalAmount: 150,
-            records: [
-                [
-                    'transaction_id' => 'testTransactionID1',
-                    'amount' => 150
-                ]
-            ],
-            dateTime: 1715071526,
-            rawRequest: $request
+            rawRequest: $request,
+            transactions: [
+                new OrsRequestDTO(
+                    gameID: 123,
+                    amount: 150,
+                    roundID: 'testTransactionID1',
+                    dateTime: 1715071526
+                )
+            ]
         );
 
         $stubRepository = $this->createMock(OrsRepository::class);
