@@ -51,11 +51,7 @@ class OrsService
 
         $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player, gameCode: $casinoRequest->gameID);
 
-        return $this->api->enterGame(
-            credentials: $credentials,
-            playerDTO: $player,
-            casinoRequest: $casinoRequest
-        );
+        return $this->api->enterGame(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
     }
 
     public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
