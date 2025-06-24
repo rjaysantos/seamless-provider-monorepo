@@ -219,7 +219,9 @@ class OrsService
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
         foreach ($requestDTO->transactions as $transaction) {
-            $existingWagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$transaction->roundID}");
+            $existingWagerTransaction = $this->repository->getTransactionByExtID(
+                extID: "wager-{$transaction->roundID}"
+            );
 
             if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
