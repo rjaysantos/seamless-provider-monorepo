@@ -28,14 +28,14 @@ class OrsRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function updateOrInsertPlayerTokenAndGameID(OrsPlayerDTO $playerDTO, string $gameCode): void
+    public function updateOrInsertPlayerTokenAndGameID(OrsPlayerDTO $playerDTO): void
     {
         $this->write->table('ors.players')
             ->updateOrInsert(
                 ['play_id' => $playerDTO->playID],
                 [
                     'token' => $playerDTO->token,
-                    'game_code' => $gameCode
+                    'game_code' => $playerDTO->gameID
                 ]
             );
     }

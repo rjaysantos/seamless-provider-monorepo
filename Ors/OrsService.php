@@ -49,7 +49,7 @@ class OrsService
 
         $this->repository->createOrIgnorePlayer(playerDTO: $player);
 
-        $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player, gameCode: $casinoRequest->gameID);
+        $this->repository->updateOrInsertPlayerTokenAndGameID(playerDTO: $player);
 
         return $this->api->enterGame(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
     }
