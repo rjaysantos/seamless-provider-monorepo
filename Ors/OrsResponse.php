@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Providers\Ors\DTO\OrsPlayerDTO;
+use Providers\Ors\DTO\OrsRequestDTO;
 
 class OrsResponse
 {
@@ -42,16 +43,16 @@ class OrsResponse
         ]);
     }
 
-    public function debit(Request $request, float $balance): JsonResponse
+    public function debit(OrsRequestDTO $requestDTO, float $balance): JsonResponse
     {
         return response()->json([
             'rs_code' => 'S-100',
             'rs_message' => 'success',
-            'player_id' => $request->player_id,
-            'total_amount' => $request->total_amount,
+            'player_id' => $requestDTO->playID,
+            'total_amount' => $requestDTO->totalAmount,
             'updated_balance' => $balance,
-            'billing_at' => $request->called_at,
-            'records' => $request->records,
+            'billing_at' =>  $requestDTO->rawRequest->called_at,
+            'records' => $requestDTO->rawRequest->records,
         ]);
     }
 
