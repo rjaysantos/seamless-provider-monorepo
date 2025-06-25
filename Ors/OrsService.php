@@ -113,13 +113,13 @@ class OrsService
 
     public function authenticate(OrsRequestDTO $requestDTO)
     {
-        $playerData = $this->getPlayerDetails(requestDTO: $requestDTO);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $playGame = $this->repository->getPlayGameByPlayIDToken(playID: $requestDTO->playID, token: $requestDTO->token);
+        $playGame = $this->repository->getPlayerByPlayIDToken(playID: $player->playID, token: $requestDTO->token);
 
         if (is_null($playGame) === true)
             throw new InvalidTokenException;

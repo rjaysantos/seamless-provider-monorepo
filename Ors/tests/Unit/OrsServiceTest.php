@@ -323,12 +323,14 @@ class OrsServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
             ->with('testPlayIDu1')
-            ->willReturn(new OrsPlayerDTO(currency: 'IDR'));
-
-        $mockRepository->method('getPlayGameByPlayIDToken')
             ->willReturn(new OrsPlayerDTO(
                 playID: 'testPlayIDu1',
-                username: 'testUser',
+                currency: 'IDR'
+            ));
+
+        $mockRepository->method('getPlayerByPlayIDToken')
+            ->willReturn(new OrsPlayerDTO(
+                playID: 'testPlayIDu1',
                 currency: 'IDR'
             ));
 
@@ -392,7 +394,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -434,7 +436,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -468,7 +470,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -515,7 +517,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -558,7 +560,7 @@ class OrsServiceTest extends TestCase
             ->willReturn($player);
 
         $mockRepository->expects($this->once())
-            ->method('getPlayGameByPlayIDToken')
+            ->method('getPlayerByPlayIDToken')
             ->with(playID: $requestDTO->playID, token: $requestDTO->token)
             ->willReturn($player);
 
@@ -603,7 +605,7 @@ class OrsServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn(null);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
