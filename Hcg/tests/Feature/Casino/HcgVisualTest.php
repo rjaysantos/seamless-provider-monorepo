@@ -23,7 +23,7 @@ class HcgVisualTest extends TestCase
 
         DB::table('hcg.reports')->insert([
             'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => 'testTransactionID',
+            'round_id' => '1-testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -65,7 +65,7 @@ class HcgVisualTest extends TestCase
 
         DB::table('hcg.reports')->insert([
             'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => 'testTransactionID',
+            'round_id' => '1-testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -154,7 +154,7 @@ class HcgVisualTest extends TestCase
 
         DB::table('hcg.reports')->insert([
             'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => 'testTransactionID',
+            'round_id' => '1-testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
