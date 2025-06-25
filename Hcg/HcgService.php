@@ -83,10 +83,8 @@ class HcgService
             throw new TransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-        
-        $transactionID = Str::afterlast($extID, '-');
 
-        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transactionID}";
+        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transaction->roundID}";
     }
 
     private function getPlayerBalance(ICredentials $credentials, string $playID): float
