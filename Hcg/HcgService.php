@@ -18,6 +18,8 @@ use App\Exceptions\Casino\TransactionNotFoundException;
 use Providers\Hcg\Exceptions\InsufficientFundException;
 use Providers\Hcg\Exceptions\TransactionAlreadyExistException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
+use Providers\Hcg\DTO\HcgPlayerDTO;
+use Providers\Hcg\DTO\HcgRequestDTO;
 use Providers\Hcg\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 
 class HcgService
@@ -86,9 +88,9 @@ class HcgService
         return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transactionID}";
     }
 
-    private function getPlayerBalance(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, HcgPlayerDTO $playerDTO): float
     {
-        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
         if ($walletResponse['status_code'] !== 2100)
             throw new WalletErrorException;
@@ -96,19 +98,18 @@ class HcgService
         return $walletResponse['credit'];
     }
 
-    public function getBalance(Request $request)
+    public function getBalance(HcgRequestDTO $requestDTO)
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->uid);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerDetails) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $request->uid
-        ) / $credentials->getCurrencyConversion();
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
+
+        return $balance / $credentials->getCurrencyConversion();
     }
 
     public function betAndSettle(Request $request): float
