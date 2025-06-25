@@ -6,6 +6,7 @@ use App\Contracts\V2\IWallet;
 use App\Libraries\Randomizer;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class Gs5PlayTest extends TestCase
@@ -14,7 +15,6 @@ class Gs5PlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE gs5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -23,9 +23,13 @@ class Gs5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
             'language' => 'en'
         ];
 
@@ -39,7 +43,7 @@ class Gs5PlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('/gs5/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $credentials = new Gs5Staging;
@@ -62,12 +66,9 @@ class Gs5PlayTest extends TestCase
         $this->assertDatabaseHas('gs5.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('gs5.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'testToken'
+            'currency' => 'IDR',
+            'token' => 'testToken',
+            'game_code' => 'testGameID'
         ]);
     }
 
@@ -76,20 +77,20 @@ class Gs5PlayTest extends TestCase
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'oldTestToken',
-            'expired' => 'FALSE'
+            'game_code' => 'oldTestGameID'
         ]);
 
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
             'language' => 'en'
         ];
 
@@ -103,7 +104,7 @@ class Gs5PlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('/gs5/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $credentials = new Gs5Staging;
@@ -123,14 +124,15 @@ class Gs5PlayTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('gs5.playgame', [
+        $this->assertDatabaseMissing('gs5.players', [
             'play_id' => 'testPlayID',
             'token' => 'oldTestToken'
         ]);
 
-        $this->assertDatabaseHas('gs5.playgame', [
+        $this->assertDatabaseHas('gs5.players', [
             'play_id' => 'testPlayID',
-            'token' => 'newTestToken'
+            'token' => 'newTestToken',
+            'game_code' => 'testGameID'
         ]);
     }
 
@@ -139,9 +141,13 @@ class Gs5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
             'language' => $lang
         ];
 
@@ -155,7 +161,7 @@ class Gs5PlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $response = $this->post('/gs5/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $credentials = new Gs5Staging;
@@ -193,16 +199,20 @@ class Gs5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
             'language' => 'en'
         ];
 
         unset($request[$param]);
 
         $response = $this->post('/gs5/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $response->assertJson([
@@ -229,9 +239,14 @@ class Gs5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en'
         ];
 
         $response = $this->post('/gs5/in/play', $request, [

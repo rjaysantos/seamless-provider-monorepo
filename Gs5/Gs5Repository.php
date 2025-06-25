@@ -3,8 +3,11 @@
 namespace Providers\Gs5;
 
 use Illuminate\Support\Facades\DB;
+use Providers\Gs5\DTO\Gs5PlayerDTO;
+use Providers\Gs5\DTO\Gs5TransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class Gs5Repository
+class Gs5Repository extends AbstractProviderRepository
 {
     public function getPlayerByToken(string $token): ?object
     {
@@ -21,11 +24,13 @@ class Gs5Repository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?Gs5TransactionDTO
     {
-        return DB::table('gs5.reports')
-            ->where('trx_id', $trxID)
+        $data = DB::table('gs5.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : Gs5TransactionDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void
@@ -37,6 +42,22 @@ class Gs5Repository
                 'username' => $username,
                 'currency' => $currency,
             ]);
+    }
+
+    public function createOrUpdatePlayer(Gs5PlayerDTO $playerDTO): void
+    {
+        $this->write->table('gs5.players')
+            ->updateOrInsert(
+                [
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                ],
+                [
+                    'game_code' => $playerDTO->gameCode,
+                    'token' => $playerDTO->token,
+                ]
+            );
     }
 
     public function createOrUpdatePlayGame(string $playID, string $token): void
