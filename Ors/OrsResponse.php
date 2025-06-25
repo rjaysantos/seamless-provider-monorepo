@@ -51,7 +51,7 @@ class OrsResponse
             'player_id' => $requestDTO->playID,
             'total_amount' => $requestDTO->totalAmount,
             'updated_balance' => $balance,
-            'billing_at' => $requestDTO->rawRequest->called_at,
+            'billing_at' =>  $requestDTO->rawRequest->called_at,
             'records' => $requestDTO->rawRequest->records,
         ]);
     }

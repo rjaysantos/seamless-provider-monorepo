@@ -6,6 +6,8 @@ use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Ygr\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Ygr\DTO\YgrPlayerDTO;
+use Providers\Ygr\DTO\YgrTransactionDTO;
 
 class YgrApi
 {
@@ -34,10 +36,10 @@ class YgrApi
         };
     }
 
-    public function launch(ICredentials $credentials, string $token, string $language): string
+    public function launch(ICredentials $credentials, YgrPlayerDTO $playerDTO, string $language): string
     {
         $apiRequest = [
-            'token' => $token,
+            'token' => $playerDTO->token,
             'language' => $this->getProviderLanguage(lang: $language)
         ];
 
@@ -56,11 +58,11 @@ class YgrApi
         return $response->Data->Url;
     }
 
-    public function getBetDetailUrl(ICredentials $credentials, string $transactionID, string $currency): string
+    public function getBetDetailUrl(ICredentials $credentials, YgrTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'WagersId' => $transactionID,
-            'Lang' => $this->getProviderLanguage(lang: $currency)
+            'WagersId' => $transactionDTO->roundID,
+            'Lang' => $this->getProviderLanguage(lang: $transactionDTO->currency)
         ];
 
         $response = $this->http->post(

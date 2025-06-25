@@ -127,8 +127,8 @@ class OrsController
 
         $requestDTO = OrsRequestDTO::fromDebitRequest(request: $request);
 
-        if ($request->transaction_type === 'debit')
-            $balance = $this->service->bet(request: $request);
+        if ($requestDTO->transactionType === 'debit')
+            $balance = $this->service->wager(requestDTO: $requestDTO);
         else
             $balance = $this->service->cancel(requestDTO: $requestDTO);
 

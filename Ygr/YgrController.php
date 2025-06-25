@@ -5,57 +5,17 @@ namespace Providers\Ygr;
 use Illuminate\Http\Request;
 use Providers\Ygr\YgrService;
 use Providers\Ygr\YgrResponse;
+use Providers\Ygr\DTO\YgrRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Casino\InvalidBearerTokenException;
-use App\Exceptions\Casino\InvalidCasinoRequestException;
+use App\Http\Controllers\AbstractCasinoController;
 use Providers\Ygr\Exceptions\InvalidProviderRequestException;
 
-class YgrController
+class YgrController extends AbstractCasinoController
 {
-    public function __construct(
-        private YgrService $service,
-        private YgrResponse $response
-    ) {
-    }
-
-    private function validateCasinoRequest(Request $request, array $rules): void
+    public function __construct(YgrService $service, YgrResponse $response)
     {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails() === true)
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'playId' => 'required|string',
-            'username' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,BRL,USD,MYR',
-            'gameId' => 'required|string',
-            'language' => 'required|string'
-        ]);
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'txn_id' => 'sometimes',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,BRL,USD,MYR',
-        ]);
-
-        $visualUrl = $this->service->getBetDetail(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
+        $this->service = $service;
+        $this->response = $response;
     }
 
     private function validateProviderRequest(Request $request, array $rules): void
@@ -66,26 +26,34 @@ class YgrController
             throw new InvalidProviderRequestException;
     }
 
-    public function verifyToken(Request $request)
+    public function authorizationConnectToken(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->verifyToken(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->authorizationConnectToken(
+            credentials: $data->credentials,
+            player: $data->player,
+            balance: $data->balance
+        );
     }
 
-    public function getBalance(Request $request)
+    public function getConnectTokenAmount(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->getBalance(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->getConnectTokenAmount(player: $data->player, balance: $data->balance);
     }
 
     public function deleteToken(Request $request)
