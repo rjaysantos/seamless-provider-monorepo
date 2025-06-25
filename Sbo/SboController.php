@@ -2,6 +2,7 @@
 
 namespace Providers\Sbo;
 
+use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Sbo\SboService;
 use Illuminate\Support\Facades\Validator;
@@ -9,7 +10,7 @@ use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Sbo\Exceptions\InvalidRequestException as ProviderInvalidRequestException;
 
-class SboController
+class SboController extends AbstractCasinoController
 {
     public function __construct(private SboService $service, private SboResponse $response) {}
 

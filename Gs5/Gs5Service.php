@@ -7,20 +7,22 @@ use Carbon\Carbon;
 use Providers\Gs5\Gs5Api;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Providers\Gs5\Gs5Repository;
 use Providers\Gs5\Gs5Credentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Gs5\DTO\Gs5PlayerDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Gs5\Contracts\ICredentials;
 use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Gs5\Exceptions\WalletErrorException;
 use Providers\Gs5\Exceptions\TokenNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException;
-use Providers\Gs5\Exceptions\TransactionAlreadySettledException;
 use Providers\Gs5\Exceptions\InsufficientFundException;
 use Providers\Gs5\Exceptions\ProviderWalletErrorException;
 use Providers\Gs5\Exceptions\TransactionAlreadyExistsException;
+use Providers\Gs5\Exceptions\TransactionAlreadySettledException;
 use Providers\Gs5\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class Gs5Service
@@ -35,7 +37,38 @@ class Gs5Service
         private IWallet $wallet,
         private WalletReport $report,
         private Randomizer $randomizer
-    ) {
+    ) {}
+
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
+    {
+        $player = Gs5PlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
+
+        $this->repository->createOrUpdatePlayer($player);
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        return $this->api->getLaunchUrl(
+            credentials: $credentials,
+            playerDTO: $player,
+            casinoRequestDTO: $casinoRequest
+        );
+    }
+
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
+    {
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
+
+        if (is_null($player) === true)
+            throw new PlayerNotFoundException;
+
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
+
+        if (is_null($transaction) === true)
+            throw new TransactionNotFoundException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        return $this->api->getGameHistory(credentials: $credentials, trxID: $transaction->roundID);
     }
 
     private function getPlayerBalance(ICredentials $credentials, string $playID): float
@@ -78,31 +111,6 @@ class Gs5Service
             'member_name' => $playerData->username,
             'balance' => $balance * self::PROVIDER_CURRENCY_CONVERSION
         ];
-    }
-
-    public function getLaunchUrl(Request $request): string
-    {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playId);
-
-        if (is_null($playerData) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                username: $request->username,
-                currency: $request->currency
-            );
-
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
-
-        $token = $this->randomizer->createToken();
-
-        $this->repository->createOrUpdatePlayGame(playID: $request->playId, token: $token);
-
-        return $this->api->getLaunchUrl(
-            credentials: $credentials,
-            playerToken: $token,
-            gameID: $request->gameId,
-            lang: $request->language
-        );
     }
 
     public function cancel(Request $request): float
@@ -148,23 +156,6 @@ class Gs5Service
         }
 
         return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
-    }
-
-    public function getBetDetailUrl(Request $request): string
-    {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->play_id);
-
-        if (is_null($playerData) === true)
-            throw new PlayerNotFoundException;
-
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->bet_id);
-
-        if (is_null($transactionData) === true)
-            throw new TransactionNotFoundException;
-
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
-
-        return $this->api->getGameHistory(credentials: $credentials, trxID: $request->bet_id);
     }
 
     public function bet(Request $request): float
