@@ -20,7 +20,7 @@ use Providers\Hcg\Exceptions\CannotCancelException;
 use App\Exceptions\Casino\TransactionNotFoundException;
 use Providers\Hcg\Exceptions\InsufficientFundException;
 use Providers\Hcg\Exceptions\TransactionAlreadyExistException;
-use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
+use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Hcg\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 
 class HcgService
@@ -75,7 +75,7 @@ class HcgService
         $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
         if (is_null($player) === true)
-            throw new CasinoPlayerNotFoundException;
+            throw new PlayerNotFoundException;
 
         $extID = $casinoRequest->extID;
 
