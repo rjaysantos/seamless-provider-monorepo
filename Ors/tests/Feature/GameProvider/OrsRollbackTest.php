@@ -151,8 +151,8 @@ class OrsRollbackTest extends TestCase
             'currency' => 'IDR',
             'game_code' => "123",
             'bet_amount' => -150.00,
-            'bet_valid' => -150.00,
-            'bet_winlose' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 150.00,
             'created_at' => '2024-05-07 16:45:26',
             'updated_at' => '2024-05-07 16:45:26',
         ]);
@@ -166,8 +166,8 @@ class OrsRollbackTest extends TestCase
             'currency' => 'IDR',
             'game_code' => "123",
             'bet_amount' => -100.00,
-            'bet_valid' => -100.00,
-            'bet_winlose' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 100.00,
             'created_at' => '2024-05-07 16:45:26',
             'updated_at' => '2024-05-07 16:45:26',
         ]);

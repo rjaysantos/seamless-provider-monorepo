@@ -44,12 +44,13 @@ class OrsTransactionDTO extends TransactionDTO
             webID: self::getWebID(playID: $playerDTO->playID),
             currency: $playerDTO->currency,
             gameID: $requestDTO->gameID,
-            betValid: -$requestDTO->amount,
             betAmount: -$requestDTO->amount,
+            betWinlose: $requestDTO->amount,
             dateTime: self::convertProviderDateTime(
                 dateTime: Carbon::createFromTimestamp($requestDTO->dateTime),
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
+            winAmount: $requestDTO->amount
         );
     }
 }

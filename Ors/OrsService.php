@@ -245,7 +245,7 @@ class OrsService
                 $walletResponse = $this->wallet->cancel(
                     credentials: $credentials,
                     transactionID: $rollbackTransactionDTO->extID,
-                    amount: abs($rollbackTransactionDTO->betAmount),
+                    amount: $rollbackTransactionDTO->winAmount,
                     transactionIDToCancel: "wager-{$transactionID}"
                 );
 
