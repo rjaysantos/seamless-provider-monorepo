@@ -45,16 +45,14 @@ class HcgService
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequest->currency);
 
         if (is_null($player) === true) {
+            $player = HcgPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
+
             try {
                 $this->repository->beginTransaction();
 
-                $this->repository->createPlayer(
-                    playID: $casinoRequest->playID,
-                    username: $casinoRequest->username,
-                    currency: $casinoRequest->currency
-                );
+                $this->repository->createPlayer(playerDTO: $player);
 
-                $this->api->userRegistrationInterface(credentials: $credentials, playID: $casinoRequest->playID);
+                $this->api->userRegistrationInterface(credentials: $credentials, playID: $player->playID);
 
                 $this->repository->commit();
             } catch (Exception $e) {
@@ -65,7 +63,7 @@ class HcgService
 
         return $this->api->userLoginInterface(
             credentials: $credentials,
-            playID: $casinoRequest->playID,
+            playID: $player->playID,
             gameCode: $casinoRequest->gameID
         );
     }

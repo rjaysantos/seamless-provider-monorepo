@@ -18,13 +18,13 @@ class HcgRepository extends AbstractProviderRepository
         return $data == null ? null : HcgPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createPlayer(HcgPlayerDTO $playerDTO): void
     {
         $this->write->table('hcg.players')
             ->insertOrIgnore([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
             ]);
     }
 
