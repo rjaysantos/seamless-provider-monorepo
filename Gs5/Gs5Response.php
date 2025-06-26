@@ -3,6 +3,7 @@
 namespace Providers\Gs5;
 
 use Illuminate\Http\JsonResponse;
+use Providers\Gs5\DTO\Gs5PlayerDTO;
 
 class Gs5Response
 {
@@ -14,13 +15,13 @@ class Gs5Response
         ]);
     }
 
-    public function authenticate(object $data): JsonResponse
+    public function authenticate(Gs5PlayerDTO $playerDTO, float $balance): JsonResponse
     {
         return response()->json([
             'status_code' => 0,
-            'member_id' => $data->member_id,
-            'member_name' => $data->member_name,
-            'balance' => $data->balance
+            'member_id' => $playerDTO->playID,
+            'member_name' => $playerDTO->username,
+            'balance' => $balance
         ]);
     }
 

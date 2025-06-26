@@ -79,7 +79,7 @@ class Gs5Service
         if ($balanceResponse['status_code'] !== 2100)
             throw new WalletErrorException;
 
-        return $balanceResponse['credit'];
+        return $balanceResponse['credit'] * self::PROVIDER_CURRENCY_CONVERSION;
     }
 
     public function getBalance(GS5RequestDTO $requestDTO): float
@@ -91,26 +91,21 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
-
-        return $balance * self::PROVIDER_CURRENCY_CONVERSION;
+        return $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
     }
 
-    public function authenticate(Request $request): object
+    public function authenticate(GS5RequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
-
-        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $playerData->play_id);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         return (object) [
-            'member_id' => $playerData->play_id,
-            'member_name' => $playerData->username,
-            'balance' => $balance * self::PROVIDER_CURRENCY_CONVERSION
+            'player' => $player,
+            'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $player->playID)
         ];
     }
 

@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 
@@ -11,8 +12,6 @@ class Gs5BalanceTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -32,13 +31,8 @@ class Gs5BalanceTest extends TestCase
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'testToken'];
@@ -69,13 +63,8 @@ class Gs5BalanceTest extends TestCase
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'invalidToken'];
@@ -93,22 +82,18 @@ class Gs5BalanceTest extends TestCase
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
                 return [
-                    'status_code' => 4534543
+                    'status_code' => 2000
                 ];
             }
         };
+
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'testToken'];
