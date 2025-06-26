@@ -12,8 +12,6 @@ class HcgRequestDTO
 
     public static function fromGetBalanceRequest(Request $request)
     {
-        return new self(
-            playID: $request->uid
-        );
+        return new self(playID: $request->uid);
     }
 }
