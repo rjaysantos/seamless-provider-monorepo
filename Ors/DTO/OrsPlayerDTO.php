@@ -16,7 +16,6 @@ class OrsPlayerDTO extends PlayerDTO
         public readonly ?string $username = null,
         public readonly ?string $currency = null,
         public readonly ?string $token = null,
-        public readonly ?string $gameID = null,
         public readonly ?string $providerUserID = null,
     ) {}
 
@@ -29,7 +28,6 @@ class OrsPlayerDTO extends PlayerDTO
             username: $casinoRequestDTO->username,
             currency: $casinoRequestDTO->currency,
             token: $randomizer->createToken(),
-            gameID: $casinoRequestDTO->gameID
         );
     }
 }

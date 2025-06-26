@@ -18,24 +18,15 @@ class OrsRepository extends AbstractProviderRepository
         return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createOrIgnorePlayer(OrsPlayerDTO $playerDTO): void
-    {
-        $this->write->table('ors.players')
-            ->insertOrIgnore([
-                'play_id' => $playerDTO->playID,
-                'username' => $playerDTO->username,
-                'currency' => $playerDTO->currency
-            ]);
-    }
-
-    public function updateOrInsertPlayerTokenAndGameID(OrsPlayerDTO $playerDTO): void
+    public function createOrUpdatePlayer(OrsPlayerDTO $playerDTO): void
     {
         $this->write->table('ors.players')
             ->updateOrInsert(
                 ['play_id' => $playerDTO->playID],
                 [
-                    'token' => $playerDTO->token,
-                    'game_code' => $playerDTO->gameID
+                    'username'   => $playerDTO->username,
+                    'currency'   => $playerDTO->currency,
+                    'token'      => $playerDTO->token
                 ]
             );
     }

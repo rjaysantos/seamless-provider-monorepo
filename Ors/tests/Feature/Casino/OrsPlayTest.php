@@ -24,7 +24,7 @@ class OrsPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1',
+            'gameId' => 'testGameID',
             'memberIp' => '127.0.0.1',
             'language' => 'en',
         ];
@@ -65,19 +65,18 @@ class OrsPlayTest extends TestCase
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'testToken',
-            'game_code' => '1',
+            'token' => 'testToken'
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=1&betlimit=164&signature=b406bd96e260b57ccf06f6964019f732' &&
+            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=testGameID&betlimit=164&signature=e0f15223ea9ed024029f72a0f9f4c3f0' &&
                 $request->hasHeader('key', 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x') &&
                 $request->hasHeader('operator-name', 'mog052testidrslot') &&
                 $request['player_id'] == 'testPlayID' &&
                 $request['nickname'] == 'testPlayID' &&
                 $request['token'] == 'testToken' &&
                 $request['lang'] == 'en' &&
-                $request['game_id'] == '1' &&
+                $request['game_id'] == 'testGameID' &&
                 $request['betlimit'] == 164;
         });
     }
@@ -87,7 +86,8 @@ class OrsPlayTest extends TestCase
         DB::table('ors.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testOldToken'
         ]);
 
         $request = [
@@ -97,7 +97,7 @@ class OrsPlayTest extends TestCase
             'host' => 'testHost.com',
             'currency' => 'IDR',
             'device' => 1,
-            'gameId' => '1',
+            'gameId' => 'testGameID',
             'memberIp' => '127.0.0.1',
             'language' => 'en',
         ];
@@ -138,18 +138,17 @@ class OrsPlayTest extends TestCase
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'testToken',
-            'game_code' => '1',
+            'token' => 'testToken'
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=1&betlimit=164&signature=b406bd96e260b57ccf06f6964019f732' &&
+            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=testGameID&betlimit=164&signature=e0f15223ea9ed024029f72a0f9f4c3f0' &&
                 $request->hasHeader('key', 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x') &&
                 $request->hasHeader('operator-name', 'mog052testidrslot') &&
                 $request['player_id'] == 'testPlayID' &&
                 $request['nickname'] == 'testPlayID' &&
                 $request['lang'] == 'en' &&
-                $request['game_id'] == '1' &&
+                $request['game_id'] == 'testGameID' &&
                 $request['betlimit'] == 164;
         });
     }
@@ -244,7 +243,7 @@ class OrsPlayTest extends TestCase
             'memberId' => 123,
             'username' => 'testUsername',
             'host' => 'testHost.com',
-            'currency' => 'invalidCurrency',
+            'currency' => 'NTD',
             'device' => 1,
             'gameId' => '1',
             'memberIp' => '127.0.0.1',
