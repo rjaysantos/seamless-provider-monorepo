@@ -119,9 +119,7 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $playGame = $this->repository->getPlayerByPlayIDToken(playID: $player->playID, token: $requestDTO->token);
-
-        if (is_null($playGame) === true)
+        if ($player->token !== $requestDTO->token)
             throw new InvalidTokenException;
     }
 

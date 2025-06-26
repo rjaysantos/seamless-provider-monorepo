@@ -319,20 +319,20 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
+        $player = new OrsPlayerDTO(
+            playID: 'testPlayIDu1',
+            currency: 'IDR',
+            token: 'testToken123'
+        );
+
         $mockRepository = $this->createMock(OrsRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
             ->with('testPlayIDu1')
-            ->willReturn(new OrsPlayerDTO(
-                playID: 'testPlayIDu1',
-                currency: 'IDR'
-            ));
+            ->willReturn($player);
 
         $mockRepository->method('getPlayerByPlayIDToken')
-            ->willReturn(new OrsPlayerDTO(
-                playID: 'testPlayIDu1',
-                currency: 'IDR'
-            ));
+            ->willReturn($player);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubProviderCredentials->method('getPublicKey')
@@ -385,10 +385,11 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
-        $player = (new OrsPlayerDTO(
+        $player = new OrsPlayerDTO(
             playID: 'testPlayIDu1',
+            token: 'testToken123',
             currency: 'IDR'
-        ));
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -427,10 +428,11 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
-        $player = (new OrsPlayerDTO(
+        $player = new OrsPlayerDTO(
             playID: 'testPlayIDu1',
+            token: 'testToken123',
             currency: 'IDR'
-        ));
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -461,10 +463,11 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
-        $player = (new OrsPlayerDTO(
+        $player = new OrsPlayerDTO(
             playID: 'testPlayIDu1',
+            token: 'testToken123',
             currency: 'IDR'
-        ));
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -508,10 +511,11 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
-        $player = (new OrsPlayerDTO(
+        $player = new OrsPlayerDTO(
             playID: 'testPlayIDu1',
+            token: 'testToken123',
             currency: 'IDR'
-        ));
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -540,50 +544,6 @@ class OrsServiceTest extends TestCase
         $service->authenticate(requestDTO: $requestDTO);
     }
 
-    public function test_authenticate_mockRepository_getPlayGameByPlayIDToken()
-    {
-        $requestDTO = new OrsRequestDTO(
-            key: 'testPublicKey',
-            playID: 'testPlayIDu1',
-            token: 'testToken123',
-            signature: 'testSignature',
-            rawRequest: new Request()
-        );
-
-        $player = (new OrsPlayerDTO(
-            playID: 'testPlayIDu1',
-            currency: 'IDR'
-        ));
-
-        $mockRepository = $this->createMock(OrsRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayIDToken')
-            ->with(playID: $requestDTO->playID, token: $requestDTO->token)
-            ->willReturn($player);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption
-        );
-        $service->authenticate(requestDTO: $requestDTO);
-    }
-
     public function test_authenticate_invalidToken_invalidTokenException()
     {
         $this->expectException(InvalidTokenException::class);
@@ -596,10 +556,10 @@ class OrsServiceTest extends TestCase
             rawRequest: new Request()
         );
 
-        $player = (new OrsPlayerDTO(
+        $player = new OrsPlayerDTO(
             playID: 'testPlayIDu1',
             currency: 'IDR'
-        ));
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
