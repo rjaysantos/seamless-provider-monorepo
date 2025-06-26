@@ -152,9 +152,9 @@ class OrsController
 
         $requestDTO = OrsRequestDTO::fromCreditRequest(request: $request);
 
-        $credit = $this->service->settle(requestDTO: $requestDTO);
+        $balance = $this->service->settle(requestDTO: $requestDTO);
 
-        return $this->response->payout(request: $request, credit: $credit);
+        return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function reward(Request $request)

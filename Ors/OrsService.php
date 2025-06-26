@@ -264,20 +264,20 @@ class OrsService
 
         $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $wagerTransactionData = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
+        $wagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
 
-        if (is_null($wagerTransactionData) === true)
+        if (is_null($wagerTransaction) === true)
             throw new ProviderTransactionNotFoundException;
 
         $payoutTransactionDTO = OrsTransactionDTO::payout(
             extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            transactionDTO: $wagerTransactionData
+            transactionDTO: $wagerTransaction
         );
 
-        $payoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
+        $existingPayoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
 
-        if (is_null($payoutTransaction) === false)
+        if (is_null($existingPayoutTransaction) === false)
             return $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         try {
