@@ -13,6 +13,7 @@ use Providers\Gs5\Gs5Repository;
 use Providers\Gs5\Gs5Credentials;
 use Illuminate\Support\Facades\DB;
 use Providers\Gs5\DTO\Gs5PlayerDTO;
+use Providers\Gs5\DTO\GS5RequestDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Gs5\Contracts\ICredentials;
 use App\Exceptions\Casino\PlayerNotFoundException;
@@ -81,16 +82,16 @@ class Gs5Service
         return $balanceResponse['credit'];
     }
 
-    public function getBalance(Request $request): float
+    public function getBalance(GS5RequestDTO $requestDTO): float
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $playerData->play_id);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
 
         return $balance * self::PROVIDER_CURRENCY_CONVERSION;
     }
