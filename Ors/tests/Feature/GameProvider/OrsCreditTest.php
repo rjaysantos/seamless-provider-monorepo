@@ -59,7 +59,7 @@ class OrsCreditTest extends TestCase
             "amount": 30,
             "result_url": "https://stage-slot-game.673ing.com/recallGame/?g=PocketJungle&t=bedee290-63d5-42e7-a2c9-31187ce7ca5f&b=uguhbkgvvu2gkn&c=true",
             "other_info": {},
-            "called_at": 1715052653,
+            "called_at": 1735689600,
             "remark": {},
             "bet_place": "BASEGAME",
             "transaction_type": "credit",
@@ -68,7 +68,7 @@ class OrsCreditTest extends TestCase
             "currency": "IDR",
             "winlose_amount": -220,
             "game_code": "pocketjungle",
-            "timestamp": 1715052653,
+            "timestamp": 1735689600,
             "player_id": "testPlayeru1",
             "game_id": ' . $gameCode . ',
             "signature": "' . $signature . '"
@@ -93,11 +93,11 @@ class OrsCreditTest extends TestCase
             'amount' => 30,
             'transaction_id' => 'testTransactionID',
             'updated_balance' => 900.0,
-            'billing_at' => 1715052653,
+            'billing_at' => 1735689600,
         ]);
 
         $this->assertDatabaseHas('ors.reports', [
-            'ext_id' => 'wager-testTransactionID',
+            'ext_id' => 'payout-testTransactionID',
             'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayeru1',
@@ -105,18 +105,18 @@ class OrsCreditTest extends TestCase
             'currency' => 'IDR',
             'game_code' => (string)$gameCode,
             'bet_valid' => 0,
-            'bet_amount' => 100,
-            'bet_winlose' => 0,
-            'created_at' => '2025-01-01 00:00:00.00',
-            'updated_at' => '2025-01-01 00:00:00.00',
+            'bet_amount' => 0,
+            'bet_winlose' => -70,
+            'created_at' => '2025-01-01 08:00:00.00',
+            'updated_at' => '2025-01-01 08:00:00.00',
         ]);
     }
 
     public static function gameCodesAndSignature()
     {
         return [
-            [131, 'bf5e10adc7157d61a51ef16f215c9c09'],
-            [123, '3ce6f6af77a0a888acb238b567c3a9d7']
+            [131, '81de4e455c88d2f6bb039ee27b6cc42c'],
+            [123, '3f7c07b8de5778eb27a4e305587cbbfe']
         ];
     }
 
@@ -150,8 +150,22 @@ class OrsCreditTest extends TestCase
             'game_code' => '131',
             'bet_amount' => 100.0,
             'bet_winlose' => 0,
-            'created_at' => '2025-01-01 00:00:00.000',
-            'updated_at' => '2025-01-01 00:00:00.000',
+            'created_at' => '2025-01-01 00:00:00',
+            'updated_at' => '2025-01-01 00:00:00',
+        ]);
+
+        DB::table('ors.reports')->insert([
+            'ext_id' => 'payout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayerIDu1',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '131',
+            'bet_amount' => 0,
+            'bet_winlose' => 0,
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00',
         ]);
 
         $request = '{
@@ -160,19 +174,19 @@ class OrsCreditTest extends TestCase
             "amount": 300,
             "result_url": "https://stage-slot-game.673ing.com/recallGame/?g=PocketJungle&t=bedee290-63d5-42e7-a2c9-31187ce7ca5f&b=uguhbkgvvu2gkn&c=true",
             "other_info": {},
-            "called_at": 1715052653,
+            "called_at": 1735689600,
             "remark": {},
             "bet_place": "BASEGAME",
             "transaction_type": "credit",
-            "round_id": "uguhbkgvvu2gkn",
+            "round_id": "testTransactionID",
             "effective_amount": 250,
             "currency": "IDR",
             "winlose_amount": -220,
             "game_code": "pocketjungle",
-            "timestamp": 1715052653,
+            "timestamp": 1735689600,
             "player_id": "testPlayerIDu1",
             "game_id": 123,
-            "signature": "647fc7793e0fd7f2c152674b4eaf3bd8"
+            "signature": "3beb04646eb04e49578a03361345db6e"
         }';
 
         $response = $this->call(
@@ -193,22 +207,22 @@ class OrsCreditTest extends TestCase
             'player_id' => 'testPlayerIDu1',
             'amount' => 300,
             'transaction_id' => 'testTransactionID',
-            'updated_balance' => 1000.0,
-            'billing_at' => 1715052653,
+            'updated_balance' => 200.0,
+            'billing_at' => 1735689600,
         ]);
 
         $this->assertDatabaseHas('ors.reports', [
-            'ext_id' => 'wager-testTransactionID',
+            'ext_id' => 'payout-testTransactionID',
             'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayerIDu1',
             'web_id' => 1,
             'currency' => 'IDR',
             'game_code' => '131',
-            'bet_amount' => 100.0,
+            'bet_amount' => 0,
             'bet_winlose' => 0,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 08:00:00',
+            'updated_at' => '2025-01-01 08:00:00',
         ]);
     }
 
@@ -483,10 +497,10 @@ class OrsCreditTest extends TestCase
             'web_id' => 1,
             'currency' => 'IDR',
             'game_code' => '131',
-            'bet_amount' => 100.0,
-            'bet_winlose' => 0,
-            'created_at' => '2025-01-01 00:00:00.000',
-            'updated_at' => '2025-01-01 00:00:00.000',
+            'bet_amount' => 0,
+            'bet_winlose' => -70.0,
+            'created_at' => '2025-01-01 08:00:00.000',
+            'updated_at' => '2025-01-01 08:00:00.000',
         ]);
     }
 

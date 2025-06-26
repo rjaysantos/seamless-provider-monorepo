@@ -31,7 +31,7 @@ class OrsTransactionDTO extends TransactionDTO
         );
     }
 
-    public static function payout(string $extID, OrsRequestDTO $requestDTO, OrsTransactionDTO $transactionDTO): self 
+    public static function payout(string $extID, OrsRequestDTO $requestDTO, OrsTransactionDTO $transactionDTO): self
     {
         return new self(
             extID: $extID,
@@ -41,8 +41,6 @@ class OrsTransactionDTO extends TransactionDTO
             webID: self::getWebID(playID: $transactionDTO->playID),
             currency: $transactionDTO->currency,
             gameID: $transactionDTO->gameID,
-            betValid: $requestDTO->amount,
-            betAmount: $requestDTO->amount,
             betWinlose: $requestDTO->amount - $transactionDTO->betAmount,
             dateTime: self::convertProviderDateTime(
                 dateTime: Carbon::createFromTimestamp($requestDTO->dateTime),

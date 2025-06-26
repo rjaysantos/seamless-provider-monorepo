@@ -46,7 +46,7 @@ class OrsRequestDTO
         return new self(
             key: $request->header('key'),
             playID: $request->player_id,
-            amount: $request->winlose_amount,
+            amount: $request->amount,
             roundID: $request->transaction_id,
             gameID: $request->game_id,
             dateTime: $request->called_at,
