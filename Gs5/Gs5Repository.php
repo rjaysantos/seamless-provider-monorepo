@@ -9,43 +9,6 @@ use App\Repositories\AbstractProviderRepository;
 
 class Gs5Repository extends AbstractProviderRepository
 {
-    public function getPlayerByToken(string $token): ?object
-    {
-        $data = DB::table('gs5.playgame')
-            ->join('gs5.players', 'gs5.playgame.play_id', '=', 'gs5.players.play_id')
-            ->where('gs5.playgame.token', $token)
-            ->first();
-
-        return $data == null ? null : Gs5PlayerDTO::fromDB(dbData: $data);
-    }
-
-    public function getPlayerByPlayID(string $playID): ?object
-    {
-        return DB::table('gs5.players')
-            ->where('play_id', $playID)
-            ->first();
-    }
-
-    public function getTransactionByExtID(string $extID): ?Gs5TransactionDTO
-    {
-        $data = DB::table('gs5.reports')
-            ->where('ext_id', $extID)
-            ->first();
-
-        return $data == null ? null : Gs5TransactionDTO::fromDB(dbData: $data);
-    }
-
-    public function createPlayer(string $playID, string $username, string $currency): void
-    {
-        DB::connection('pgsql_write')
-            ->table('gs5.players')
-            ->insert([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
-            ]);
-    }
-
     public function createOrUpdatePlayer(Gs5PlayerDTO $playerDTO): void
     {
         $this->write->table('gs5.players')
@@ -61,6 +24,46 @@ class Gs5Repository extends AbstractProviderRepository
                 ]
             );
     }
+
+    public function getPlayerByToken(string $token): ?object
+    {
+        $data = $this->read->table('gs5.players')
+            ->where('token', $token)
+            ->first();
+
+        return $data == null ? null : Gs5PlayerDTO::fromDB(dbData: $data);
+    }
+
+    public function getTransactionByExtID(string $extID): ?Gs5TransactionDTO
+    {
+        $data = $this->read->table('gs5.reports')
+            ->where('ext_id', $extID)
+            ->first();
+
+        return $data == null ? null : Gs5TransactionDTO::fromDB(dbData: $data);
+    }
+
+    public function getPlayerByPlayID(string $playID): ?object
+    {
+        return DB::table('gs5.players')
+            ->where('play_id', $playID)
+            ->first();
+    }
+
+
+
+    public function createPlayer(string $playID, string $username, string $currency): void
+    {
+        DB::connection('pgsql_write')
+            ->table('gs5.players')
+            ->insert([
+                'play_id' => $playID,
+                'username' => $username,
+                'currency' => $currency,
+            ]);
+    }
+
+
 
     public function createOrUpdatePlayGame(string $playID, string $token): void
     {

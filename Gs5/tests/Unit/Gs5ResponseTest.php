@@ -15,7 +15,7 @@ class Gs5ResponseTest extends TestCase
         $balance = 1000;
 
         $response = $this->makeResponse();
-        $result = $response->successTransaction(balance: $balance);
+        $result = $response->success(balance: $balance);
 
         $this->assertSame(
             expected: [

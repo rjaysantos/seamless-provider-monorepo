@@ -43,9 +43,11 @@ class Gs5Controller extends AbstractCasinoController
     {
         $this->validateProviderRequest(request: $request, rules: ['access_token' => 'required|string']);
 
-        $data = $this->service->authenticate(request: $request);
+        $requestDTO = GS5RequestDTO::tokenRequest(request: $request);
 
-        return $this->response->authenticate(data: $data);
+        $data = $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(playerDTO: $data->player, balance: $data->balance);
     }
 
     public function result(Request $request)
