@@ -22,10 +22,12 @@ class OrsRepository extends AbstractProviderRepository
     {
         $this->write->table('ors.players')
             ->updateOrInsert(
-                ['play_id' => $playerDTO->playID],
                 [
-                    'username'   => $playerDTO->username,
-                    'currency'   => $playerDTO->currency,
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                ],
+                [
                     'token'      => $playerDTO->token
                 ]
             );
