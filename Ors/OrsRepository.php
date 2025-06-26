@@ -63,18 +63,6 @@ class OrsRepository extends AbstractProviderRepository
             ->first();
     }
 
-    public function createBetTransaction(string $transactionID, float $betAmount, string $betTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->insert([
-                'trx_id' => $transactionID,
-                'bet_amount' => $betAmount,
-                'created_at' => $betTime,
-                'updated_at' => null
-            ]);
-    }
-
     public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
     {
         DB::connection('pgsql_write')
