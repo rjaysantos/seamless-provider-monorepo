@@ -75,11 +75,10 @@ class YgrRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function deletePlayGameByToken(string $token): void
+    public function updatePlayerTokenByToken(string $token): void
     {
-        DB::connection('pgsql_write')
-            ->table('ygr.playgame')
+        $this->write->table('ygr.players')
             ->where('token', $token)
-            ->delete();
+            ->update(['token' => null]);
     }
 }
