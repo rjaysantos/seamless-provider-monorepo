@@ -75,16 +75,14 @@ class HcgService
         if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $extID = $casinoRequest->extID;
-
-        $transaction = $this->repository->getTransactionByExtID(extID: $extID);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
         if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $transactionID = Str::afterlast($extID, '-');
+        $transactionID = Str::after($transaction->roundID, '-');
 
         return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transactionID}";
     }
