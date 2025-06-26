@@ -43,6 +43,25 @@ class Gs5Repository extends AbstractProviderRepository
         return $data == null ? null : Gs5TransactionDTO::fromDB(dbData: $data);
     }
 
+    public function createTransaction(Gs5TransactionDTO $transactionDTO): void
+    {
+        $this->write->table('gs5.reports')
+            ->insert([
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
+            ]);
+    }
+
     public function getPlayerByPlayID(string $playID): ?object
     {
         return DB::table('gs5.players')

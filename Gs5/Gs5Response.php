@@ -7,11 +7,13 @@ use Providers\Gs5\DTO\Gs5PlayerDTO;
 
 class Gs5Response
 {
+    private const PROVIDER_CURRENCY_CONVERSION = 100;
+
     public function success(float $balance): JsonResponse
     {
         return response()->json([
             'status_code' => 0,
-            'balance' => $balance
+            'balance' => $balance * self::PROVIDER_CURRENCY_CONVERSION
         ]);
     }
 
@@ -21,7 +23,7 @@ class Gs5Response
             'status_code' => 0,
             'member_id' => $playerDTO->playID,
             'member_name' => $playerDTO->username,
-            'balance' => $balance
+            'balance' => $balance * self::PROVIDER_CURRENCY_CONVERSION
         ]);
     }
 
