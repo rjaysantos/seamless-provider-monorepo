@@ -11,8 +11,9 @@ class Gs5TransactionDTO extends TransactionDTO
     use TransactionDTOTrait;
 
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
+    private const PROVIDER_CURRENCY_CONVERSION = 100;
 
-    public static function wager(string $extID, AixRequestDTO $requestDTO, AixPlayerDTO $playerDTO): self
+    public static function wager(string $extID, GS5RequestDTO $requestDTO, Gs5PlayerDTO $playerDTO): self
     {
         return new self(
             extID: $extID,

@@ -50,6 +50,23 @@ class Gs5Controller extends AbstractCasinoController
         return $this->response->authenticate(playerDTO: $data->player, balance: $data->balance);
     }
 
+    public function bet(Request $request)
+    {
+        $this->validateProviderRequest(request: $request, rules: [
+            'access_token' => 'required|string',
+            'txn_id' => 'required|string',
+            'total_bet' => 'required|numeric',
+            'game_id' => 'required|string',
+            'ts' => 'required|numeric'
+        ]);
+
+        $requestDTO = GS5RequestDTO::fromBetRequest($request);
+
+        $balance = $this->service->wager(requestDTO: $requestDTO);
+
+        return $this->response->success(balance: $balance);
+    }
+
     public function result(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
@@ -73,21 +90,6 @@ class Gs5Controller extends AbstractCasinoController
         ]);
 
         $balance = $this->service->cancel(request: $request);
-
-        return $this->response->success(balance: $balance);
-    }
-
-    public function bet(Request $request)
-    {
-        $this->validateProviderRequest(request: $request, rules: [
-            'access_token' => 'required|string',
-            'txn_id' => 'required|string',
-            'total_bet' => 'required|numeric',
-            'game_id' => 'required|string',
-            'ts' => 'required|numeric'
-        ]);
-
-        $balance = $this->service->bet(request: $request);
 
         return $this->response->success(balance: $balance);
     }

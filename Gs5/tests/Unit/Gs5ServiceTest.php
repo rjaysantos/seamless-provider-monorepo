@@ -1053,7 +1053,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubRepositoryNullPlayer_TokenNotFoundException()
@@ -1073,7 +1073,7 @@ class Gs5ServiceTest extends TestCase
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockRepository_getTransactionByTrxID()
@@ -1116,7 +1116,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubRepositoryTransactionNotNull_TransactionAlreadyExistException()
@@ -1142,7 +1142,7 @@ class Gs5ServiceTest extends TestCase
             ->willReturn((object) []);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockCredentials_getCredentialsByCurrency()
@@ -1190,7 +1190,7 @@ class Gs5ServiceTest extends TestCase
             wallet: $stubWallet,
             credentials: $mockCredentials
         );
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockWallet_balance()
@@ -1243,7 +1243,7 @@ class Gs5ServiceTest extends TestCase
             wallet: $mockWallet,
             credentials: $stubCredentials
         );
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubWallet_InsufficientFundException()
@@ -1273,7 +1273,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubWalletBalanceInvalidStatus_WalletErrorException()
@@ -1300,7 +1300,7 @@ class Gs5ServiceTest extends TestCase
             ->willReturn(['status_code' => 999]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockRepository_createWagerTransaction()
@@ -1346,7 +1346,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $mockRepository, report: $stubReport, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockReport_makeSlotReport()
@@ -1390,7 +1390,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, report: $mockReport, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_mockWallet_wager()
@@ -1447,7 +1447,7 @@ class Gs5ServiceTest extends TestCase
             wallet: $mockWallet,
             credentials: $stubCredentials
         );
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubWalletWagerInvalidStatus_WalletErrorException()
@@ -1484,7 +1484,7 @@ class Gs5ServiceTest extends TestCase
             ->willReturn(['status_code' => 999]);
 
         $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
-        $service->bet(request: $request);
+        $service->wager(request: $request);
     }
 
     public function test_bet_stubWallet_expectedData()
@@ -1524,7 +1524,7 @@ class Gs5ServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, report: $stubReport, wallet: $stubWallet);
-        $response = $service->bet(request: $request);
+        $response = $service->wager(request: $request);
 
         $this->assertSame(expected: $expectedData, actual: $response);
     }

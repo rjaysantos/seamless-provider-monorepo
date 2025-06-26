@@ -20,6 +20,7 @@ use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Gs5\Exceptions\WalletErrorException;
 use Providers\Gs5\Exceptions\TokenNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException;
+use Providers\Gs5\DTO\Gs5TransactionDTO;
 use Providers\Gs5\Exceptions\InsufficientFundException;
 use Providers\Gs5\Exceptions\ProviderWalletErrorException;
 use Providers\Gs5\Exceptions\TransactionAlreadyExistsException;
@@ -28,7 +29,6 @@ use Providers\Gs5\Exceptions\TransactionNotFoundException as ProviderTransaction
 
 class Gs5Service
 {
-    private const PROVIDER_CURRENCY_CONVERSION = 100;
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
 
     public function __construct(
@@ -37,7 +37,6 @@ class Gs5Service
         private Gs5Api $api,
         private IWallet $wallet,
         private WalletReport $report,
-        private Randomizer $randomizer
     ) {}
 
     public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
@@ -79,7 +78,7 @@ class Gs5Service
         if ($balanceResponse['status_code'] !== 2100)
             throw new WalletErrorException;
 
-        return $balanceResponse['credit'] * self::PROVIDER_CURRENCY_CONVERSION;
+        return $balanceResponse['credit'];
     }
 
     public function getBalance(GS5RequestDTO $requestDTO): float
@@ -107,6 +106,63 @@ class Gs5Service
             'player' => $player,
             'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $player->playID)
         ];
+    }
+
+    public function wager(GS5RequestDTO $requestDTO): float
+    {
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
+
+        if (is_null($player) === true)
+            throw new TokenNotFoundException;
+
+        $wagerTransactionDTO = Gs5TransactionDTO::wager(
+            extID: "wager-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player
+        );
+
+        $existingTransaction = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
+
+        if (is_null($existingTransaction) === false)
+            throw new TransactionAlreadyExistsException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+
+        if ($balance < $wagerTransactionDTO->betAmount)
+            throw new InsufficientFundException;
+
+        try {
+            $this->repository->beginTransaction();
+
+            $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
+
+            $report = $this->report->makeSlotReport(
+                transactionID: $wagerTransactionDTO->roundID,
+                gameCode: $wagerTransactionDTO->gameID,
+                betTime: $wagerTransactionDTO->dateTime
+            );
+
+            $walletResponse = $this->wallet->wager(
+                credentials: $credentials,
+                playID: $wagerTransactionDTO->playID,
+                currency: $wagerTransactionDTO->currency,
+                transactionID: $wagerTransactionDTO->extID,
+                amount: $wagerTransactionDTO->betAmount,
+                report: $report
+            );
+
+            if ($walletResponse['status_code'] != 2100)
+                throw new ProviderWalletErrorException;
+
+            $this->repository->commit();
+        } catch (Exception $e) {
+            $this->repository->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'];
     }
 
     public function cancel(Request $request): float
@@ -151,69 +207,10 @@ class Gs5Service
             throw new $e;
         }
 
-        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
+        return $walletResponse['credit_after'];
     }
 
-    public function bet(Request $request): float
-    {
-        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
 
-        if (is_null($playerData) === true)
-            throw new TokenNotFoundException;
-
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->txn_id);
-
-        if (is_null($transactionData) === false)
-            throw new TransactionAlreadyExistsException;
-
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
-
-        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $playerData->play_id);
-
-        $betAmount = $request->total_bet / self::PROVIDER_CURRENCY_CONVERSION;
-
-        if ($balance < $betAmount)
-            throw new InsufficientFundException;
-
-        try {
-            DB::connection('pgsql_write')->beginTransaction();
-
-            $transactionDate = Carbon::createFromTimestamp($request->ts, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
-
-            $this->repository->createWagerTransaction(
-                trxID: $request->txn_id,
-                betAmount: $betAmount,
-                transactionDate: $transactionDate
-            );
-
-            $report = $this->report->makeSlotReport(
-                transactionID: $request->txn_id,
-                gameCode: $request->game_id,
-                betTime: $transactionDate
-            );
-
-            $walletResponse = $this->wallet->wager(
-                credentials: $credentials,
-                playID: $playerData->play_id,
-                currency: $playerData->currency,
-                transactionID: "wager-{$request->txn_id}",
-                amount: $betAmount,
-                report: $report
-            );
-
-            if ($walletResponse['status_code'] != 2100)
-                throw new ProviderWalletErrorException;
-
-            DB::connection('pgsql_write')->commit();
-        } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
-            throw $e;
-        }
-
-        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
-    }
 
     public function settle(Request $request): float
     {
