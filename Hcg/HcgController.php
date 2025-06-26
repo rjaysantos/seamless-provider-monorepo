@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Providers\Hcg\HcgService;
 use Providers\Hcg\HcgResponse;
 use Providers\Hcg\HcgEncryption;
+use Providers\Hcg\DTO\HcgRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Hcg\Exceptions\InvalidActionException;
 use App\Exceptions\Casino\InvalidBearerTokenException;
@@ -148,7 +149,9 @@ class HcgController
             ]
         );
 
-        $this->service->cancelBetAndSettle(request: $request);
+        $requestDTO = HcgRequestDTO::fromCancelSettlementRequest(request: $request);
+
+        $this->service->cancelBetAndSettle(requestDTO: $requestDTO);
     }
 
     private function gameOfflineNotification()

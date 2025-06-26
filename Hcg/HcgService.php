@@ -5,11 +5,13 @@ namespace Providers\Hcg;
 use Exception;
 use Carbon\Carbon;
 use Providers\Hcg\HcgApi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use Providers\Hcg\HcgRepository;
 use Providers\Hcg\HcgCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Hcg\DTO\HcgRequestDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hcg\Contracts\ICredentials;
 use Providers\Hcg\Exceptions\WalletErrorException;
@@ -181,17 +183,17 @@ class HcgService
         sleep(self::PROVIDER_REQUEST_TIMEOUT_SECONDS);
     }
 
-    public function cancelBetAndSettle(Request $request): void
+    public function cancelBetAndSettle(HcgRequestDTO $requestDTO): void
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->uid);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerDetails) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $transactionDetails = $this->repository->getTransactionByTrxID(
-            transactionID: "{$credentials->getTransactionIDPrefix()}-{$request->orderNo}"
+        $transactionDetails = $this->repository->getTransactionByExtID(
+            extID: "wagerpayout-{$credentials->getTransactionIDPrefix()}-{$requestDTO->roundID}"
         );
 
         if (is_null($transactionDetails) === false)

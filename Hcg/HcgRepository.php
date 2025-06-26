@@ -3,14 +3,19 @@
 namespace Providers\Hcg;
 
 use Illuminate\Support\Facades\DB;
+use Providers\Hcg\DTO\HcgPlayerDTO;
+use Providers\Hcg\DTO\HcgTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class HcgRepository
+class HcgRepository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?HcgPlayerDTO
     {
-        return DB::table('hcg.players')
+        $data = $this->read->table('hcg.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : HcgPlayerDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void
@@ -24,11 +29,13 @@ class HcgRepository
             ]);
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
-        return DB::table('hcg.reports')
-            ->where('trx_id', $transactionID)
+        $data = $this->read->table('hcg.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : HcgTransactionDTO::fromDB(dbData: $data);
     }
 
     public function createSettleTransaction(

@@ -29,8 +29,8 @@ class HcgCancelBetAndSettleTest extends TestCase
     {
         $payload =  [
             'action' => 3,
-            'uid' => 'playID',
-            'orderNo' => 'transactionID',
+            'uid' => 'testPlayIDu001',
+            'orderNo' => 'testTransactionID',
         ];
 
         unset($payload[$unset]);
@@ -64,8 +64,8 @@ class HcgCancelBetAndSettleTest extends TestCase
     {
         $payload =  [
             'action' => 3,
-            'uid' => 'playID',
-            'orderNo' => 'transactionID',
+            'uid' => 'testPlayIDu001',
+            'orderNo' => 'testTransactionID',
             'sign' => 'invalid signature'
         ];
 
@@ -83,8 +83,8 @@ class HcgCancelBetAndSettleTest extends TestCase
     {
         $payload =  [
             'action' => 999,
-            'uid' => 'playID',
-            'orderNo' => 'transactionID',
+            'uid' => 'testPlayIDu001',
+            'orderNo' => 'testTransactionID',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: 'IDR');
@@ -102,23 +102,29 @@ class HcgCancelBetAndSettleTest extends TestCase
     public function test_cancelBetAndSettle_cannotCancel_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hcg.reports')->insert([
-            'trx_id' => '0-transactionID',
-            'bet_amount' => 200,
-            'win_amount' => 400,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00'
+            'ext_id' => 'wagerpayout-0-testTransactionID',
+            'round_id' => '0-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 200.0,
+            'updated_at' => '2025-01-01 00:00:00',
+            'created_at' => '2025-01-01 00:00:00'
         ]);
 
         $payload =  [
             'action' => 3,
-            'uid' => 'playID',
-            'orderNo' => 'transactionID',
+            'uid' => 'testPlayIDu001',
+            'orderNo' => 'testTransactionID',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: 'IDR');;
