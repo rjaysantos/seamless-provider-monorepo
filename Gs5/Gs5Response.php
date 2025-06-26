@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 
 class Gs5Response
 {
-    public function successTransaction(float $balance): JsonResponse
+    public function success(float $balance): JsonResponse
     {
         return response()->json([
             'status_code' => 0,

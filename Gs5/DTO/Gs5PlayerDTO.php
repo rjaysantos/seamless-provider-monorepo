@@ -2,12 +2,15 @@
 
 namespace Providers\Gs5\DTO;
 
+use App\Traits\PlayerDTOTrait;
 use Illuminate\Support\Str;
 use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 
 class Gs5PlayerDTO
 {
+    use PlayerDTOTrait;
+
     public function __construct(
         public readonly ?string $playID = null,
         public readonly ?string $username = null,

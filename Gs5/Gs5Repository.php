@@ -11,10 +11,12 @@ class Gs5Repository extends AbstractProviderRepository
 {
     public function getPlayerByToken(string $token): ?object
     {
-        return DB::table('gs5.playgame')
+        $data = DB::table('gs5.playgame')
             ->join('gs5.players', 'gs5.playgame.play_id', '=', 'gs5.players.play_id')
             ->where('gs5.playgame.token', $token)
             ->first();
+
+        return $data == null ? null : Gs5PlayerDTO::fromDB(dbData: $data);
     }
 
     public function getPlayerByPlayID(string $playID): ?object

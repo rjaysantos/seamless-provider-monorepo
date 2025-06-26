@@ -2,11 +2,12 @@
 
 namespace Providers\Gs5;
 
-use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Gs5\Gs5Service;
 use Providers\Gs5\Gs5Response;
+use Providers\Gs5\DTO\GS5RequestDTO;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AbstractCasinoController;
 use Providers\Gs5\Exceptions\InvalidProviderRequestException;
 
 class Gs5Controller extends AbstractCasinoController
@@ -31,9 +32,11 @@ class Gs5Controller extends AbstractCasinoController
     {
         $this->validateProviderRequest(request: $request, rules: ['access_token' => 'required|string']);
 
-        $balance = $this->service->getBalance(request: $request);
+        $requestDTO = GS5RequestDTO::tokenRequest(request: $request);
 
-        return $this->response->successTransaction(balance: $balance);
+        $balance = $this->service->getBalance(requestDTO: $requestDTO);
+
+        return $this->response->success(balance: $balance);
     }
 
     public function authenticate(Request $request)
@@ -57,7 +60,7 @@ class Gs5Controller extends AbstractCasinoController
 
         $balance = $this->service->settle(request: $request);
 
-        return $this->response->successTransaction(balance: $balance);
+        return $this->response->success(balance: $balance);
     }
 
     public function refund(Request $request)
@@ -69,7 +72,7 @@ class Gs5Controller extends AbstractCasinoController
 
         $balance = $this->service->cancel(request: $request);
 
-        return $this->response->successTransaction(balance: $balance);
+        return $this->response->success(balance: $balance);
     }
 
     public function bet(Request $request)
@@ -84,6 +87,6 @@ class Gs5Controller extends AbstractCasinoController
 
         $balance = $this->service->bet(request: $request);
 
-        return $this->response->successTransaction(balance: $balance);
+        return $this->response->success(balance: $balance);
     }
 }
