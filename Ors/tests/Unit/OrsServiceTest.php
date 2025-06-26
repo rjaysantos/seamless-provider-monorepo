@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use PHPUnit\Framework\MockObject\Stub\ConsecutiveCalls;
 use Tests\TestCase;
 use Providers\Ors\OrsApi;
 use Illuminate\Http\Request;
@@ -3040,7 +3041,8 @@ class OrsServiceTest extends TestCase
                 currency: 'IDR'
             ));
 
-        $mockRepository->method('getTransactionByExtID')
+        $mockRepository->expects($this->exactly(2))
+            ->method('getTransactionByExtID')
             ->willReturnCallback(function ($extID) use ($wagerTransaction) {
                 return match ($extID) {
                     'wager-testTransactionID' => $wagerTransaction,
