@@ -2,6 +2,7 @@
 
 namespace Providers\Hcg;
 
+use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Hcg\HcgService;
 use Providers\Hcg\HcgResponse;
@@ -13,7 +14,7 @@ use Providers\Hcg\Exceptions\InvalidSignatureException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Hcg\Exceptions\InvalidProviderRequestException;
 
-class HcgController
+class HcgController extends AbstractCasinoController
 {
     private const GET_BALANCE = 1;
     private const SETTLEMENT = 2;
@@ -21,55 +22,15 @@ class HcgController
     private const GAME_OFFLINE_NOTIFICATION = 4;
 
     public function __construct(
-        private HcgService $service,
-        private HcgResponse $response,
+        HcgService $service,
+        HcgResponse $response,
         private HcgCredentials $credentials,
         private HcgEncryption $encryption
     ) {
-    }
-
-    private function validateCasinoRequest(Request $request, array $rules): void
-    {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env(key: 'FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(
-            request: $request,
-            rules: [
-                'playId' => 'required|string',
-                'username' => 'required|string',
-                'currency' => 'required|string',
-                'gameId' => 'required|string',
-            ]
-        );
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(
-            request: $request,
-            rules: [
-                'play_id' => 'required|string',
-                'bet_id' => 'required|string',
-                'currency' => 'required|string'
-            ]
-        );
-
-        $visualUrl = $this->service->getVisualUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
+        $this->service = $service;
+        $this->response = $response;
+        $this->credentials = $credentials;
+        $this->encryption = $encryption;
     }
 
     private function validateProviderRequest(Request $request, array $rules)
