@@ -18,18 +18,17 @@ class HcgRepository extends AbstractProviderRepository
         return $data == null ? null : HcgPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createPlayer(HcgPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('hcg.players')
+        $this->write->table('hcg.players')
             ->insert([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
             ]);
     }
 
-    public function getTransactionByExtID(string $extID): ?object
+    public function getTransactionByExtID(string $extID): ?HcgTransactionDTO
     {
         $data = $this->read->table('hcg.reports')
             ->where('ext_id', $extID)

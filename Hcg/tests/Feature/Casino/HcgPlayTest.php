@@ -20,7 +20,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         Http::fake([
@@ -73,7 +77,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         DB::table('hcg.players')->insert([
@@ -125,7 +133,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         unset($request[$unset]);
@@ -151,6 +163,11 @@ class HcgPlayTest extends TestCase
             ['username'],
             ['currency'],
             ['gameId'],
+            ['language'],
+            ['memberId'],
+            ['host'],
+            ['device'],
+            ['memberIp']
         ];
     }
 
@@ -161,7 +178,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         $response = $this->post('hcg/in/play', $request, [
@@ -185,7 +206,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         Http::fake([
@@ -221,7 +246,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         Http::fake([
@@ -260,7 +289,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         Http::fake([
@@ -297,7 +330,11 @@ class HcgPlayTest extends TestCase
             'username' => 'testUsername',
             'currency' => 'IDR',
             'language' => 'en',
-            'gameId' => '1'
+            'gameId' => '1',
+            'memberId' => 123,
+            'host' => 'testHost.com',
+            'device' => 1,
+            'memberIp' => '127.0.0.1'
         ];
 
         $response = [
