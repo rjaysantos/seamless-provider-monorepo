@@ -6,7 +6,7 @@ use App\Contracts\V2\IWallet;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 
-class YGRDelConnectTokenTest extends TestCase
+class YgrDelConnectTokenTest extends TestCase
 {
     protected function setUp(): void
     {

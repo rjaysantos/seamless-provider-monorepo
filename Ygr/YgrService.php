@@ -89,7 +89,7 @@ class YgrService
         if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $this->repository->updatePlayerTokenByToken(token: $player->token);
+        $this->repository->updatePlayerTokenByPlayIDToken(playerDTO: $player);
     }
 
     public function betAndSettle(Request $request): object
