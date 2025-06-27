@@ -62,7 +62,7 @@ class YgrResponse
         ]);
     }
 
-    public function deleteToken(): JsonResponse
+    public function delConnectToken(): JsonResponse
     {
         return $this->providerSuccessResponse(data: []);
     }

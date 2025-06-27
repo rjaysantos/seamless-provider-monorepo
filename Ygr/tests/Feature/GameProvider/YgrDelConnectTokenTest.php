@@ -3,16 +3,15 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 
-class YgrDeleteTokenTest extends TestCase
+class YgrDelConnectTokenTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ygr.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ygr.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -23,14 +22,8 @@ class YgrDeleteTokenTest extends TestCase
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $request = [
@@ -51,14 +44,19 @@ class YgrDeleteTokenTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('ygr.playgame', [
+        $this->assertDatabaseMissing('ygr.players', [
             'play_id' => 'testPlayID',
-            'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
-        Carbon::setTestNow();
+        $this->assertDatabaseHas('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => null
+        ]);
     }
 
     public function test_deleteToken_invalidRequest_expectedData()
@@ -68,14 +66,8 @@ class YgrDeleteTokenTest extends TestCase
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $request = [
@@ -95,8 +87,6 @@ class YgrDeleteTokenTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 
     public function test_deleteToken_tokenNotFoundException_expectedData()
@@ -106,14 +96,8 @@ class YgrDeleteTokenTest extends TestCase
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ygr.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testToken',
-            'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $request = [
@@ -133,7 +117,5 @@ class YgrDeleteTokenTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        Carbon::setTestNow();
     }
 }
