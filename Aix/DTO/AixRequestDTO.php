@@ -2,7 +2,6 @@
 
 namespace Providers\Aix\DTO;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AixRequestDTO
@@ -28,7 +27,7 @@ class AixRequestDTO
     {
         return new self(
             secretKey: $request->header('secret-key'),
-            playID: str_replace('sbo_', '', $request->user_id),
+            playID: $request->user_id,
             gameID: $request->prd_id,
             roundID: $request->txn_id,
             amount: $request->amount,
