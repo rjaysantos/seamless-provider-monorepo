@@ -21,7 +21,7 @@ class HcgRepository extends AbstractProviderRepository
     public function createPlayer(HcgPlayerDTO $playerDTO): void
     {
         $this->write->table('hcg.players')
-            ->insertOrIgnore([
+            ->insert([
                 'play_id' => $playerDTO->playID,
                 'username' => $playerDTO->username,
                 'currency' => $playerDTO->currency,
