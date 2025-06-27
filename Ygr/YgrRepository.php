@@ -75,11 +75,10 @@ class YgrRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function updatePlayerTokenByPlayIDToken(YgrPlayerDTO $playerDTO): void
+    public function resetPlayerToken(YgrPlayerDTO $playerDTO): void
     {
         $this->write->table('ygr.players')
             ->where('play_id', $playerDTO->playID)
-            ->where('token', $playerDTO->token)
             ->update(['token' => null]);
     }
 }
