@@ -21,6 +21,7 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -34,8 +35,7 @@ class PlaService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $report,
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -74,25 +74,25 @@ class PlaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
-    private function validateToken(Request $request, ?object $player): void
+    private function validateToken(PlaRequestDTO $requestDTO, ?object $player): void
     {
-        $playGame = $this->repository->getPlayGameByPlayIDToken(
-            playID: $player->play_id,
-            token: $request->externalToken
+        $player = $this->repository->getPlayerByPlayIDToken(
+            playID: $player->playID,
+            token: $requestDTO->token
         );
 
-        if (is_null($playGame) === true)
-            throw new InvalidTokenException(request: $request);
+        if (is_null($player) === true)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
     }
 
-    private function getPlayerDetails(Request $request): object
+    private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $playID = explode('_', $request->username)[1] ?? null;
+        $playID = explode('_', $requestDTO->username)[1] ?? null;
 
         $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(request: $request);
+            throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
 
         return $player;
     }
@@ -107,11 +107,11 @@ class PlaService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): string
+    public function authenticate(PlaRequestDTO $requestDTO): string
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        $this->validateToken(requestDTO: $requestDTO, player: $player);
 
         return $player->currency;
     }
