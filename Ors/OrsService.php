@@ -270,7 +270,7 @@ class OrsService
         $payoutTransactionDTO = OrsTransactionDTO::payout(
             extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            transactionDTO: $wagerTransaction
+            wagerTransactionDTO: $wagerTransaction
         );
 
         $existingPayoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
@@ -283,7 +283,7 @@ class OrsService
 
             $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
 
-            if (in_array($requestDTO->gameID, $credentials->getArcadeGameList()) === true)
+            if (in_array($payoutTransactionDTO->gameID, $credentials->getArcadeGameList()) === true)
                 $report = $this->walletReport->makeArcadeReport(
                     transactionID: $payoutTransactionDTO->roundID,
                     gameCode: $payoutTransactionDTO->gameID,
