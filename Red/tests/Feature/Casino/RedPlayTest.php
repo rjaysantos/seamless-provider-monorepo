@@ -235,6 +235,36 @@ class RedPlayTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_play_invalidCurrency_expectedData()
+    {
+        config(['app.env' => 'PRODUCTION']);
+
+        $request = [
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
+            'currency' => 'invalidCurrency',
+            'device' => 1,
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
+        ];
+
+        $response = $this->post('red/in/play', $request, [
+            'Authorization' => 'Bearer ' . config('app.bearer')
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'error' => 'Currency not supported!',
+            'data' => null
+        ]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_play_invalidWalletResponse_expectedData()
     {
         $request = [
