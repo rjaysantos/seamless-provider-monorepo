@@ -82,9 +82,7 @@ class HcgService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $transactionID = Str::after($transaction->roundID, '-');
-
-        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transactionID}";
+        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transaction->roundID}";
     }
 
     private function getPlayerBalance(ICredentials $credentials, string $playID): float

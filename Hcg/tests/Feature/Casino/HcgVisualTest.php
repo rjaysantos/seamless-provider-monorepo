@@ -22,8 +22,8 @@ class HcgVisualTest extends TestCase
         ]);
 
         DB::table('hcg.reports')->insert([
-            'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => '1-testTransactionID',
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -37,7 +37,7 @@ class HcgVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayIDu001',
-            'bet_id' => 'wagerpayout-1-testTransactionID',
+            'bet_id' => 'wagerpayout-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -64,8 +64,8 @@ class HcgVisualTest extends TestCase
         ]);
 
         DB::table('hcg.reports')->insert([
-            'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => '1-testTransactionID',
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -79,7 +79,7 @@ class HcgVisualTest extends TestCase
 
         $request = [
             'play_id' => 'testPlayIDu001',
-            'bet_id' => 'wagerpayout-1-testTransactionID',
+            'bet_id' => 'wagerpayout-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -101,7 +101,7 @@ class HcgVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayIDu001',
-            'bet_id' => 'wagerpayout-1-testTransactionID',
+            'bet_id' => 'wagerpayout-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -128,7 +128,7 @@ class HcgVisualTest extends TestCase
 
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'wagerpayout-1-testTransactionID',
+            'bet_id' => 'wagerpayout-testTransactionID',
             'currency' => 'IDR'
         ];
 
@@ -153,8 +153,8 @@ class HcgVisualTest extends TestCase
         ]);
 
         DB::table('hcg.reports')->insert([
-            'ext_id' => 'wagerpayout-1-testTransactionID',
-            'round_id' => '1-testTransactionID',
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
@@ -189,7 +189,7 @@ class HcgVisualTest extends TestCase
     {
         $request = [
             'play_id' => 'testPlayIDu001',
-            'bet_id' => 'wagerpayout-1-testTransactionID',
+            'bet_id' => 'wagerpayout-testTransactionID',
             'currency' => 'IDR'
         ];
 
