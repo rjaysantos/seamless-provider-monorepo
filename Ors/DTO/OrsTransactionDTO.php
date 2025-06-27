@@ -31,6 +31,28 @@ class OrsTransactionDTO extends TransactionDTO
         );
     }
 
+    public static function wager(
+        string $extID,
+        OrsRequestDTO $requestDTO,
+        OrsPlayerDTO $playerDTO
+    ): self {
+        return new self(
+            extID: $extID,
+            roundID: $requestDTO->roundID,
+            playID: $playerDTO->playID,
+            username: $playerDTO->username,
+            webID: self::getWebID(playID: $playerDTO->playID),
+            currency: $playerDTO->currency,
+            gameID: $requestDTO->gameID,
+            betValid: $requestDTO->amount,
+            betAmount: $requestDTO->amount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: Carbon::createFromTimestamp($requestDTO->dateTime),
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+        );
+    }
+
     public static function payout(string $extID, OrsRequestDTO $requestDTO, OrsTransactionDTO $transactionDTO): self
     {
         return new self(

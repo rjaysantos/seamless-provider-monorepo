@@ -125,12 +125,14 @@ class OrsController
             ]
         );
 
-        if ($request->transaction_type === 'debit')
-            $balance = $this->service->bet(request: $request);
+        $requestDTO = OrsRequestDTO::fromDebitRequest(request: $request);
+
+        if ($requestDTO->transactionType === 'debit')
+            $balance = $this->service->wager(requestDTO: $requestDTO);
         else
             $balance = $this->service->rollback(request: $request);
 
-        return $this->response->debit(request: $request, balance: $balance);
+        return $this->response->debit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function credit(Request $request)
