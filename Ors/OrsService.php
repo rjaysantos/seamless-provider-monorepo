@@ -111,17 +111,15 @@ class OrsService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): void
+    public function authenticate(OrsRequestDTO $requestDTO)
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $playGame = $this->repository->getPlayGameByPlayIDToken(playID: $request->player_id, token: $request->token);
-
-        if (is_null($playGame) === true)
+        if ($player->token !== $requestDTO->token)
             throw new InvalidTokenException;
     }
 

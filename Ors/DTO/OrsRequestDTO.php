@@ -12,6 +12,7 @@ class OrsRequestDTO
         public readonly ?string $signature = null,
         public readonly ?string $transactionType = null,
         public readonly ?Request $rawRequest = null,
+        public readonly ?string $token = null,
         public readonly ?int $gameID = null,
         public readonly ?float $amount = null,
         public readonly ?float $totalAmount = null,
@@ -25,6 +26,17 @@ class OrsRequestDTO
         return new self(
             key: $request->header('key'),
             playID: $request->player_id,
+            signature: $request->signature,
+            rawRequest: $request
+        );
+    }
+
+    public static function fromAuthenticateRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            token: $request->token,
             signature: $request->signature,
             rawRequest: $request
         );

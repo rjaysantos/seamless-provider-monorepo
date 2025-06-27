@@ -82,9 +82,11 @@ class OrsController
             ]
         );
 
-        $this->service->authenticate(request: $request);
+        $requestDTO = OrsRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(token: $request->token);
+        $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(token: $requestDTO->token);
     }
 
     public function balance(Request $request)
