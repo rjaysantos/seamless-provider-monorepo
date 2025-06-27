@@ -10,7 +10,6 @@ class OrsAuthenticateTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ors.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ors.playgame RESTART IDENTITY;');
     }
 
     public function test_authenticate_validRequest_expectedData()
@@ -18,13 +17,8 @@ class OrsAuthenticateTest extends TestCase
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'player_id',
+            'currency' => 'IDR',
             'token' => 'test_token',
-            'expired' => 'false'
         ]);
 
         $request = '{
@@ -64,13 +58,8 @@ class OrsAuthenticateTest extends TestCase
         DB::table('ors.players')->insert([
             'play_id' => 'player_id',
             'username' => 'testUsername',
-            'currency' => $currency
-        ]);
-
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'player_id',
+            'currency' => $currency,
             'token' => 'test_token',
-            'expired' => 'false'
         ]);
 
         $request = '{
@@ -122,12 +111,6 @@ class OrsAuthenticateTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'player_id',
-            'token' => 'test_token',
-            'expired' => 'false'
-        ]);
-
         $request = '{
             "player_id":"player_id",
             "timestamp":1715052653,
@@ -163,12 +146,6 @@ class OrsAuthenticateTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'player_id',
-            'token' => 'test_token',
-            'expired' => 'false'
-        ]);
-
         $request = '{
             "player_id":"player_id",
             "timestamp":1715052653,
@@ -202,12 +179,6 @@ class OrsAuthenticateTest extends TestCase
             'play_id' => 'player_id',
             'username' => 'testUsername',
             'currency' => 'IDR'
-        ]);
-
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'player_id',
-            'token' => 'test_token',
-            'expired' => 'false'
         ]);
 
         $request = '{

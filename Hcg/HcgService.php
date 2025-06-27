@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Providers\Hcg\HcgApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use Providers\Hcg\HcgRepository;
 use Providers\Hcg\HcgCredentials;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +18,9 @@ use Providers\Hcg\Exceptions\CannotCancelException;
 use App\Exceptions\Casino\TransactionNotFoundException;
 use Providers\Hcg\Exceptions\InsufficientFundException;
 use Providers\Hcg\Exceptions\TransactionAlreadyExistException;
-use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
-use Providers\Hcg\DTO\HcgPlayerDTO;
+use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Hcg\DTO\HcgRequestDTO;
+use Providers\Hcg\DTO\HcgPlayerDTO;
 use Providers\Hcg\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 
 class HcgService
@@ -37,55 +38,51 @@ class HcgService
     ) {
     }
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequest->currency);
 
-        if (is_null($playerDetails) === true) {
+        if (is_null($player) === true) {
+            $player = HcgPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
+
             try {
-                DB::connection('pgsql_write')->beginTransaction();
+                $this->repository->beginTransaction();
 
-                $this->repository->createPlayer(
-                    playID: $request->playId,
-                    username: $request->username,
-                    currency: $request->currency
-                );
+                $this->repository->createPlayer(playerDTO: $player);
 
-                $this->api->userRegistrationInterface(credentials: $credentials, playID: $request->playId);
-                DB::connection('pgsql_write')->commit();
+                $this->api->userRegistrationInterface(credentials: $credentials, playID: $player->playID);
+
+                $this->repository->commit();
             } catch (Exception $e) {
-                DB::connection('pgsql_write')->rollBack();
+                $this->repository->rollBack();
                 throw $e;
             }
         }
 
         return $this->api->userLoginInterface(
             credentials: $credentials,
-            playID: $request->playId,
-            gameCode: $request->gameId
+            playID: $player->playID,
+            gameCode: $casinoRequest->gameID
         );
     }
 
-    public function getVisualUrl(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->play_id);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
-        if (is_null($playerDetails) === true)
-            throw new CasinoPlayerNotFoundException;
+        if (is_null($player) === true)
+            throw new PlayerNotFoundException;
 
-        $transactionDetails = $this->repository->getTransactionByTrxID(transactionID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
-        if (is_null($transactionDetails) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $transactionIDArray = explode('-', $request->bet_id);
-        $transactionID = $transactionIDArray[1] ?? $request->bet_id;
-
-        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transactionID}";
+        return "{$credentials->getVisualUrl()}/#/order_details/en/{$credentials->getAgentID()}/{$transaction->roundID}";
     }
 
     private function getPlayerBalance(ICredentials $credentials, HcgPlayerDTO $playerDTO): float
