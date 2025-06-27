@@ -82,14 +82,14 @@ class YgrService
         ];
     }
 
-    public function deleteToken(Request $request): void
+    public function deleteToken(YgrRequestDTO $requestDTO): void
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->connectToken);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $this->repository->deletePlayGameByToken(token: $request->connectToken);
+        $this->repository->resetPlayerToken(playerDTO: $player);
     }
 
     public function betAndSettle(Request $request): object
