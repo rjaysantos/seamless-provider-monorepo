@@ -5,7 +5,6 @@ namespace Providers\Hcg;
 use Exception;
 use Carbon\Carbon;
 use Providers\Hcg\HcgApi;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use Providers\Hcg\HcgRepository;
@@ -190,10 +189,8 @@ class HcgService
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-
         $transactionDetails = $this->repository->getTransactionByExtID(
-            extID: "wagerpayout-{$credentials->getTransactionIDPrefix()}-{$requestDTO->roundID}"
+            extID: "wagerpayout-{$requestDTO->roundID}"
         );
 
         if (is_null($transactionDetails) === false)

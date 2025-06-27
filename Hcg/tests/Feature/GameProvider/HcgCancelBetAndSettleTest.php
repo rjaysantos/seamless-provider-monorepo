@@ -108,8 +108,8 @@ class HcgCancelBetAndSettleTest extends TestCase
         ]);
 
         DB::table('hcg.reports')->insert([
-            'ext_id' => 'wagerpayout-0-testTransactionID',
-            'round_id' => '0-testTransactionID',
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
             'web_id' => 1,
