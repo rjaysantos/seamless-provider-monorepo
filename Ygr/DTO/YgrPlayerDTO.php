@@ -16,7 +16,19 @@ class YgrPlayerDTO extends PlayerDTO
         public readonly ?string $username = null,
         public readonly ?string $currency = null,
         public readonly ?string $token = null,
+        public readonly ?string $gameCode = null,
     ) {}
+
+    public static function fromDB(object $dbData): YgrPlayerDTO
+    {
+        return new self(
+            playID: $dbData->play_id,
+            username: $dbData->username,
+            currency: $dbData->currency,
+            token: $dbData->token,
+            gameCode: $dbData->game_code
+        );
+    }
 
     public static function fromPlayRequestDTO(CasinoRequestDTO $casinoRequestDTO): self
     {

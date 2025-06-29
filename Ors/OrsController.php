@@ -37,9 +37,11 @@ class OrsController extends AbstractCasinoController
             ]
         );
 
-        $this->service->authenticate(request: $request);
+        $requestDTO = OrsRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(token: $request->token);
+        $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(token: $requestDTO->token);
     }
 
     public function balance(Request $request)
@@ -80,12 +82,14 @@ class OrsController extends AbstractCasinoController
             ]
         );
 
-        if ($request->transaction_type === 'debit')
-            $balance = $this->service->bet(request: $request);
+        $requestDTO = OrsRequestDTO::fromDebitRequest(request: $request);
+
+        if ($requestDTO->transactionType === 'debit')
+            $balance = $this->service->wager(requestDTO: $requestDTO);
         else
             $balance = $this->service->rollback(request: $request);
 
-        return $this->response->debit(request: $request, balance: $balance);
+        return $this->response->debit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function credit(Request $request)
@@ -105,9 +109,11 @@ class OrsController extends AbstractCasinoController
             ]
         );
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = OrsRequestDTO::fromCreditRequest(request: $request);
 
-        return $this->response->payout(request: $request, balance: $balance);
+        $balance = $this->service->settle(requestDTO: $requestDTO);
+
+        return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function reward(Request $request)

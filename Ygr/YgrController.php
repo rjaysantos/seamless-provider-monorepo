@@ -5,6 +5,7 @@ namespace Providers\Ygr;
 use Illuminate\Http\Request;
 use Providers\Ygr\YgrService;
 use Providers\Ygr\YgrResponse;
+use Providers\Ygr\DTO\YgrRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\AbstractCasinoController;
 use Providers\Ygr\Exceptions\InvalidProviderRequestException;
@@ -25,37 +26,47 @@ class YgrController extends AbstractCasinoController
             throw new InvalidProviderRequestException;
     }
 
-    public function verifyToken(Request $request)
+    public function authorizationConnectToken(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->verifyToken(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->authorizationConnectToken(
+            credentials: $data->credentials,
+            player: $data->player,
+            balance: $data->balance
+        );
     }
 
-    public function getBalance(Request $request)
+    public function getConnectTokenAmount(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $data = $this->service->getPlayerDetails(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->getBalance(data: $data);
+        $data = $this->service->getPlayerDetails(requestDTO: $requestDTO);
+
+        return $this->response->getConnectTokenAmount(player: $data->player, balance: $data->balance);
     }
 
-    public function deleteToken(Request $request)
+    public function delConnectToken(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $this->service->deleteToken(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->deleteToken();
+        $this->service->deleteToken(requestDTO: $requestDTO);
+
+        return $this->response->delConnectToken();
     }
 
     public function betAndSettle(Request $request)
