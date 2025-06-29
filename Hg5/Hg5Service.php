@@ -8,10 +8,12 @@ use Providers\Hg5\Hg5Api;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use Providers\Hg5\Hg5Repository;
 use Providers\Hg5\Hg5Credentials;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Illuminate\Support\Facades\Crypt;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hg5\Contracts\ICredentials;
@@ -37,32 +39,19 @@ class Hg5Service
         private Hg5Api $api,
         private IWallet $wallet,
         private WalletReport $walletReport
-    ) {
-    }
+    ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = Hg5PlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        if (is_null($playerData) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                username: $request->username,
-                currency: $request->currency
-            );
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $response = $this->api->getGameLink(credentials: $credentials, playerDTO: $player, requestDTO: $casinoRequest);
 
-        $response = $this->api->getGameLink(
-            credentials: $credentials,
-            playID: $request->playId,
-            gameCode: $request->gameId
-        );
+        $this->repository->createOrIgnorePlayer(playerDTO: $player);
 
-        $this->repository->createOrUpdatePlayGame(
-            playID: $request->playId,
-            token: $response->token
-        );
+        $this->repository->updatePlayerToken(playerDTO: $player, token: $response->token);
 
         return $response->url;
     }
