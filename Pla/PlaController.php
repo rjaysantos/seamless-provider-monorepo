@@ -8,6 +8,7 @@ use Providers\Pla\PlaResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController
@@ -96,9 +97,11 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $this->service->logout(request: $request);
+        $requestDTO = PlaRequestDTO::fromLogoutRequest(request: $request);
 
-        return $this->response->logout(requestId: $request->requestId);
+        $this->service->logout(requestDTO: $requestDTO);
+
+        return $this->response->logout(requestId: $requestDTO->requestId);
     }
 
     public function bet(Request $request)
