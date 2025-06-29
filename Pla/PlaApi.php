@@ -2,6 +2,7 @@
 
 namespace Providers\Pla;
 
+use App\DTO\CasinoRequestDTO;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Libraries\LaravelHttpClient;
@@ -23,16 +24,16 @@ class PlaApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function getGameLaunchUrl(ICredentials $credentials, Request $request, string $token): string
+    public function getGameLaunchUrl(ICredentials $credentials, CasinoRequestDTO $requestDTO, string $token): string
     {
         $apiRequest = [
             'requestId' => Str::uuid()->toString(),
             'serverName' => $credentials->getServerName(),
-            'username' => strtoupper($credentials->getKioskName() . "_{$request->playId}"),
-            'gameCodeName' => $request->gameId,
-            'clientPlatform' => $request->device == 0 ? 'mobile' : 'web',
+            'username' => strtoupper($credentials->getKioskName() . "_{$requestDTO->playID}"),
+            'gameCodeName' => $requestDTO->gameID,
+            'clientPlatform' => $requestDTO->device == 0 ? 'mobile' : 'web',
             'externalToken' => $token,
-            'language' => $request->language,
+            'language' => $requestDTO->lang,
             'playMode' => 1
         ];
 

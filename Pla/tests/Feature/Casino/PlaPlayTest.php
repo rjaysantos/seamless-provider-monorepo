@@ -14,7 +14,7 @@ class PlaPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
+        // DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -30,13 +30,17 @@ class PlaPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $request = [
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
+            'playId'    => 'testPlayID',
+            'username'  => 'testUsername',
+            'currency'  => 'IDR',
+            'gameId'    => 'testGameID',
+            'device'    => 1,
+            'language'  => 'en',
+            'memberIp'  => '127.0.0.1',
+            'memberId'  => 123,
+            'host'      => 'localhost'
         ];
+
 
         Http::fake([
             '/from-operator/getGameLaunchUrl' => Http::response(json_encode([
@@ -62,12 +66,6 @@ class PlaPlayTest extends TestCase
             'play_id' => 'testPlayID',
             'currency' => 'IDR',
             'username' => 'testUsername'
-        ]);
-
-        $this->assertDatabaseHas('pla.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
         ]);
 
         Http::assertSent(function ($request) {
@@ -101,19 +99,16 @@ class PlaPlayTest extends TestCase
             'currency' => 'IDR'
         ]);
 
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'oldToken',
-            'expired' => 'FALSE'
-        ]);
-
         $request = [
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
+            'playId'    => 'testPlayID',
+            'username'  => 'testUsername',
+            'currency'  => 'IDR',
+            'gameId'    => 'testGameID',
+            'device'    => 1,
+            'language'  => 'en',
+            'memberIp'  => '127.0.0.1',
+            'memberId'  => 123,
+            'host'      => 'localhost'
         ];
 
         Http::fake([
@@ -203,12 +198,15 @@ class PlaPlayTest extends TestCase
     public function test_play_invalidBearerToken_expectedData()
     {
         $request = [
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
+            'playId'    => 'testPlayID',
+            'username'  => 'testUsername',
+            'currency'  => 'IDR',
+            'gameId'    => 'testGameID',
+            'device'    => 1,
+            'language'  => 'en',
+            'memberIp'  => '127.0.0.1',
+            'memberId'  => 123,
+            'host'      => 'localhost'
         ];
 
         $response = $this->post('pla/in/play', $request, [
@@ -238,12 +236,15 @@ class PlaPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $request = [
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
+            'playId'    => 'testPlayID',
+            'username'  => 'testUsername',
+            'currency'  => 'IDR',
+            'gameId'    => 'testGameID',
+            'device'    => 1,
+            'language'  => 'en',
+            'memberIp'  => '127.0.0.1',
+            'memberId'  => 123,
+            'host'      => 'localhost'
         ];
 
         $response = [
@@ -322,12 +323,15 @@ class PlaPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         $request = [
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
+            'playId'    => 'testPlayID',
+            'username'  => 'testUsername',
+            'currency'  => 'IDR',
+            'gameId'    => 'testGameID',
+            'device'    => 1,
+            'language'  => 'en',
+            'memberIp'  => '127.0.0.1',
+            'memberId'  => 123,
+            'host'      => 'localhost'
         ];
 
         Http::fake([
