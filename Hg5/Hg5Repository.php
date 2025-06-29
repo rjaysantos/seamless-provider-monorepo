@@ -2,10 +2,10 @@
 
 namespace Providers\Hg5;
 
+use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
-use App\Repositories\AbstractProviderRepository;
 
 class Hg5Repository extends AbstractProviderRepository
 {
@@ -43,17 +43,21 @@ class Hg5Repository extends AbstractProviderRepository
             ]);
     }
 
-    public function createOrUpdatePlayGame(string $playID, string $token): void
+    public function createOrIgnorePlayer(Hg5PlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('hg5.playgame')
-            ->updateOrInsert(
-                ['play_id' => $playID],
-                [
-                    'token' => $token,
-                    'expired' => 'FALSE'
-                ]
-            );
+        $this->write->table('hg5.players')
+            ->insertOrIgnore([
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
+            ]);
+    }
+
+    public function updatePlayerToken(Hg5PlayerDTO $playerDTO, string $token): void
+    {
+        $this->write->table('hg5.players')
+            ->where('play_id', $playerDTO->playID)
+            ->update(['token' => $token]);
     }
 
     public function createWagerAndPayoutTransaction(
