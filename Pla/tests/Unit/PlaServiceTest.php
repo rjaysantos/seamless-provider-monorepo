@@ -19,6 +19,7 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaServiceTest extends TestCase
@@ -50,38 +51,38 @@ class PlaServiceTest extends TestCase
 
     public function test_getLaunchUrl_mockRepository_getPlayerByPlayID()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
-            ->with(playID: $request->playId);
+            ->with(playID: $requestDTO->playID);
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(requestDTO: $requestDTO);
     }
 
     public function test_getLaunchUrl_mockRepository_createPlayer()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->method('getPlayerByPlayID')
@@ -90,9 +91,9 @@ class PlaServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('createPlayer')
             ->with(
-                playID: $request->playId,
-                currency: $request->currency,
-                username: $request->username
+                playID: $requestDTO->playID,
+                currency: $requestDTO->currency,
+                username: $requestDTO->username
             );
 
         $stubApi = $this->createMock(PlaApi::class);
@@ -100,44 +101,44 @@ class PlaServiceTest extends TestCase
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(requestDTO: $requestDTO);
     }
 
     public function test_getLaunchUrl_mockCredentials_getCredentialsByCurrency()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
 
         $mockCredentials->expects($this->once())
             ->method('getCredentialsByCurrency')
-            ->with(currency: $request->currency);
+            ->with(currency: $requestDTO->currency);
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $mockCredentials, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(requestDTO: $requestDTO);
     }
 
     public function test_getLaunchUrl_mockRepository_createOrUpdateToken()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $providerCredentials = $this->createMock(ICredentials::class);
         $providerCredentials->method('getKioskName')
@@ -154,7 +155,7 @@ class PlaServiceTest extends TestCase
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
             ->method('createOrUpdateToken')
-            ->with(playID: $request->playId, token: 'testKioskName_testToken');
+            ->with(playID: $requestDTO->playID, token: 'testKioskName_testToken');
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
@@ -166,19 +167,19 @@ class PlaServiceTest extends TestCase
             api: $stubApi,
             randomizer: $stubRandomizer
         );
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(requestDTO: $requestDTO);
     }
 
     public function test_getLaunchUrl_mockApi_getGameLaunchUrl()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $providerCredentials = $this->createMock(ICredentials::class);
         $providerCredentials->method('getKioskName')
@@ -195,32 +196,32 @@ class PlaServiceTest extends TestCase
         $mockApi = $this->createMock(PlaApi::class);
         $mockApi->expects($this->once())
             ->method('getGameLaunchUrl')
-            ->with(credentials: $providerCredentials, request: $request, token: 'testKioskName_testToken')
+            ->with(credentials: $providerCredentials, request: $requestDTO, token: 'testKioskName_testToken')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $stubCredentials, api: $mockApi, randomizer: $stubRandomizer);
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(requestDTO: $requestDTO);
     }
 
     public function test_getLaunchUrl_stubApi_expectedData()
     {
         $expected = 'testUrl.com';
 
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            language: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(api: $stubApi);
-        $response = $service->getLaunchUrl(request: $request);
+        $response = $service->getLaunchUrl(requestDTO: $requestDTO);
 
         $this->assertSame(expected: $expected, actual: $response);
     }

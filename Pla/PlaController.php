@@ -8,6 +8,7 @@ use Providers\Pla\PlaResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController
@@ -48,7 +49,9 @@ class PlaController
             'device' => 'required|numeric'
         ]);
 
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
+        $requestDTO = PlaRequestDTO::fromPlayRequest(request: $request);
+
+        $launchUrl = $this->service->getLaunchUrl(requestDTO: $requestDTO);
 
         return $this->response->casinoSuccess(data: $launchUrl);
     }

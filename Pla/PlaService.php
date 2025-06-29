@@ -21,6 +21,7 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -37,24 +38,24 @@ class PlaService
     ) {
     }
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(PlaRequestDTO $requestDTO): string
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             $this->repository->createPlayer(
-                playID: $request->playId,
-                currency: $request->currency,
-                username: $request->username
+                playID: $requestDTO->playID,
+                currency: $requestDTO->currency,
+                username: $requestDTO->username
             );
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $requestDTO->currency);
 
         $token = "{$credentials->getKioskName()}_{$this->randomizer->createToken()}";
 
-        $this->repository->createOrUpdateToken(playID: $request->playId, token: $token);
+        $this->repository->createOrUpdateToken(playID: $requestDTO->playID, token: $token);
 
-        return $this->api->getGameLaunchUrl(credentials: $credentials, request: $request, token: $token);
+        return $this->api->getGameLaunchUrl(credentials: $credentials, requestDTO: $requestDTO, token: $token);
     }
 
     public function getBetDetail(Request $request): string
