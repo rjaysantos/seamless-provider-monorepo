@@ -56,15 +56,17 @@ class YgrController extends AbstractCasinoController
         return $this->response->getConnectTokenAmount(player: $data->player, balance: $data->balance);
     }
 
-    public function deleteToken(Request $request)
+    public function delConnectToken(Request $request)
     {
         $this->validateProviderRequest(request: $request, rules: [
             'connectToken' => 'required|string'
         ]);
 
-        $this->service->deleteToken(request: $request);
+        $requestDTO = YgrRequestDTO::tokenRequest(request: $request);
 
-        return $this->response->deleteToken();
+        $this->service->deleteToken(requestDTO: $requestDTO);
+
+        return $this->response->delConnectToken();
     }
 
     public function betAndSettle(Request $request)

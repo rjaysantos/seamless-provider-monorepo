@@ -82,9 +82,11 @@ class OrsController
             ]
         );
 
-        $this->service->authenticate(request: $request);
+        $requestDTO = OrsRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(token: $request->token);
+        $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(token: $requestDTO->token);
     }
 
     public function balance(Request $request)
@@ -152,9 +154,11 @@ class OrsController
             ]
         );
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = OrsRequestDTO::fromCreditRequest(request: $request);
 
-        return $this->response->payout(request: $request, balance: $balance);
+        $balance = $this->service->settle(requestDTO: $requestDTO);
+
+        return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function reward(Request $request)

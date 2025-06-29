@@ -3,32 +3,38 @@
 namespace Providers\Hcg;
 
 use Illuminate\Support\Facades\DB;
+use Providers\Hcg\DTO\HcgPlayerDTO;
+use Providers\Hcg\DTO\HcgTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class HcgRepository
+class HcgRepository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?HcgPlayerDTO
     {
-        return DB::table('hcg.players')
+        $data = $this->read->table('hcg.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : HcgPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createPlayer(HcgPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('hcg.players')
+        $this->write->table('hcg.players')
             ->insert([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
+                'play_id' => $playerDTO->playID,
+                'username' => $playerDTO->username,
+                'currency' => $playerDTO->currency,
             ]);
     }
 
-    public function getTransactionByTrxID(string $transactionID): ?object
+    public function getTransactionByExtID(string $extID): ?HcgTransactionDTO
     {
-        return DB::table('hcg.reports')
-            ->where('trx_id', $transactionID)
+        $data = $this->read->table('hcg.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : HcgTransactionDTO::fromDB(dbData: $data);
     }
 
     public function createSettleTransaction(
