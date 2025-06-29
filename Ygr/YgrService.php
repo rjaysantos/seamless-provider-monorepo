@@ -95,11 +95,7 @@ class YgrService
         if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $transactionDTO = YgrTransactionDTO::wagerAndPayout(
-            extID: $requestDTO->roundID,
-            requestDTO: $requestDTO,
-            playerDTO: $player,
-        );
+        $transactionDTO = YgrTransactionDTO::wagerAndPayout(requestDTO: $requestDTO, playerDTO: $player);
 
         $transaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
 

@@ -11,10 +11,10 @@ class YgrTransactionDTO extends TransactionDTO
 
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
 
-    public static function wagerAndPayout(string $extID, YgrRequestDTO $requestDTO, YgrPlayerDTO $playerDTO): self
+    public static function wagerAndPayout(YgrRequestDTO $requestDTO, YgrPlayerDTO $playerDTO): self
     {
         return new self(
-            extID: $extID,
+            extID: $requestDTO->roundID,
             roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,

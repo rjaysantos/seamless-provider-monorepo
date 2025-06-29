@@ -18,7 +18,7 @@ class YgrAddGameResultTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_betAndSettle_validRequest_expectedData()
+    public function test_addGameResult_validRequest_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -93,7 +93,7 @@ class YgrAddGameResultTest extends TestCase
     }
 
     #[DataProvider('betAndSettleParams')]
-    public function test_betAndSettle_invalidRequest_expectedData($parameter)
+    public function test_addGameResult_invalidRequest_expectedData($parameter)
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -135,7 +135,7 @@ class YgrAddGameResultTest extends TestCase
         ];
     }
 
-    public function test_betAndSettle_tokenNotFound_expectedData()
+    public function test_addGameResult_tokenNotFound_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -170,7 +170,7 @@ class YgrAddGameResultTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_betAndSettle_transactionAlreadyExists_expectedData()
+    public function test_addGameResult_transactionAlreadyExists_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -249,7 +249,7 @@ class YgrAddGameResultTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_betAndSettle_walletErrorBalance_expectedData()
+    public function test_addGameResult_walletErrorBalance_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -297,7 +297,7 @@ class YgrAddGameResultTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_betAndSettle_insufficientFund_expectedData()
+    public function test_addGameResult_insufficientFund_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -346,7 +346,7 @@ class YgrAddGameResultTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_betAndSettle_walletErrorWagerAndPayout_expectedData()
+    public function test_addGameResult_walletErrorWagerAndPayout_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
