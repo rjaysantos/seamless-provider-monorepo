@@ -22,10 +22,10 @@ class PlaRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?object
     {
         return DB::table('pla.reports')
-            ->where('trx_id', $trxID)
+            ->where('ext_id', $extID)
             ->first();
     }
 

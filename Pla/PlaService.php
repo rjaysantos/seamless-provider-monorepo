@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
@@ -57,21 +58,21 @@ class PlaService
         return $this->api->getGameLaunchUrl(credentials: $credentials, request: $request, token: $token);
     }
 
-    public function getBetDetail(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string  //editing
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->play_id);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
         if (is_null($player) === true)
             throw new CasinoPlayerNotFoundException;
 
-        $transaction = $this->repository->getTransactionByTrxID(trxID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
         if (is_null($transaction) === true)
             throw new CasinoTransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequest->currency);
 
-        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
+        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ext_id);
     }
 
     private function validateToken(Request $request, ?object $player): void
