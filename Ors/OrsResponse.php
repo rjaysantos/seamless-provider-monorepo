@@ -10,12 +10,12 @@ use Providers\Ors\DTO\OrsRequestDTO;
 
 class OrsResponse
 {
-    public function casinoSuccess($data): JsonResponse
+    public function casinoSuccess($url): JsonResponse
     {
         return response()->json([
             'success' => true,
             'code' => 200,
-            'data' => $data,
+            'data' => $url,
             'error' => null
         ]);
     }
