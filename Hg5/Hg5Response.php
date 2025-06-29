@@ -4,6 +4,7 @@ namespace Providers\Hg5;
 
 use Providers\Hg5\Hg5DateTime;
 use Illuminate\Http\JsonResponse;
+use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Illuminate\Support\Facades\View;
 
 class Hg5Response
@@ -24,12 +25,12 @@ class Hg5Response
         return View::file($path, $data);
     }
 
-    public function balance(object $data): JsonResponse
+    public function balance(float $balance, Hg5PlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'data' => [
-                'balance' => $data->balance,
-                'currency' => $data->currency
+                'balance' => $balance,
+                'currency' => $playerDTO->currency
             ],
             'status' => [
                 'code' => '0',
