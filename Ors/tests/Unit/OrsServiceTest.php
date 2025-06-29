@@ -1,7 +1,6 @@
 <?php
 
 use Carbon\Carbon;
-use PHPUnit\Framework\MockObject\Stub\ConsecutiveCalls;
 use Tests\TestCase;
 use Providers\Ors\OrsApi;
 use Illuminate\Http\Request;
@@ -13,19 +12,21 @@ use Providers\Ors\OrsCredentials;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
 use Providers\Ors\Exceptions\InvalidTokenException;
+use PHPUnit\Framework\MockObject\Stub\ConsecutiveCalls;
 use Providers\Ors\Exceptions\InsufficientFundException;
 use Providers\Ors\Exceptions\InvalidPublicKeyException;
 use Providers\Ors\Exceptions\InvalidSignatureException;
+use Providers\Red\Exceptions\TransactionDoesNotExistException;
 use Providers\Ors\Exceptions\TransactionAlreadyExistsException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Ors\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
-use Providers\Red\Exceptions\TransactionDoesNotExistException;
 
 class OrsServiceTest extends TestCase
 {
