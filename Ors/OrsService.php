@@ -5,9 +5,9 @@ namespace Providers\Ors;
 use Exception;
 use Carbon\Carbon;
 use Providers\Ors\OrsApi;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
@@ -23,9 +23,9 @@ use Providers\Ors\Exceptions\InsufficientFundException;
 use Providers\Ors\Exceptions\InvalidPublicKeyException;
 use Providers\Ors\Exceptions\InvalidSignatureException;
 use Providers\Ors\Exceptions\TransactionAlreadyExistsException;
-use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
+use App\Exceptions\Casino\PlayerNotFoundException;
+use App\Exceptions\Casino\TransactionNotFoundException;
 use Providers\Ors\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
-use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class OrsService
@@ -41,45 +41,32 @@ class OrsService
         private WalletReport $walletReport
     ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerData = $this->repository->getPlayerByPlayID($request->playId);
+        $player = OrsPlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        if (is_null($playerData) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                username: $request->username,
-                currency: $request->currency
-            );
+        $this->repository->createOrUpdatePlayer(playerDTO: $player);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $token = $this->repository->createToken(playID: $request->playId);
-
-        return $this->api->enterGame(credentials: $credentials, request: $request, token: $token);
+        return $this->api->enterGame(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
     }
 
-    public function getBetDetailUrl(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->play_id);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
-        if (is_null($playerData) === true)
-            throw new CasinoPlayerNotFoundException;
+        if (is_null($player) === true)
+            throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
-        if (is_null($transactionData) === true)
-            throw new CasinoTransactionNotFoundException;
+        if (is_null($transaction) === true)
+            throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $extID = Str::after($request->bet_id, '-');
-
-        return $this->api->getBettingRecords(
-            credentials: $credentials,
-            transactionID: $extID,
-            playID: $request->play_id
-        );
+        return $this->api->getBettingRecords(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void

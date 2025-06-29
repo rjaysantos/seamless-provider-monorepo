@@ -18,32 +18,19 @@ class OrsRepository extends AbstractProviderRepository
         return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createOrUpdatePlayer(OrsPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('ors.players')
-            ->insertOrIgnore([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
-            ]);
-    }
-
-    public function createToken(string $playID): string
-    {
-        $token = $this->randomizer->createToken();
-
-        DB::connection('pgsql_write')
-            ->table('ors.playgame')
+        $this->write->table('ors.players')
             ->updateOrInsert(
-                ['play_id' => $playID],
                 [
-                    'token' => $token,
-                    'expired' => 'FALSE'
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                ],
+                [
+                    'token'      => $playerDTO->token
                 ]
             );
-
-        return $token;
     }
 
     public function getTransactionByExtID(string $extID): ?OrsTransactionDTO
