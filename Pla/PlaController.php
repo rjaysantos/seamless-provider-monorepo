@@ -8,6 +8,7 @@ use Providers\Pla\PlaResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController
@@ -78,9 +79,11 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $balance = $this->service->getBalance(request: $request);
+        $requestDTO = PlaRequestDTO::fromGetBalanceRequest(request: $request);
 
-        return $this->response->getBalance(requestId: $request->requestId, balance: $balance);
+        $balance = $this->service->getBalance(requestDTO: $requestDTO);
+
+        return $this->response->getBalance(requestId: $requestDTO->requestId, balance: $balance);
     }
 
     public function healthCheck()
