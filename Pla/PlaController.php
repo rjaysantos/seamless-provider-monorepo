@@ -2,6 +2,7 @@
 
 namespace Providers\Pla;
 
+use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
@@ -10,23 +11,14 @@ use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
-class PlaController
+class PlaController extends AbstractCasinoController
 {
     public function __construct(
-        private PlaService $service,
-        private PlaResponse $response
+        PlaService $service,
+        PlaResponse $response
     ) {
-    }
-
-    private function validateCasinoRequest(Request $request, array $rules): void
-    {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env(key: 'FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
+        $this->service = $service;
+        $this->response = $response;
     }
 
     private function validateProviderRequest(Request $request, array $rules): void
@@ -142,16 +134,4 @@ class PlaController
         return $this->response->gameRoundResult(request: $request, balance: $balance);
     }
 
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR'
-        ]);
-
-        $visualUrl = $this->service->getBetDetail(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
-    }
 }
