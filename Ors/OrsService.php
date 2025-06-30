@@ -3,15 +3,12 @@
 namespace Providers\Ors;
 
 use Exception;
-use Carbon\Carbon;
 use Providers\Ors\OrsApi;
-use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
-use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
@@ -30,8 +27,6 @@ use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransaction
 
 class OrsService
 {
-    private const PROVIDER_API_TIMEZONE = 'GMT+8';
-
     public function __construct(
         private OrsRepository $repository,
         private OrsCredentials $credentials,
@@ -208,16 +203,17 @@ class OrsService
 
             if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
+
+            $transactionDetails[] = (object) [
+                'requestDTO' => $transaction,
+                'wagerTransactionDTO' => $existingWagerTransaction
+            ];
         }
 
-        foreach ($requestDTO->transactions as $transaction) {
-
-            $transactionID = $transaction->roundID;
-
+        foreach ($transactionDetails as $transaction) {
             $rollbackTransactionDTO = OrsTransactionDTO::cancel(
-                extID: "cancel-{$transactionID}",
-                requestDTO: $transaction,
-                playerDTO: $player
+                requestDTO: $transaction->requestDTO,
+                wagerTransactionDTO: $transaction->wagerTransactionDTO
             );
 
             try {
@@ -229,7 +225,7 @@ class OrsService
                     credentials: $credentials,
                     transactionID: $rollbackTransactionDTO->extID,
                     amount: $rollbackTransactionDTO->winAmount,
-                    transactionIDToCancel: "wager-{$transactionID}"
+                    transactionIDToCancel: $transaction->wagerTransactionDTO->extID
                 );
 
                 if ($walletResponse['status_code'] !== 2100)

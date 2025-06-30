@@ -134,6 +134,6 @@ class OrsController extends AbstractCasinoController
 
         $balance = $this->service->bonus(requestDTO: $requestDTO);
 
-        return $this->response->payout(request: $request, balance: $balance);
+        return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }
 }
