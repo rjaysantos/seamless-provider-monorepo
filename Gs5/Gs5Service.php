@@ -8,7 +8,6 @@ use Providers\Gs5\Gs5Api;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
-use App\Libraries\Randomizer;
 use Providers\Gs5\Gs5Repository;
 use Providers\Gs5\Gs5Credentials;
 use Illuminate\Support\Facades\DB;
@@ -165,14 +164,71 @@ class Gs5Service
         return $walletResponse['credit_after'];
     }
 
-    public function cancel(Request $request): float
+    public function settle(GS5RequestDTO $requestDTO): float
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->txn_id);
+        $wagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
+
+        if (is_null($wagerTransaction) === true)
+            throw new ProviderTransactionNotFoundException;
+
+        $payoutTransactionDTO = Gs5TransactionDTO::payout(
+            extID: "payout-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            wagerTransactionDTO: $wagerTransaction
+        );
+
+        $existingPayoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
+
+        if (is_null($existingPayoutTransaction) === false)
+            throw new TransactionAlreadySettledException;
+
+        try {
+            $this->repository->beginTransaction();
+
+            $this->repository->createTransaction(transactionDTO: $payoutTransactionDTO);
+
+            $credentials = $this->credentials->getCredentialsByCurrency(currency: $payoutTransactionDTO->currency);
+
+            $report = $this->report->makeSlotReport(
+                transactionID: $payoutTransactionDTO->roundID,
+                gameCode: $payoutTransactionDTO->gameID,
+                betTime: $payoutTransactionDTO->dateTime
+            );
+
+            $walletResponse = $this->wallet->payout(
+                credentials: $credentials,
+                playID: $payoutTransactionDTO->playID,
+                currency: $payoutTransactionDTO->currency,
+                transactionID: $payoutTransactionDTO->extID,
+                amount: $payoutTransactionDTO->winAmount,
+                report: $report
+            );
+
+            if ($walletResponse['status_code'] != 2100)
+                throw new WalletErrorException;
+
+            $this->repository->commit();
+        } catch (Exception $e) {
+            $this->repository->rollback();
+            throw $e;
+        }
+
+        return $walletResponse['credit_after'];
+    }
+
+    public function cancel(Request $request): float
+    {
+        $player = $this->repository->getPlayerByToken(token: $request->access_token);
+
+        if (is_null($player) === true)
+            throw new TokenNotFoundException;
+
+        $transactionData = $this->repository->getTransactionByExtID(extID: "wager-{$request->extID}");
 
         if (is_null($transactionData) === true)
             throw new ProviderTransactionNotFoundException;
@@ -208,66 +264,5 @@ class Gs5Service
         }
 
         return $walletResponse['credit_after'];
-    }
-
-
-
-    public function settle(Request $request): float
-    {
-        $playerData = $this->repository->getPlayerByToken(token: $request->access_token);
-
-        if (is_null($playerData) === true)
-            throw new TokenNotFoundException;
-
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->txn_id);
-
-        if (is_null($transactionData) === true)
-            throw new ProviderTransactionNotFoundException;
-
-        if (is_null($transactionData->updated_at) === false)
-            throw new TransactionAlreadySettledException;
-
-        try {
-            DB::connection('pgsql_write')->beginTransaction();
-
-            $transactionDate = Carbon::createFromTimestamp($request->ts, self::PROVIDER_API_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
-
-            $winAmount = $request->total_win / self::PROVIDER_CURRENCY_CONVERSION;
-
-            $this->repository->settleTransaction(
-                trxID: $request->txn_id,
-                winAmount: $winAmount,
-                settleTime: $transactionDate
-            );
-
-            $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
-
-            $report = $this->report->makeSlotReport(
-                transactionID: $request->txn_id,
-                gameCode: $request->game_id,
-                betTime: $transactionDate
-            );
-
-            $walletResponse = $this->wallet->payout(
-                credentials: $credentials,
-                playID: $playerData->play_id,
-                currency: $playerData->currency,
-                transactionID: "payout-{$request->txn_id}",
-                amount: $winAmount,
-                report: $report
-            );
-
-            if ($walletResponse['status_code'] != 2100)
-                throw new WalletErrorException;
-
-            DB::connection('pgsql_write')->commit();
-        } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
-            throw $e;
-        }
-
-        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
     }
 }
