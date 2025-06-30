@@ -2,10 +2,11 @@
 
 namespace Providers\Pla;
 
-use Illuminate\Support\Carbon;
+use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Facades\DB;
+use Providers\Pla\DTO\PlaPlayerDTO;
 
-class PlaRepository
+class PlaRepository extends AbstractProviderRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -36,15 +37,19 @@ class PlaRepository
             ->first();
     }
 
-    public function createPlayer(string $playID, string $currency, string $username): void
+    public function createOrUpdatePlayer(PlaPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('pla.players')
-            ->insert([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency
-            ]);
+        $this->write->table('pla.players')
+            ->updateOrInsert(
+                [
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                ],
+                [
+                    'token' => $playerDTO->token
+                ]
+            );
     }
 
     public function createOrUpdateToken(string $playID, string $token): void
