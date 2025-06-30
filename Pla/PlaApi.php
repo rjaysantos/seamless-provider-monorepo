@@ -9,6 +9,7 @@ use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Pla\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
+use Providers\Pla\DTO\PlaPlayerDTO;
 
 class PlaApi
 {
@@ -24,15 +25,15 @@ class PlaApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function getGameLaunchUrl(ICredentials $credentials, CasinoRequestDTO $requestDTO, string $token): string
+    public function getGameLaunchUrl(ICredentials $credentials, CasinoRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): string
     {
         $apiRequest = [
             'requestId' => Str::uuid()->toString(),
             'serverName' => $credentials->getServerName(),
-            'username' => strtoupper($credentials->getKioskName() . "_{$requestDTO->playID}"),
+            'username' => strtoupper($credentials->getKioskName() . "_{$playerDTO->playID}"),
             'gameCodeName' => $requestDTO->gameID,
             'clientPlatform' => $requestDTO->device == 0 ? 'mobile' : 'web',
-            'externalToken' => $token,
+            'externalToken' => $credentials->getKioskName() . "_{$playerDTO->token}",
             'language' => $requestDTO->lang,
             'playMode' => 1
         ];

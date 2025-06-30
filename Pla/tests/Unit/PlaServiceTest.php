@@ -10,6 +10,7 @@ use App\Libraries\Randomizer;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
+use Providers\Pla\DTO\PlaPlayerDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
@@ -44,12 +45,12 @@ class PlaServiceTest extends TestCase
             credentials: $credentials,
             api: $api,
             randomizer: $randomizer,
-            wallet: $wallet, 
+            wallet: $wallet,
             report: $report
         );
     }
 
-    public function test_getLaunchUrl_mockRepository_getPlayerByPlayID()
+    public function test_getLaunchUrl_mockRepository_createOrUpdatePlayer()
     {
         $casinoRequest = new CasinoRequestDTO(
             playID: 'testPlayID',
@@ -61,46 +62,14 @@ class PlaServiceTest extends TestCase
         );
 
         $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: $casinoRequest->playID);
-
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getLaunchUrl(casinoRequest: $casinoRequest);
-    }
-
-    public function test_getLaunchUrl_mockRepository_createPlayer()
-    {
-        $casinoRequest = new CasinoRequestDTO(
-            playID: 'testPlayID',
-            username: 'testUsername',
-            currency: 'IDR',
-            lang: 'en',
-            gameID: 'testGameID',
-            device: 1
-        );
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
 
         $mockRepository->expects($this->once())
-            ->method('createPlayer')
-            ->with(
-                playID: $casinoRequest->playID,
-                currency: $casinoRequest->currency,
-                username: $casinoRequest->username
-            );
+            ->method('createOrUpdatePlayer')
+            ->willReturnCallback(function ($player) use (&$requestDTO) {
+                $requestDTO = $player;
+            });
 
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $mockRepository, api: $stubApi);
+        $service = $this->makeService(repository: $mockRepository);
         $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
@@ -129,47 +98,6 @@ class PlaServiceTest extends TestCase
         $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
-    public function test_getLaunchUrl_mockRepository_createOrUpdateToken()
-    {
-        $casinoRequest = new CasinoRequestDTO(
-            playID: 'testPlayID',
-            username: 'testUsername',
-            currency: 'IDR',
-            lang: 'en',
-            gameID: 'testGameID',
-            device: 1
-        );
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getKioskName')
-            ->willReturn('testKioskName');
-
-        $stubCredentials = $this->createMock(PlaCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRandomizer = $this->createMock(Randomizer::class);
-        $stubRandomizer->method('createToken')
-            ->willReturn('testToken');
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('createOrUpdateToken')
-            ->with(playID: $casinoRequest->playID, token: 'testKioskName_testToken');
-
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            api: $stubApi,
-            randomizer: $stubRandomizer
-        );
-        $service->getLaunchUrl(casinoRequest: $casinoRequest);
-    }
-
     public function test_getLaunchUrl_mockApi_getGameLaunchUrl()
     {
         $casinoRequest = new CasinoRequestDTO(
@@ -182,24 +110,22 @@ class PlaServiceTest extends TestCase
         );
 
         $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getKioskName')
-            ->willReturn('testKioskName');
 
         $stubCredentials = $this->createMock(PlaCredentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($providerCredentials);
 
-        $stubRandomizer = $this->createMock(Randomizer::class);
-        $stubRandomizer->method('createToken')
-            ->willReturn('testToken');
-
         $mockApi = $this->createMock(PlaApi::class);
         $mockApi->expects($this->once())
             ->method('getGameLaunchUrl')
-            ->with(credentials: $providerCredentials, request: $casinoRequest, token: 'testKioskName_testToken')
+            ->with(
+                $providerCredentials,
+                $casinoRequest,
+                $this->isInstanceOf(PlaPlayerDTO::class)
+            )
             ->willReturn('testUrl.com');
 
-        $service = $this->makeService(credentials: $stubCredentials, api: $mockApi, randomizer: $stubRandomizer);
+        $service = $this->makeService(credentials: $stubCredentials, api: $mockApi);
         $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
@@ -2200,7 +2126,7 @@ class PlaServiceTest extends TestCase
 
         $stubRepository->method('getBetTransactionByRefID')
             ->willReturn((object) []);
-            
+
         $stubRepository->method('getTransactionByTrxID')
             ->willReturn((object) []);
 
@@ -2290,7 +2216,7 @@ class PlaServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('createTransaction')
             ->with(
-                trxID: 'L-TEST_requestToken', 
+                trxID: 'L-TEST_requestToken',
                 betAmount: 0,
                 winAmount: 0,
                 betTime: '2024-01-01 00:00:00',
@@ -2309,7 +2235,7 @@ class PlaServiceTest extends TestCase
         $service->settle(request: $request);
     }
 
-    public function test_settle_stubRepositoryWithoutWin_expected() 
+    public function test_settle_stubRepositoryWithoutWin_expected()
     {
         $request = new Request([
             'requestId' => 'TEST_requestToken',
@@ -3318,7 +3244,7 @@ class PlaServiceTest extends TestCase
 
         $stubRepository->method('getBetTransactionByTrxID')
             ->willReturn($betTransaction);
-        
+
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
             ->willReturn(new Report);

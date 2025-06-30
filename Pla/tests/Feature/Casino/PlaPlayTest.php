@@ -14,7 +14,6 @@ class PlaPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        // DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -131,12 +130,6 @@ class PlaPlayTest extends TestCase
             'code' => 200,
             'data' => 'testUrl.com',
             'error' => null
-        ]);
-
-        $this->assertDatabaseHas('pla.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
         ]);
 
         Http::assertSent(function ($request) {
@@ -282,12 +275,6 @@ class PlaPlayTest extends TestCase
             'username' => 'testUsername'
         ]);
 
-        $this->assertDatabaseHas('pla.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
-        ]);
-
         Http::assertSent(function ($request) {
             return $request->url() == 'https://api-uat.agmidway.net/from-operator/getGameLaunchUrl' &&
                 $request->hasHeader('x-auth-kiosk-key', '4d45ab9bee2ab5a924629d18e5f07606cbfeb5fd7c0' .
@@ -360,12 +347,6 @@ class PlaPlayTest extends TestCase
             'play_id' => 'testPlayID',
             'currency' => 'IDR',
             'username' => 'testUsername'
-        ]);
-
-        $this->assertDatabaseHas('pla.playgame', [
-            'play_id' => 'testPlayID',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
         ]);
 
         Http::assertSent(function ($request) {
