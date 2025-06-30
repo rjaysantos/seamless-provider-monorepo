@@ -77,7 +77,9 @@ class Gs5Controller extends AbstractCasinoController
             'ts' => 'required|numeric'
         ]);
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = GS5RequestDTO::fromResultRequest($request);
+
+        $balance = $this->service->settle(requestDTO: $requestDTO);
 
         return $this->response->success(balance: $balance);
     }
