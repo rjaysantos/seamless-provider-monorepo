@@ -2,12 +2,13 @@
 
 namespace Providers\Pla\DTO;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class PlaRequestDTO
 {
     public function __construct(
-        public readonly ?string $requestId = null,
+        public readonly ?string $playID = null,
         public readonly ?string $username = null,
         public readonly ?string $token = null,
     ) {}
@@ -15,8 +16,8 @@ class PlaRequestDTO
     public static function fromLogoutRequest(Request $request): self
     {
         return new self(
-            requestId: $request->requestId,
-            username: $request->username,
+            playID: $request->requestId,
+            username: Str::after($request->username, '_'),
             token: $request->externalToken
         );
     }

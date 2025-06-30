@@ -2,9 +2,7 @@
 
 namespace Providers\Pla;
 
-use App\DTO\PlayerDTO;
 use App\Repositories\AbstractProviderRepository;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Providers\Pla\DTO\PlaPlayerDTO;
 
@@ -67,7 +65,7 @@ class PlaRepository extends AbstractProviderRepository
             );
     }
 
-    public function deleteToken(string $playID, string $token): void
+    public function resetPlayerToken(string $playID, string $token): void
     {
         $this->write->table('pla.players')
             ->where('play_id', $playID)

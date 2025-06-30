@@ -39,6 +39,11 @@ class PlaLogoutTest extends TestCase
 
         $response->assertStatus(200);
 
+        $this->assertDatabaseMissing('pla.players', [
+            'play_id' => 'player001',
+            'token' => 'PLAUC_TOKEN88888888'
+        ]);
+
         $this->assertDatabaseHas('pla.players', [
             'play_id' => 'player001',
             'token' => null,

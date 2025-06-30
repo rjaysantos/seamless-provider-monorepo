@@ -35,8 +35,7 @@ class PlaService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $report,
-    ) {
-    }
+    ) {}
 
     public function getLaunchUrl(Request $request): string
     {
@@ -79,7 +78,7 @@ class PlaService
     {
         $player = $this->repository->getPlayerByPlayIDToken(
             playID: $player->playID,
-            token: $requestDTO->token
+            token: $player->token
         );
 
         if (is_null($player) === true)
@@ -88,9 +87,8 @@ class PlaService
 
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $playID = explode('_', $requestDTO->username)[1] ?? null;
-
-        $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
+        $player = $requestDTO == null ? null : $this->repository
+            ->getPlayerByPlayID(playID: strtolower($requestDTO->username));
 
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
@@ -131,10 +129,11 @@ class PlaService
     public function logout(PlaRequestDTO $requestDTO): void
     {
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
-        
-        $this->validateToken(requestDTO: $requestDTO, player: $player);
-        
-        $this->repository->deleteToken($player->playID, $player->token);
+
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
+
+        $this->repository->resetPlayerToken($player->playID, $player->token);
     }
 
     private function makeReport(
