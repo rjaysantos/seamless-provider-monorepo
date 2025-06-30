@@ -221,45 +221,45 @@ class Gs5Service
         return $walletResponse['credit_after'];
     }
 
-    public function cancel(Request $request): float
+    public function cancel(GS5RequestDTO $requestDTO): float
     {
-        $player = $this->repository->getPlayerByToken(token: $request->access_token);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
         if (is_null($player) === true)
             throw new TokenNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: "wager-{$request->extID}");
+        $wagerTransaction = $this->repository->getTransactionByExtID(extID: "wager-{$requestDTO->roundID}");
 
-        if (is_null($transactionData) === true)
+        if (is_null($wagerTransaction) === true)
             throw new ProviderTransactionNotFoundException;
 
-        if (is_null($transactionData->updated_at) === false)
+        $payoutTransaction = $this->repository->getTransactionByExtID(extID: "payout-{$requestDTO->roundID}");
+
+        if (is_null($payoutTransaction) === false)
             throw new TransactionAlreadySettledException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $this->repository->settleTransaction(
-                trxID: $request->txn_id,
-                winAmount: $transactionData->bet_amount,
-                settleTime: $transactionData->created_at
-            );
+            $cancelTransactionDTO = Gs5TransactionDTO::cancel(wagerTransactionDTO: $wagerTransaction);
 
-            $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+            $this->repository->createTransaction(transactionDTO: $cancelTransactionDTO);
+
+            $credentials = $this->credentials->getCredentialsByCurrency(currency: $cancelTransactionDTO->currency);
 
             $walletResponse = $this->wallet->cancel(
                 credentials: $credentials,
-                transactionID: "cancel-{$request->txn_id}",
-                amount: $transactionData->bet_amount,
-                transactionIDToCancel: "wager-{$request->txn_id}"
+                transactionID: $cancelTransactionDTO->extID,
+                amount: $cancelTransactionDTO->betWinlose,
+                transactionIDToCancel: $wagerTransaction->extID
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollBack();
+            $this->repository->rollBack();
             throw new $e;
         }
 
