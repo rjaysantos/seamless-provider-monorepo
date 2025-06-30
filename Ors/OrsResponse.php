@@ -3,10 +3,9 @@
 namespace Providers\Ors;
 
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
+use Providers\Ors\DTO\OrsPlayerDTO;
 
 class OrsResponse
 {
