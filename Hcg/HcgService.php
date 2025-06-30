@@ -21,6 +21,7 @@ use Providers\Hcg\Exceptions\TransactionAlreadyExistException;
 use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Hcg\DTO\HcgRequestDTO;
 use Providers\Hcg\DTO\HcgPlayerDTO;
+use Providers\Hcg\DTO\HcgTransactionDTO;
 use Providers\Hcg\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 
 class HcgService
@@ -109,65 +110,60 @@ class HcgService
         return $balance / $credentials->getCurrencyConversion();
     }
 
-    public function betAndSettle(Request $request): float
+    public function betAndSettle(HcgRequestDTO $requestDTO): float
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->uid);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerDetails) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
-        $transactionID = "{$credentials->getTransactionIDPrefix()}-{$request->orderNo}";
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $transactionDetails = $this->repository->getTransactionByTrxID(transactionID: $transactionID);
+        $wagerPayoutTransactionDTO = HcgTransactionDTO::wager(
+            extID: "wagerpayout-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player,
+            currencyConversion: $credentials->getCurrencyConversion()
+        );
 
-        if (is_null($transactionDetails) === false)
+        $existingTransactionData = $this->repository->getTransactionByExtID(extID: $wagerPayoutTransactionDTO->extID);
+
+        if (is_null($existingTransactionData) === false)
             throw new TransactionAlreadyExistException;
 
-        $betAmount = $request->bet * $credentials->getCurrencyConversion();
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
-        if ($this->getPlayerBalance(credentials: $credentials, playID: $request->uid) < $betAmount)
+        if ($balance < $wagerPayoutTransactionDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $winAmount = $request->win * $credentials->getCurrencyConversion();
-
-            $settleTime = Carbon::createFromTimestamp($request->timestamp, self::PROVIDER_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
-
-            $this->repository->createSettleTransaction(
-                transactionID: $transactionID,
-                betAmount: $betAmount,
-                winAmount: $winAmount,
-                settleTime: $settleTime
-            );
-
+            $this->repository->createTransaction(transactionDTO: $wagerPayoutTransactionDTO);
+            
             $report = $this->report->makeSlotReport(
-                transactionID: $transactionID,
-                gameCode: $request->gameCode,
-                betTime: $settleTime
+                transactionID: $wagerPayoutTransactionDTO->roundID,
+                gameCode: $wagerPayoutTransactionDTO->gameID,
+                betTime: $wagerPayoutTransactionDTO->dateTime
             );
 
             $betAndSettleResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,
-                playID: $request->uid,
-                currency: $playerDetails->currency,
-                wagerTransactionID: "wagerpayout-{$transactionID}",
-                wagerAmount: $betAmount,
-                payoutTransactionID: "wagerpayout-{$transactionID}",
-                payoutAmount: $winAmount,
+                playID: $wagerPayoutTransactionDTO->playID,
+                currency: $wagerPayoutTransactionDTO->currency,
+                wagerTransactionID: $wagerPayoutTransactionDTO->extID,
+                wagerAmount: $wagerPayoutTransactionDTO->betAmount,
+                payoutTransactionID: $wagerPayoutTransactionDTO->extID,
+                payoutAmount: $wagerPayoutTransactionDTO->winAmount,
                 report: $report
             );
 
             if ($betAndSettleResponse['status_code'] !== 2100)
                 throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollBack();
+            $this->repository->rollBack();
             throw new $e;
         }
 

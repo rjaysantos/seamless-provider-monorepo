@@ -37,20 +37,22 @@ class HcgRepository extends AbstractProviderRepository
         return $data == null ? null : HcgTransactionDTO::fromDB(dbData: $data);
     }
 
-    public function createSettleTransaction(
-        string $transactionID,
-        float $betAmount,
-        float $winAmount,
-        string $settleTime
-    ): void {
-        DB::connection('pgsql_write')
-            ->table('hcg.reports')
+    public function createTransaction(HcgTransactionDTO $transactionDTO): void
+    {
+        $this->write->table('hcg.reports')
             ->insert([
-                'trx_id' => $transactionID,
-                'bet_amount' => $betAmount,
-                'win_amount' => $winAmount,
-                'created_at' => $settleTime,
-                'updated_at' => $settleTime,
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 }

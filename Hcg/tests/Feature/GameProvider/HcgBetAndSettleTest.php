@@ -28,12 +28,8 @@ class HcgBetAndSettleTest extends TestCase
 
         return $encryptionLib->createSignature(credentials: $credentials, data: $payload);
     }
-
-    #[DataProvider('apiEnvironment')]
-    public function test_betAndSettle_validRequest_expectedData($environment, $prefix)
+    public function test_betAndSettle_validRequest_expectedData()
     {
-        config(['app.env' => $environment]);
-
         $wallet = new class extends TestWallet {
             public function balance(IWalletCredentials $credentials, string $playID): array
             {
@@ -54,16 +50,16 @@ class HcgBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 1,
             'win' => 3,
@@ -81,20 +77,19 @@ class HcgBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hcg.reports', [
-            'trx_id' => "{$prefix}-transactionID",
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '123',
+            'bet_valid' => 1000.00,
+            'bet_amount' => 1000.00,
+            'bet_winlose' => 2000.00,
             'created_at' => '2024-08-14 14:47:42',
             'updated_at' => '2024-08-14 14:47:42'
         ]);
-    }
-
-    public static function apiEnvironment()
-    {
-        return [
-            ['STAGING', '0'],
-            ['PRODUCTION', '1']
-        ];
     }
 
     #[DataProvider('currencyConversionExpectedData')]
@@ -120,16 +115,16 @@ class HcgBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => $currency
         ]);
 
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => $bet,
             'win' => $win,
@@ -147,9 +142,16 @@ class HcgBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hcg.reports', [
-            'trx_id' => '0-transactionID',
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => $currency,
+            'game_code' => '123',
+            'bet_valid' => 1000.00,
+            'bet_amount' => 1000.00,
+            'bet_winlose' => 2000.00,
             'created_at' => '2024-08-14 14:47:42',
             'updated_at' => '2024-08-14 14:47:42'
         ]);
@@ -168,12 +170,12 @@ class HcgBetAndSettleTest extends TestCase
     {
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
-            'win' => 3,
+            'win' => 3
         ];
 
         unset($payload[$unset]);
@@ -211,12 +213,12 @@ class HcgBetAndSettleTest extends TestCase
     {
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
-            'win' => 3,
+            'win' => 3
         ];
 
         $payload['sign'] = 'invalid Signature';
@@ -234,10 +236,10 @@ class HcgBetAndSettleTest extends TestCase
     public function test_betAndSettle_invalidAction_expectedData()
     {
         $payload = [
-            'action' => 999,
-            'uid' => 'playID',
+            'action' => 222,
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
             'win' => 3,
@@ -259,9 +261,9 @@ class HcgBetAndSettleTest extends TestCase
     {
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
             'win' => 3,
@@ -282,24 +284,31 @@ class HcgBetAndSettleTest extends TestCase
     public function test_betAndSettle_transactionAlreadyExist_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hcg.reports')->insert([
-            'trx_id' => '0-transactionID',
-            'bet_amount' => 2000,
-            'win_amount' => 3000,
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '123',
+            'bet_valid' => 1000.00,
+            'bet_amount' => 1000.00,
+            'bet_winlose' => 2000.00,
             'created_at' => '2024-08-14 14:47:42',
             'updated_at' => '2024-08-14 14:47:42'
         ]);
 
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
             'win' => 3,
@@ -331,16 +340,16 @@ class HcgBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $payload = [
-            'action' => 2,
-            'uid' => 'playID',
+           'action' => 2,
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 2,
             'win' => 3,
@@ -371,16 +380,16 @@ class HcgBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 1,
             'win' => 3,
@@ -419,16 +428,16 @@ class HcgBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playID',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $payload = [
             'action' => 2,
-            'uid' => 'playID',
+            'uid' => 'testPlayeru001',
             'timestamp' => 1723618062,
-            'orderNo' => 'transactionID',
+            'orderNo' => 'testTransactionID',
             'gameCode' => '123',
             'bet' => 1,
             'win' => 3,
@@ -446,9 +455,16 @@ class HcgBetAndSettleTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hcg.reports', [
-            'trx_id' => '0-transactionID',
-            'bet_amount' => 1000,
-            'win_amount' => 3000,
+            'ext_id' => 'wagerpayout-testTransactionID',
+            'round_id' => 'testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '123',
+            'bet_valid' => 1000.00,
+            'bet_amount' => 1000.00,
+            'bet_winlose' => 2000.00,
             'created_at' => '2024-08-14 14:47:42',
             'updated_at' => '2024-08-14 14:47:42'
         ]);
