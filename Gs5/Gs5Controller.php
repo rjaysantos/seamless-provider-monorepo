@@ -91,7 +91,9 @@ class Gs5Controller extends AbstractCasinoController
             'txn_id' => 'required|string'
         ]);
 
-        $balance = $this->service->cancel(request: $request);
+        $requestDTO = GS5RequestDTO::fromRefundRequest($request);
+
+        $balance = $this->service->cancel(requestDTO: $requestDTO);
 
         return $this->response->success(balance: $balance);
     }

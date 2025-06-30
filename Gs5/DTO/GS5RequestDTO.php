@@ -45,4 +45,12 @@ class GS5RequestDTO
             dateTime: $request->ts
         );
     }
+
+    public static function fromRefundRequest(Request $request): GS5RequestDTO
+    {
+        return new self(
+            token: $request->access_token,
+            roundID: $request->txn_id,
+        );
+    }
 }
