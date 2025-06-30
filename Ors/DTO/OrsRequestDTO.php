@@ -74,7 +74,8 @@ class OrsRequestDTO
             transactionType: $request->transaction_type,
             totalAmount: $request->total_amount,
             rawRequest: $request,
-            transactions: $transactions
+            transactions: $transactions,
+            dateTime: $request->called_at,
         );
     }
 
