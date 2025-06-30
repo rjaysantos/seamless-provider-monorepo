@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
 use App\Libraries\Randomizer;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -14,8 +15,6 @@ class Hg5AuthenticateTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE hg5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE hg5.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE hg5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -45,14 +44,8 @@ class Hg5AuthenticateTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testLaunchToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'currency' => 'IDR',
+            'token' => 'testLaunchToken'
         ]);
 
         $request = [
@@ -137,14 +130,8 @@ class Hg5AuthenticateTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testLaunchToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'currency' => 'IDR',
+            'token' => 'testLaunchToken'
         ]);
 
         $request = [
@@ -181,14 +168,8 @@ class Hg5AuthenticateTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testLaunchToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'currency' => 'IDR',
+            'token' => 'testLaunchToken'
         ]);
 
         $request = [
@@ -222,14 +203,8 @@ class Hg5AuthenticateTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testLaunchToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'currency' => 'IDR',
+            'token' => 'testLaunchToken'
         ]);
 
         $request = [
@@ -284,14 +259,8 @@ class Hg5AuthenticateTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'testLaunchToken',
-            'expired' => 'FALSE',
-            'status' => 'oldGameID'
+            'currency' => 'IDR',
+            'token' => 'testLaunchToken'
         ]);
 
         $request = [
