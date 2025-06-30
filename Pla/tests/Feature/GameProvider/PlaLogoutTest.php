@@ -92,14 +92,14 @@ class PlaLogoutTest extends TestCase
 
         $response = $this->post('pla/prov/logout', $payload);
 
-        $response->assertStatus(200);
-
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
             'error' => [
                 'code' => 'ERR_PLAYER_NOT_FOUND'
             ]
         ]);
+
+        $response->assertStatus(200);
     }
 
     public function test_logout_usernameWithoutKiosk_expectedData()

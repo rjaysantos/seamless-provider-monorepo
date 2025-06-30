@@ -101,7 +101,7 @@ class PlaController
 
         $this->service->logout(requestDTO: $requestDTO);
 
-        return $this->response->logout(requestId: $requestDTO->playID);
+        return $this->response->logout(requestId: $request->requestId);
     }
 
     public function bet(Request $request)

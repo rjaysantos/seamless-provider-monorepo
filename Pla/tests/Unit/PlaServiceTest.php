@@ -879,8 +879,8 @@ class PlaServiceTest extends TestCase
     public function test_logout_mockRepository_getPlayerByPlayID()
     {
         $requestDTO = new PlaRequestDTO(
-            playID: 'TEST_requestToken',
-            username: 'PLAYERID',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
 

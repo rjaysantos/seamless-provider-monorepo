@@ -14,7 +14,7 @@ class InvalidTokenException extends Exception
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestDTO->playID,
+            'requestId' => $this->requestDTO->requestId,
             'error' => [
                 'code' => 'ERR_AUTHENTICATION_FAILED'
             ]
