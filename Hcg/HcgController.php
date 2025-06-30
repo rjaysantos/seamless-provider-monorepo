@@ -76,7 +76,9 @@ class HcgController extends AbstractCasinoController
             ]
         );
 
-        $balance = $this->service->getBalance(request: $request);
+        $requestDTO = HcgRequestDTO::fromGetBalanceRequest(request: $request);
+
+        $balance = $this->service->getBalance(requestDTO: $requestDTO);
 
         return $this->response->providerSuccess(balance: $balance);
     }

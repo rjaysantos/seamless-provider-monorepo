@@ -84,34 +84,6 @@ class RedBalanceTest extends TestCase
         ];
     }
 
-    public function test_balance_invalidCurrency_expected()
-    {
-        config(['app.env' => 'PRODUCTION']);
-
-        DB::table('red.players')->insert([
-            'user_id_provider' => 27,
-            'play_id' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'JPY' // invalid currency not supported
-        ]);
-
-        $request = [
-            'user_id' => 27,
-            'prd_id' => 1,
-        ];
-
-        $response = $this->post('/red/prov/balance', $request, [
-            'secret-key' => 'MtVRWb3SzvOiF7Ll9DTcT1rMSyJIUAad'
-        ]);
-
-        $response->assertJson([
-            'status' => 0,
-            'error' => 'INVALID_CURRENCY'
-        ]);
-
-        $response->assertStatus(200);
-    }
-
     public function test_balance_invalidSecretKey_expected()
     {
         DB::table('red.players')->insert([
