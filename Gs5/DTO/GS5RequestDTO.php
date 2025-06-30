@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 class GS5RequestDTO
 {
-    private const PROVIDER_CURRENCY_CONVERSION = 100;
-
     public function __construct(
         public readonly ?string $token = null,
         public readonly ?string $roundID = null,
@@ -29,7 +27,7 @@ class GS5RequestDTO
         return new self(
             token: $request->access_token,
             roundID: $request->txn_id,
-            amount: $request->total_bet / self::PROVIDER_CURRENCY_CONVERSION,
+            amount: $request->total_bet,
             gameID: $request->game_id,
             dateTime: $request->ts
         );
@@ -40,7 +38,7 @@ class GS5RequestDTO
         return new self(
             token: $request->access_token,
             roundID: $request->txn_id,
-            amount: $request->total_win / self::PROVIDER_CURRENCY_CONVERSION,
+            amount: $request->total_win,
             gameID: $request->game_id,
             dateTime: $request->ts
         );
