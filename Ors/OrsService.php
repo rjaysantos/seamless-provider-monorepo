@@ -204,16 +204,13 @@ class OrsService
             if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
 
-            $transactionDetails[] = (object) [
-                'requestDTO' => $transaction,
-                'wagerTransactionDTO' => $existingWagerTransaction
-            ];
+            $wagerTransactions[] = $existingWagerTransaction;
         }
 
-        foreach ($transactionDetails as $transaction) {
+        foreach ($wagerTransactions as $wagerTransaction) {
             $rollbackTransactionDTO = OrsTransactionDTO::cancel(
-                requestDTO: $transaction->requestDTO,
-                wagerTransactionDTO: $transaction->wagerTransactionDTO
+                wagerTransactionDTO: $wagerTransaction,
+                timestamp: $requestDTO->dateTime
             );
 
             try {
@@ -225,7 +222,7 @@ class OrsService
                     credentials: $credentials,
                     transactionID: $rollbackTransactionDTO->extID,
                     amount: $rollbackTransactionDTO->winAmount,
-                    transactionIDToCancel: $transaction->wagerTransactionDTO->extID
+                    transactionIDToCancel: $wagerTransaction->extID
                 );
 
                 if ($walletResponse['status_code'] !== 2100)
