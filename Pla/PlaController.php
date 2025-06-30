@@ -5,6 +5,7 @@ namespace Providers\Pla;
 use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -61,13 +62,12 @@ class PlaController
             'externalToken' => 'required|string'
         ]);
 
-        $currency = $this->service->authenticate(request: $request);
+        $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(
-            requestId: $request->requestId,
-            playID: $request->username,
-            currency: $currency
-        );
+        $currency = $this->service->authenticate(requestDTO: $requestDTO);
+        
+        return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
+        
     }
 
     public function getBalance(Request $request)
