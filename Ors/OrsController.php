@@ -111,7 +111,7 @@ class OrsController extends AbstractCasinoController
 
         $requestDTO = OrsRequestDTO::fromCreditRequest(request: $request);
 
-        $balance = $this->service->settle(requestDTO: $requestDTO);
+        $balance = $this->service->payout(requestDTO: $requestDTO);
 
         return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }

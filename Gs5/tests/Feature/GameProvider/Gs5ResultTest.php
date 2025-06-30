@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -12,7 +13,6 @@ class Gs5ResultTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE gs5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -31,22 +31,24 @@ class Gs5ResultTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123456',
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'updated_at' => null,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);
 
@@ -67,18 +69,17 @@ class Gs5ResultTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('gs5.reports', [
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'updated_at' => null,
-            'created_at' => '2024-01-01 00:00:00'
-        ]);
-
         $this->assertDatabaseHas('gs5.reports', [
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
+            'ext_id' => 'payout-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 200.00,
             'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);
@@ -118,15 +119,10 @@ class Gs5ResultTest extends TestCase
     public function test_result_tokenNotFound_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = [
@@ -147,22 +143,24 @@ class Gs5ResultTest extends TestCase
     public function test_result_transactionNotFound_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'updated_at' => null,
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 200.00,
+            'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);
 
@@ -184,21 +182,38 @@ class Gs5ResultTest extends TestCase
     public function test_result_transactionAlreadySettled_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 200.00,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
+        ]);
+
+        DB::table('gs5.reports')->insert([
+            'ext_id' => 'payout-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 200.00,
             'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);
@@ -231,22 +246,23 @@ class Gs5ResultTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123456',
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'updated_at' => null,
+            'bet_winlose' => 300.00,
+            'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);
 
@@ -264,18 +280,17 @@ class Gs5ResultTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseHas('gs5.reports', [
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'updated_at' => null,
-            'created_at' => '2024-01-01 00:00:00'
-        ]);
-
         $this->assertDatabaseMissing('gs5.reports', [
-            'trx_id' => '123456',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
+            'ext_id' => 'payout-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 200.00,
             'updated_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00'
         ]);

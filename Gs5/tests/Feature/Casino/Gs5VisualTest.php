@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use Providers\Gs5\Credentials\Gs5Staging;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -12,7 +13,6 @@ class Gs5VisualTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE gs5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -26,9 +26,15 @@ class Gs5VisualTest extends TestCase
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'round_id' => 'testTransactionID',
+            'web_id' => 1,
+            'game_code' => 'testGameCode',
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
+            'bet_winlose' => 300.00,
             'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
@@ -48,7 +54,7 @@ class Gs5VisualTest extends TestCase
         $response = $this->post(
             uri: 'gs5/in/visual',
             data: $request,
-            headers: ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]
+            headers: ['Authorization' => 'Bearer ' . config('app.bearer')]
         );
 
         $response->assertJson([
@@ -75,7 +81,7 @@ class Gs5VisualTest extends TestCase
         $response = $this->post(
             uri: 'gs5/in/visual',
             data: $request,
-            headers: ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]
+            headers: ['Authorization' => 'Bearer ' . config('app.bearer')]
         );
 
         $response->assertJson([
@@ -138,7 +144,7 @@ class Gs5VisualTest extends TestCase
         $response = $this->post(
             uri: 'gs5/in/visual',
             data: $request,
-            headers: ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]
+            headers: ['Authorization' => 'Bearer ' . config('app.bearer')]
         );
 
         $response->assertJson([
@@ -160,9 +166,15 @@ class Gs5VisualTest extends TestCase
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => 'testTransactionID',
+            'ext_id' => 'testTransactionID',
+            'round_id' => 'testTransactionID',
+            'web_id' => 1,
+            'game_code' => 'testGameCode',
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
             'bet_amount' => 100.00,
-            'win_amount' => 300.00,
+            'bet_winlose' => 300.00,
             'updated_at' => '2021-01-01 00:00:00',
             'created_at' => '2021-01-01 00:00:00'
         ]);
@@ -176,7 +188,7 @@ class Gs5VisualTest extends TestCase
         $response = $this->post(
             uri: 'gs5/in/visual',
             data: $request,
-            headers: ['Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')]
+            headers: ['Authorization' => 'Bearer ' . config('app.bearer')]
         );
 
         $response->assertJson([

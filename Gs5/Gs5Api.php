@@ -2,7 +2,9 @@
 
 namespace Providers\Gs5;
 
+use App\DTO\CasinoRequestDTO;
 use Providers\Gs5\Contracts\ICredentials;
+use Providers\Gs5\DTO\Gs5PlayerDTO;
 
 class Gs5Api
 {
@@ -19,15 +21,14 @@ class Gs5Api
 
     public function getLaunchUrl(
         ICredentials $credentials,
-        string $playerToken,
-        string $gameID,
-        ?string $lang = null
+        Gs5PlayerDTO $playerDTO,
+        CasinoRequestDTO $casinoRequestDTO,
     ): string {
         $apiRequest = http_build_query([
             'host_id' => $credentials->getHostID(),
-            'game_id' => $gameID,
-            'lang' => $this->getProviderLanguage(language: $lang),
-            'access_token' => $playerToken
+            'game_id' => $playerDTO->gameCode,
+            'lang' => $this->getProviderLanguage(language: $casinoRequestDTO->lang),
+            'access_token' => $playerDTO->token
         ]);
 
         return "{$credentials->getApiUrl()}/launch/?{$apiRequest}";
