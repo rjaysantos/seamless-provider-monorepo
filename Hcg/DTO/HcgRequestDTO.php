@@ -7,11 +7,20 @@ use Illuminate\Http\Request;
 class HcgRequestDTO
 {
     public function __construct(
-        public readonly ?string $playID = null
+        public readonly ?string $playID = null,
+        public readonly ?string $roundID = null,
     ) {}
 
     public static function fromGetBalanceRequest(Request $request)
     {
         return new self(playID: $request->uid);
+    }
+
+    public static function fromCancelSettlementRequest(Request $request): self
+    {
+        return new self(
+            playID: $request->uid,
+            roundID: $request->orderNo
+        );
     }
 }
