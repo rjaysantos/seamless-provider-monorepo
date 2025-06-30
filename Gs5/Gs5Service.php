@@ -67,9 +67,9 @@ class Gs5Service
         return $this->api->getGameHistory(credentials: $credentials, trxID: $transaction->roundID);
     }
 
-    private function getPlayerBalance(ICredentials $credentials, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, Gs5PlayerDTO $playerDTO): float
     {
-        $balanceResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
+        $balanceResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
         if ($balanceResponse['status_code'] !== 2100)
             throw new WalletErrorException;
@@ -86,7 +86,7 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $balance =  $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+        $balance =  $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return $balance * self::PROVIDER_CURRENCY_CONVERSION;
     }
@@ -100,7 +100,7 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $balance =  $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+        $balance =  $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'player' => $player,
@@ -129,7 +129,7 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $balance = $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         if ($balance < $wagerTransactionDTO->betAmount)
             throw new InsufficientFundException;
