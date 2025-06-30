@@ -193,45 +193,51 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function rollback(Request $request): float
+    public function cancel(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        foreach ($request->records as $record) {
-            $betTransaction = $this->repository->getBetTransactionByTrxID(transactionID: $record['transaction_id']);
+        foreach ($requestDTO->transactions as $transaction) {
+            $existingWagerTransaction = $this->repository->getTransactionByExtID(
+                extID: "wager-{$transaction->roundID}"
+            );
 
-            if (is_null($betTransaction) === true)
+            if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
         }
 
-        foreach ($request->records as $record) {
-            try {
-                DB::connection('pgsql_write')->beginTransaction();
+        foreach ($requestDTO->transactions as $transaction) {
 
-                $this->repository->cancelBetTransaction(
-                    transactionID: $record['transaction_id'],
-                    cancelTme: Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
-                        ->setTimezone('GMT+8')
-                        ->format('Y-m-d H:i:s')
-                );
+            $transactionID = $transaction->roundID;
+
+            $rollbackTransactionDTO = OrsTransactionDTO::cancel(
+                extID: "cancel-{$transactionID}",
+                requestDTO: $transaction,
+                playerDTO: $player
+            );
+
+            try {
+                $this->repository->beginTransaction();
+
+                $this->repository->createTransaction(transactionDTO: $rollbackTransactionDTO);
 
                 $walletResponse = $this->wallet->cancel(
                     credentials: $credentials,
-                    transactionID: "cancelBet-{$record['transaction_id']}",
-                    amount: $record['amount'],
-                    transactionIDToCancel: "wager-{$record['transaction_id']}"
+                    transactionID: $rollbackTransactionDTO->extID,
+                    amount: $rollbackTransactionDTO->winAmount,
+                    transactionIDToCancel: "wager-{$transactionID}"
                 );
 
                 if ($walletResponse['status_code'] !== 2100)
                     throw new WalletErrorException;
 
-                DB::connection('pgsql_write')->commit();
+                $this->repository->commit();
             } catch (Exception $e) {
-                DB::connection('pgsql_write')->rollBack();
+                $this->repository->rollback();
                 throw $e;
             }
         }

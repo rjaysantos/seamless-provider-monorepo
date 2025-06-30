@@ -87,7 +87,7 @@ class OrsController extends AbstractCasinoController
         if ($requestDTO->transactionType === 'debit')
             $balance = $this->service->wager(requestDTO: $requestDTO);
         else
-            $balance = $this->service->rollback(request: $request);
+            $balance = $this->service->cancel(requestDTO: $requestDTO);
 
         return $this->response->debit(requestDTO: $requestDTO, balance: $balance);
     }

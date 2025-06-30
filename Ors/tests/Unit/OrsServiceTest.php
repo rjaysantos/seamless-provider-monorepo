@@ -1,7 +1,6 @@
 <?php
 
 use Carbon\Carbon;
-use PHPUnit\Framework\MockObject\Stub\ConsecutiveCalls;
 use Tests\TestCase;
 use Providers\Ors\OrsApi;
 use Illuminate\Http\Request;
@@ -13,19 +12,21 @@ use Providers\Ors\OrsCredentials;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ors\Contracts\ICredentials;
 use Providers\Ors\Exceptions\WalletErrorException;
 use Providers\Ors\Exceptions\InvalidTokenException;
+use PHPUnit\Framework\MockObject\Stub\ConsecutiveCalls;
 use Providers\Ors\Exceptions\InsufficientFundException;
 use Providers\Ors\Exceptions\InvalidPublicKeyException;
 use Providers\Ors\Exceptions\InvalidSignatureException;
+use Providers\Red\Exceptions\TransactionDoesNotExistException;
 use Providers\Ors\Exceptions\TransactionAlreadyExistsException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Ors\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
-use Providers\Red\Exceptions\TransactionDoesNotExistException;
 
 class OrsServiceTest extends TestCase
 {
@@ -1018,537 +1019,7 @@ class OrsServiceTest extends TestCase
         $service->wager(requestDTO: $requestDTO);
     }
 
-    public function test_rollback_mockRepository_getPlayerByPlayID()
-    {
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $mockRepository = $this->createMock(OrsRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: $request->player_id)
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $mockRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $mockRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 1000.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_nullPlayer_providerPlayerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_mockCredentials_getCredentialsByCurrency()
-    {
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $mockCredentials = $this->createMock(OrsCredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentialsByCurrency')
-            ->with(currency: $player->currency)
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 1000.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $mockCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_invalidPublicKey_invalidPublicKeyException()
-    {
-        $this->expectException(InvalidPublicKeyException::class);
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('invalidPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_mockEncryption_isSignatureValid()
-    {
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $mockEncryption = $this->createMock(OgSignature::class);
-        $mockEncryption->expects($this->once())
-            ->method('isSignatureValid')
-            ->with(request: $request, credentials: $stubProviderCredentials)
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 1000.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            encryption: $mockEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_stubEncryptionInvalidSignature_invalidSignatureException()
-    {
-        $this->expectException(InvalidSignatureException::class);
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(false);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_mockRepository_getBetTransactionByTrxID()
-    {
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $mockRepository = $this->createMock(OrsRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $mockRepository->expects($this->once())
-            ->method('getBetTransactionByTrxID')
-            ->with(transactionID: 'test_transacID_1')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 1000.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_nullTransaction_expected()
-    {
-        $this->expectException(ProviderTransactionNotFoundException::class);
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567891,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn(null);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_mockRepository_cancelBetTransaction()
-    {
-        $date = Carbon::now()->setTimezone('GMT+8');
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => $date->timestamp,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $mockRepository = $this->createMock(OrsRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $mockRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $mockRepository->expects($this->once())
-            ->method('cancelBetTransaction')
-            ->with(transactionID: 'test_transacID_1', cancelTime: $date->format('Y-m-d H:i:s'));
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 1000.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_mockWallet_cancel()
+    public function test_cancel_mockWallet_cancel()
     {
         $request = new Request(
             query: [
@@ -1560,7 +1031,7 @@ class OrsServiceTest extends TestCase
                 'called_at' => 1234567890,
                 'records' => [
                     [
-                        'transaction_id' => 'test_transacID_1',
+                        'transaction_id' => 'testTransactionID1',
                         'amount' => 150
                     ]
                 ],
@@ -1571,17 +1042,42 @@ class OrsServiceTest extends TestCase
             ]
         );
 
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
+        $requestDTO = new OrsRequestDTO(
+            key: 'testPublicKey',
+            playID: 'testPlayIDu001',
+            signature: 'testSignature',
+            totalAmount: 150,
+            rawRequest: $request,
+            transactions: [
+                new OrsRequestDTO(
+                    gameID: 123,
+                    amount: 150,
+                    roundID: 'testTransactionID1',
+                    dateTime: 1715071526
+                )
+            ]
+        );
 
         $stubRepository = $this->createMock(OrsRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn(new OrsPlayerDTO(
+                playID: 'testPlayIDu001',
+                currency: 'IDR'
+            ));
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn(new OrsTransactionDTO(
+                extID: 'wager-testTransactionID1',
+                roundID: 'testTransactionID1',
+                playID: 'testPlayIDu001',
+                username: 'testUsername',
+                webID: 27,
+                currency: 'IDR',
+                gameID: 123,
+                betValid: -150,
+                betAmount: -150,
+                dateTime: '2025-06-21 15:36:10',
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubProviderCredentials->method('getPublicKey')
@@ -1600,9 +1096,9 @@ class OrsServiceTest extends TestCase
             ->method('cancel')
             ->with(
                 credentials: $stubProviderCredentials,
-                transactionID: 'cancelBet-test_transacID_1',
+                transactionID: 'cancel-testTransactionID1',
                 amount: 150,
-                transactionIDToCancel: 'wager-test_transacID_1'
+                transactionIDToCancel: 'wager-testTransactionID1'
             )
             ->willReturn([
                 'status_code' => 2100,
@@ -1616,140 +1112,7 @@ class OrsServiceTest extends TestCase
             wallet: $mockWallet
         );
 
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_invalidWalletResponse_walletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567890,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 'invalid',
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $service->rollback(request: $request);
-    }
-
-    public function test_rollback_stubWallet_expected()
-    {
-        $request = new Request(
-            query: [
-                'player_id' => 'testPlayID',
-                'total_amount' => 150,
-                'transaction_type' => 'debit',
-                'game_id' => 123,
-                'round_id' => 'testRoundID',
-                'called_at' => 1234567890,
-                'records' => [
-                    [
-                        'transaction_id' => 'test_transacID_1',
-                        'amount' => 150
-                    ]
-                ],
-                'signature' => 'testSignature'
-            ],
-            server: [
-                'HTTP_KEY' => 'testPublicKey'
-            ]
-        );
-
-        $expected = 1000.00;
-
-        $player = (object) ['play_id' => 'testPlayID', 'currency' => 'IDR'];
-
-        $stubRepository = $this->createMock(OrsRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getBetTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getPublicKey')
-            ->willReturn('testPublicKey');
-
-        $stubCredentials = $this->createMock(OrsCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubEncryption = $this->createMock(OgSignature::class);
-        $stubEncryption->method('isSignatureValid')
-            ->willReturn(true);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('cancel')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => $expected
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            encryption: $stubEncryption,
-            wallet: $stubWallet
-        );
-
-        $response = $service->rollback(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $response);
+        $service->cancel(requestDTO: $requestDTO);
     }
 
     public function test_settle_mockRepository_getPlayerByPlayID()
