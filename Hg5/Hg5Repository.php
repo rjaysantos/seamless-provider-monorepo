@@ -43,21 +43,17 @@ class Hg5Repository extends AbstractProviderRepository
             ]);
     }
 
-    public function createOrIgnorePlayer(Hg5PlayerDTO $playerDTO): void
+    public function createOrUpdatePlayer(Hg5PlayerDTO $playerDTO, string $token): void
     {
         $this->write->table('hg5.players')
-            ->insertOrIgnore([
-                'play_id' => $playerDTO->playID,
-                'username' => $playerDTO->username,
-                'currency' => $playerDTO->currency,
-            ]);
-    }
-
-    public function updatePlayerToken(Hg5PlayerDTO $playerDTO, string $token): void
-    {
-        $this->write->table('hg5.players')
-            ->where('play_id', $playerDTO->playID)
-            ->update(['token' => $token]);
+            ->updateOrInsert(
+                ['play_id' => $playerDTO->playID],
+                [
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                    'token' => $token
+                ]
+            );
     }
 
     public function createWagerAndPayoutTransaction(

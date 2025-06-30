@@ -50,9 +50,7 @@ class Hg5Service
 
         $response = $this->api->getGameLink(credentials: $credentials, playerDTO: $player, requestDTO: $casinoRequest);
 
-        $this->repository->createOrIgnorePlayer(playerDTO: $player);
-
-        $this->repository->updatePlayerToken(playerDTO: $player, token: $response->token);
+        $this->repository->createOrUpdatePlayer(playerDTO: $player, token: $response->token);
 
         return $response->url;
     }
