@@ -3,14 +3,11 @@
 namespace Providers\Gs5;
 
 use Exception;
-use Carbon\Carbon;
 use Providers\Gs5\Gs5Api;
-use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use Providers\Gs5\Gs5Repository;
 use Providers\Gs5\Gs5Credentials;
-use Illuminate\Support\Facades\DB;
 use Providers\Gs5\DTO\Gs5PlayerDTO;
 use Providers\Gs5\DTO\GS5RequestDTO;
 use App\Libraries\Wallet\V2\WalletReport;
@@ -28,7 +25,7 @@ use Providers\Gs5\Exceptions\TransactionNotFoundException as ProviderTransaction
 
 class Gs5Service
 {
-    private const PROVIDER_API_TIMEZONE = 'GMT+8';
+    private const PROVIDER_CURRENCY_CONVERSION = 100;
 
     public function __construct(
         private Gs5Repository $repository,
@@ -42,7 +39,7 @@ class Gs5Service
     {
         $player = Gs5PlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        $this->repository->createOrUpdatePlayer($player);
+        $this->repository->createOrUpdatePlayer(playerDTO: $player);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
@@ -89,7 +86,9 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+        $balance =  $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+
+        return $balance * self::PROVIDER_CURRENCY_CONVERSION;
     }
 
     public function authenticate(GS5RequestDTO $requestDTO): object
@@ -101,9 +100,11 @@ class Gs5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
+        $balance =  $this->getPlayerBalance(credentials: $credentials, playID: $player->playID);
+
         return (object) [
             'player' => $player,
-            'balance' => $this->getPlayerBalance(credentials: $credentials, playID: $player->playID)
+            'balance' => $balance * self::PROVIDER_CURRENCY_CONVERSION
         ];
     }
 
@@ -117,7 +118,8 @@ class Gs5Service
         $wagerTransactionDTO = Gs5TransactionDTO::wager(
             extID: "wager-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            playerDTO: $player
+            playerDTO: $player,
+            betAmount: $requestDTO->amount / self::PROVIDER_CURRENCY_CONVERSION
         );
 
         $existingTransaction = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
@@ -161,10 +163,10 @@ class Gs5Service
             throw $e;
         }
 
-        return $walletResponse['credit_after'];
+        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
     }
 
-    public function settle(GS5RequestDTO $requestDTO): float
+    public function payout(GS5RequestDTO $requestDTO): float
     {
         $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
 
@@ -179,7 +181,8 @@ class Gs5Service
         $payoutTransactionDTO = Gs5TransactionDTO::payout(
             extID: "payout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
-            wagerTransactionDTO: $wagerTransaction
+            wagerTransactionDTO: $wagerTransaction,
+            winAmount: $requestDTO->amount / self::PROVIDER_CURRENCY_CONVERSION
         );
 
         $existingPayoutTransaction = $this->repository->getTransactionByExtID(extID: $payoutTransactionDTO->extID);
@@ -218,7 +221,7 @@ class Gs5Service
             throw $e;
         }
 
-        return $walletResponse['credit_after'];
+        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
     }
 
     public function cancel(GS5RequestDTO $requestDTO): float
@@ -263,6 +266,6 @@ class Gs5Service
             throw new $e;
         }
 
-        return $walletResponse['credit_after'];
+        return $walletResponse['credit_after'] * self::PROVIDER_CURRENCY_CONVERSION;
     }
 }

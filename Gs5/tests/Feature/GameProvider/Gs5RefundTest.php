@@ -149,6 +149,21 @@ class Gs5RefundTest extends TestCase
         ]);
 
         DB::table('gs5.reports')->insert([
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.0,
+            'bet_valid' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
+        ]);
+
+        DB::table('gs5.reports')->insert([
             'ext_id' => 'payout-123456',
             'round_id' => '123456',
             'username' => 'testUsername',
