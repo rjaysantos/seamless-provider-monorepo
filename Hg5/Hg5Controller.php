@@ -4,6 +4,7 @@ namespace Providers\Hg5;
 
 use Illuminate\Http\Request;
 use Providers\Hg5\Hg5Response;
+use Providers\Hg5\DTO\Hg5RequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -14,8 +15,7 @@ class Hg5Controller
     public function __construct(
         private Hg5Service $service,
         private Hg5Response $response
-    ) {
-    }
+    ) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -94,9 +94,14 @@ class Hg5Controller
             'agentId' => 'required|int'
         ]);
 
-        $data = $this->service->getBalance(request: $request);
+        $requestDTO = Hg5RequestDTO::fromBalanceRequest(request: $request);
 
-        return $this->response->balance(data: $data);
+        $balanceResponse = $this->service->balance(requestDTO: $requestDTO);
+
+        return $this->response->balance(
+            balance: $balanceResponse->balance,
+            playerDTO: $balanceResponse->player
+        );
     }
 
     public function authenticate(Request $request)

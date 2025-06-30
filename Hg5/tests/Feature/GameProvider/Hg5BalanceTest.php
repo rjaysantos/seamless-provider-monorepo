@@ -14,8 +14,6 @@ class Hg5BalanceTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE hg5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE hg5.playgame RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE hg5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -35,13 +33,13 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
-            'playerId' => 'testPlayID',
+            'playerId' => 'testPlayIDu001',
             'agentId' => 111
         ];
 
@@ -75,7 +73,7 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         $request = [
-            'playerId' => 'testPlayID',
+            'playerId' => 'testPlayIDu001',
             'agentId' => 111
         ];
 
@@ -115,7 +113,7 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -151,13 +149,13 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
-            'playerId' => 'testPlayID',
+            'playerId' => 'testPlayIDu001',
             'agentId' => 111
         ];
 
@@ -184,13 +182,13 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
-            'playerId' => 'testPlayID',
+            'playerId' => 'testPlayIDu001',
             'agentId' => 12354698756213
         ];
 
@@ -230,13 +228,13 @@ class Hg5BalanceTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
-            'playerId' => 'testPlayID',
+            'playerId' => 'testPlayIDu001',
             'agentId' => 111
         ];
 
