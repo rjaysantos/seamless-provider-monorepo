@@ -22,8 +22,6 @@ use App\Exceptions\Casino\PlayerNotFoundException;
 use Providers\Hcg\DTO\HcgRequestDTO;
 use Providers\Hcg\DTO\HcgPlayerDTO;
 use Providers\Hcg\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
-use Providers\Hcg\DTO\HcgPlayerDTO;
-use Providers\Hcg\DTO\HcgRequestDTO;
 
 class HcgService
 {
