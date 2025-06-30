@@ -113,8 +113,7 @@ class Hg5Controller
 
         return $this->response->authenticate(
             balance: $balanceResponse->balance,
-            playerDTO: $balanceResponse->player,
-            sessionID: $balanceResponse->sessionID
+            playerDTO: $balanceResponse->player
         );
     }
 

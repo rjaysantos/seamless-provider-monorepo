@@ -2,6 +2,7 @@
 
 namespace Providers\Hg5;
 
+use Illuminate\Support\Str;
 use Providers\Hg5\Hg5DateTime;
 use Illuminate\Http\JsonResponse;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
@@ -40,13 +41,13 @@ class Hg5Response
         ]);
     }
 
-    public function authenticate(float $balance, Hg5PlayerDTO $playerDTO, string $sessionID): JsonResponse
+    public function authenticate(float $balance, Hg5PlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'data' => [
                 'playerId' => $playerDTO->playID,
                 'currency' => $playerDTO->currency,
-                'sessionId' => $sessionID,
+                'sessionId' => Str::uuid()->toString(),
                 'balance' => $balance
             ],
             'status' => [

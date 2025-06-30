@@ -1044,7 +1044,7 @@ class Hg5ServiceTest extends TestCase
     public function test_authenticate_mockWallet_balance()
     {
         $requestDTO = new Hg5RequestDTO(
-            auth: 'testAuthToken',
+            bearerToken: 'testAuthToken',
             playID: 'testPlayID',
             agentID: 111,
             token: 'testToken'
