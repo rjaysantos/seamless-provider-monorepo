@@ -67,7 +67,7 @@ class YgrResponse
         return $this->providerSuccessResponse(data: []);
     }
 
-    public function betAndSettle(object $data): JsonResponse
+    public function addGameResult(object $data): JsonResponse
     {
         return $this->providerSuccessResponse(data: [
             'balance' => $this->formatToTwoDecimals(balance: $data->balance),

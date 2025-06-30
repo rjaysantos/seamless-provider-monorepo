@@ -1,13 +1,11 @@
 <?php
 
-namespace Providers\Ors\DTO;
+namespace Providers\Hg5\DTO;
 
 use App\DTO\PlayerDTO;
-use App\DTO\CasinoRequestDTO;
-use App\Libraries\Randomizer;
 use App\Traits\PlayerDTOTrait;
 
-class OrsPlayerDTO extends PlayerDTO
+class Hg5PlayerDTO extends PlayerDTO
 {
     use PlayerDTOTrait;
 
@@ -25,18 +23,6 @@ class OrsPlayerDTO extends PlayerDTO
             username: $dbData->username,
             currency: $dbData->currency,
             token: $dbData->token,
-        );
-    }
-
-    public static function fromPlayRequestDTO(CasinoRequestDTO $casinoRequestDTO): self
-    {
-        $randomizer = app(Randomizer::class);
-
-        return new self(
-            playID: $casinoRequestDTO->playID,
-            username: $casinoRequestDTO->username,
-            currency: $casinoRequestDTO->currency,
-            token: $randomizer->createToken(),
         );
     }
 }
