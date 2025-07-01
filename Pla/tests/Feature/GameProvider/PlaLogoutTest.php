@@ -106,7 +106,7 @@ class PlaLogoutTest extends TestCase
     {
         $payload = [
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
-            'username' => 'invalidUsername',
+            'username' => 'PLAYER001',
             'externalToken' => 'PLAUC_TOKEN88888888'
         ];
 
@@ -117,7 +117,7 @@ class PlaLogoutTest extends TestCase
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
             'error' => [
-                'code' => 'ERR_PLAYER_NOT_FOUND'
+                'code' => 'CONSTRAINT_VIOLATION'
             ]
         ]);
     }
