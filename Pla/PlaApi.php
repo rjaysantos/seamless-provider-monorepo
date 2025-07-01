@@ -17,6 +17,9 @@ class PlaApi
     {
     }
 
+    public const DEVICE_MOBILE = 0;
+    public const DEVICE_WEB = 1;
+
     public function validateResponse(object $response, array $rules): void
     {
         $validator = Validator::make(data: json_decode(json_encode($response), true), rules: $rules);
@@ -30,13 +33,14 @@ class PlaApi
         $apiRequest = [
             'requestId' => Str::uuid()->toString(),
             'serverName' => $credentials->getServerName(),
-            'username' => strtoupper($credentials->getKioskName() . "_{$playerDTO->playID}"),
+            'username' => strtoupper("{$credentials->getKioskName()}_{$playerDTO->playID}"),
             'gameCodeName' => $requestDTO->gameID,
-            'clientPlatform' => $requestDTO->device == 0 ? 'mobile' : 'web',
-            'externalToken' => $credentials->getKioskName() . "_{$playerDTO->token}",
+            'clientPlatform' => $requestDTO->device == self::DEVICE_MOBILE ? 'mobile' : 'web',
+            'externalToken' => "{$credentials->getKioskName()}_{$playerDTO->token}",
             'language' => $requestDTO->lang,
             'playMode' => 1
         ];
+        // dd($apiRequest, $credentials);
 
         $headers = ['x-auth-kiosk-key' => $credentials->getKioskKey()];
 
