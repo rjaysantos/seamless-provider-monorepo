@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Casino\InvalidBearerTokenException;
-use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController extends AbstractCasinoController
@@ -27,22 +25,6 @@ class PlaController extends AbstractCasinoController
 
         if ($validate->fails())
             throw new InvalidProviderRequestException(request: $request);
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'playId' => 'required|string',
-            'username' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
-            'language' => 'required|string',
-            'gameId' => 'required|string',
-            'device' => 'required|numeric'
-        ]);
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
     }
 
     public function authenticate(Request $request)
