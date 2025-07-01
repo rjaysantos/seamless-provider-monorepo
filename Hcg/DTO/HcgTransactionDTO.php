@@ -18,12 +18,10 @@ class HcgTransactionDTO extends TransactionDTO
         string $extID, 
         HcgRequestDTO $requestDTO, 
         HcgPlayerDTO $playerDTO, 
-        int $currencyConversion
-    ): self {
+        float $betAmount,
+        float $winAmount,
+    ): self {   
 
-        $betAmount = $requestDTO->amount * $currencyConversion;
-        $winAmount = $requestDTO->winAmount * $currencyConversion;
-            
         return new self(
             extID: $extID,
             roundID: $requestDTO->roundID,
