@@ -16,9 +16,7 @@ class PlaApi
     public function __construct(protected LaravelHttpClient $http)
     {
     }
-
     public const DEVICE_MOBILE = 0;
-    public const DEVICE_WEB = 1;
 
     public function validateResponse(object $response, array $rules): void
     {
@@ -40,7 +38,6 @@ class PlaApi
             'language' => $requestDTO->lang,
             'playMode' => 1
         ];
-        // dd($apiRequest, $credentials);
 
         $headers = ['x-auth-kiosk-key' => $credentials->getKioskKey()];
 
