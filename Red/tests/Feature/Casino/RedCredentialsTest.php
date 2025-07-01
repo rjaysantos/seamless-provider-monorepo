@@ -4,6 +4,7 @@ use Tests\TestCase;
 use Providers\Red\RedCredentials;
 use Providers\Red\Contracts\ICredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
+use App\Exceptions\Casino\InvalidCurrencyException;
 
 class RedCredentialsTest extends TestCase
 {
@@ -216,5 +217,15 @@ class RedCredentialsTest extends TestCase
             default:
                 return null;
         }
+    }
+
+    public function test_getCredentialsByCurrency_productionInvalidCurrency_InvalidCurrencyException()
+    {
+        $this->expectException(InvalidCurrencyException::class);
+
+        config(['app.env' => 'PRODUCTION']);
+
+        $credentialSetter = $this->makeCredentialSetter();
+        $credentialSetter->getCredentialsByCurrency(currency: 'invalidCurrency');
     }
 }

@@ -4,8 +4,8 @@ namespace Providers\Ors;
 
 use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
-use App\Repositories\AbstractProviderRepository;
 use Providers\Ors\DTO\OrsTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class OrsRepository extends AbstractProviderRepository
 {
@@ -18,32 +18,19 @@ class OrsRepository extends AbstractProviderRepository
         return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $username, string $currency): void
+    public function createOrUpdatePlayer(OrsPlayerDTO $playerDTO): void
     {
-        DB::connection('pgsql_write')
-            ->table('ors.players')
-            ->insertOrIgnore([
-                'play_id' => $playID,
-                'username' => $username,
-                'currency' => $currency,
-            ]);
-    }
-
-    public function createToken(string $playID): string
-    {
-        $token = $this->randomizer->createToken();
-
-        DB::connection('pgsql_write')
-            ->table('ors.playgame')
+        $this->write->table('ors.players')
             ->updateOrInsert(
-                ['play_id' => $playID],
                 [
-                    'token' => $token,
-                    'expired' => 'FALSE'
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency,
+                ],
+                [
+                    'token'      => $playerDTO->token
                 ]
             );
-
-        return $token;
     }
 
     public function getTransactionByExtID(string $extID): ?OrsTransactionDTO
@@ -55,14 +42,6 @@ class OrsRepository extends AbstractProviderRepository
         return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
     }
 
-    public function getBetTransactionByTrxID(string $transactionID): ?object
-    {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->first();
-    }
-
     public function getPlayerByPlayIDToken(string $playID, string $token): ?OrsPlayerDTO
     {
         $data = $this->read->table('ors.players')
@@ -71,17 +50,6 @@ class OrsRepository extends AbstractProviderRepository
             ->first();
 
         return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
-    }
-
-    public function cancelBetTransaction(string $transactionID, string $cancelTme): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->update([
-                'updated_at' => $cancelTme
-            ]);
     }
 
     public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
