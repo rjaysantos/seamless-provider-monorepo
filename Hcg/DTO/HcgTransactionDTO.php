@@ -8,6 +8,4 @@ use App\Traits\TransactionDTOTrait;
 class HcgTransactionDTO extends TransactionDTO
 {
     use TransactionDTOTrait;
-
-    private const PROVIDER_API_TIMEZONE = 'GMT+8';
 }

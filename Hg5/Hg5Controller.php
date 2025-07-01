@@ -6,16 +6,20 @@ use Illuminate\Http\Request;
 use Providers\Hg5\Hg5Response;
 use Providers\Hg5\DTO\Hg5RequestDTO;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AbstractCasinoController;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Hg5\Exceptions\InvalidProviderRequestException;
 
-class Hg5Controller
+class Hg5Controller extends AbstractCasinoController
 {
     public function __construct(
-        private Hg5Service $service,
-        private Hg5Response $response
-    ) {}
+        Hg5Service $service,
+        Hg5Response $response
+    ) {
+        $this->service = $service;
+        $this->response = $response;
+    }
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -26,20 +30,6 @@ class Hg5Controller
 
         if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
             throw new InvalidBearerTokenException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'playId' => 'required|string',
-            'username' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
-            'gameId' => 'required|string',
-        ]);
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
     }
 
     public function visual(Request $request)
@@ -112,9 +102,14 @@ class Hg5Controller
             'gameId' => 'required|string'
         ]);
 
-        $data = $this->service->authenticate(request: $request);
+        $requestDTO = Hg5RequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(data: $data);
+        $balanceResponse = $this->service->authenticate(requestDTO: $requestDTO);
+
+        return $this->response->authenticate(
+            balance: $balanceResponse->balance,
+            playerDTO: $balanceResponse->player
+        );
     }
 
     public function withdrawAndDeposit(Request $request)

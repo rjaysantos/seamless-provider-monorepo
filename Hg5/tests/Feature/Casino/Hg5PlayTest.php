@@ -22,9 +22,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([
@@ -55,11 +60,7 @@ class Hg5PlayTest extends TestCase
         $this->assertDatabaseHas('hg5.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseHas('hg5.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken'
         ]);
 
@@ -78,20 +79,20 @@ class Hg5PlayTest extends TestCase
         DB::table('hg5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('hg5.playgame')->insert([
-            'play_id' => 'testPlayID',
-            'token' => 'oldTestToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'oldTestToken'
         ]);
 
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([
@@ -119,19 +120,17 @@ class Hg5PlayTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseHas('hg5.players', [
+        $this->assertDatabaseMissing('hg5.players', [
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        $this->assertDatabaseMissing('hg5.playgame', [
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'oldTestToken'
         ]);
 
-        $this->assertDatabaseHas('hg5.playgame', [
+        $this->assertDatabaseHas('hg5.players', [
             'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
             'token' => 'newTestToken'
         ]);
 
@@ -150,9 +149,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         unset($request[$param]);
@@ -185,9 +189,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         $response = $this->post('/hg5/in/play', $request, [
@@ -208,9 +217,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([
@@ -236,9 +250,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         $apiResponse = [
@@ -280,9 +299,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         $apiResponse = [
@@ -333,9 +357,14 @@ class Hg5PlayTest extends TestCase
     {
         $request = [
             'playId' => 'testPlayID',
+            'memberId' => 123,
             'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
+            'device' => 1,
             'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([

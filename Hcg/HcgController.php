@@ -112,7 +112,9 @@ class HcgController extends AbstractCasinoController
             ]
         );
 
-        $this->service->cancelBetAndSettle(request: $request);
+        $requestDTO = HcgRequestDTO::fromCancelSettlementRequest(request: $request);
+
+        $this->service->cancelBetAndSettle(requestDTO: $requestDTO);
     }
 
     private function gameOfflineNotification()

@@ -179,17 +179,15 @@ class HcgService
         sleep(self::PROVIDER_REQUEST_TIMEOUT_SECONDS);
     }
 
-    public function cancelBetAndSettle(Request $request): void
+    public function cancelBetAndSettle(HcgRequestDTO $requestDTO): void
     {
-        $playerDetails = $this->repository->getPlayerByPlayID(playID: $request->uid);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerDetails) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDetails->currency);
-
-        $transactionDetails = $this->repository->getTransactionByTrxID(
-            transactionID: "{$credentials->getTransactionIDPrefix()}-{$request->orderNo}"
+        $transactionDetails = $this->repository->getTransactionByExtID(
+            extID: "wagerpayout-{$requestDTO->roundID}"
         );
 
         if (is_null($transactionDetails) === false)

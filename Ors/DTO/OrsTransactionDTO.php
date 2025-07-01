@@ -71,4 +71,23 @@ class OrsTransactionDTO extends TransactionDTO
             winAmount: $requestDTO->amount
         );
     }
+
+    public static function cancel(OrsTransactionDTO $wagerTransactionDTO, int $timestamp): self
+    {
+        return new self(
+            extID: "cancel-{$wagerTransactionDTO->roundID}",
+            roundID: $wagerTransactionDTO->roundID,
+            playID: $wagerTransactionDTO->playID,
+            username: $wagerTransactionDTO->username,
+            webID: $wagerTransactionDTO->webID,
+            currency: $wagerTransactionDTO->currency,
+            gameID: $wagerTransactionDTO->gameID,
+            betWinlose: $wagerTransactionDTO->betAmount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: Carbon::createFromTimestamp($timestamp),
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $wagerTransactionDTO->betAmount
+        );
+    }
 }
