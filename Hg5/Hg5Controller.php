@@ -13,42 +13,17 @@ use Providers\Hg5\Exceptions\InvalidProviderRequestException;
 
 class Hg5Controller extends AbstractCasinoController
 {
-    public function __construct(
-        Hg5Service $service,
-        Hg5Response $response
-    ) {
+    public function __construct(Hg5Service $service, Hg5Response $response)
+    {
         $this->service = $service;
         $this->response = $response;
     }
 
-    private function validateCasinoRequest(Request $request, array $rules): void
-    {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'txn_id' => 'sometimes',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
-        ]);
-
-        $visualUrl = $this->service->getBetDetailUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
-    }
-
     public function visualHtml(string $playID, string $trxID)
     {
-        $betDetailData = $this->service->getBetDetailData(encryptedPlayID: $playID, encryptedTrxID: $trxID);
+        $requestDTO = Hg5RequestDTO::fromVisualHTMLRequest(playID: $playID, trxID: $trxID);
+
+        $betDetailData = $this->service->getBetDetailData(casinoRequestDTO: $requestDTO);
 
         return $this->response->visualHtml(data: $betDetailData);
     }
@@ -58,15 +33,17 @@ class Hg5Controller extends AbstractCasinoController
         $validate = Validator::make(data: $request->all(), rules: [
             'trxID' => 'required|string',
             'playID' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR',
+            'currency' => 'required|string',
         ]);
 
         if ($validate->fails())
             throw new InvalidCasinoRequestException;
 
-        $betDetailData = $this->service->getFishGameDetailUrl(request: $request);
+        $requestDTO = Hg5RequestDTO::fromVisualFishGameRequest(request: $request);
 
-        return $this->response->casinoSuccess(data: $betDetailData);
+        $betDetailData = $this->service->getFishGameDetailUrl(casinoRequestDTO: $requestDTO);
+
+        return $this->response->casinoSuccess(url: $betDetailData);
     }
 
     private function validateProviderRequest(array $request, array $rules): void

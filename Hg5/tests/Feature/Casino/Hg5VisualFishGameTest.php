@@ -2,6 +2,8 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 

@@ -1,7 +1,10 @@
 <?php
 
 use Tests\TestCase;
+use Illuminate\Support\Str;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -19,17 +22,23 @@ class Hg5VisualTest extends TestCase
     public function test_visual_validRequest_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-hg5-testTransactionID',
+            'round_id' => 'hg5-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100,
+            'bet_winlose' => 200,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -58,8 +67,8 @@ class Hg5VisualTest extends TestCase
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -81,41 +90,47 @@ class Hg5VisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/orders' .
-                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayID' &&
+                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['starttime'] == '2021-01-01 00:00:00' &&
                 $request['endtime'] == '2021-01-01 00:00:05' &&
                 $request['page'] == 1 &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/order/detail' .
-                '?roundid=testTransactionID&account=testPlayID' &&
+                '?roundid=testTransactionID&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['roundid'] == 'testTransactionID' &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
     }
 
     public function test_visual_validRequestFishGame_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'hg5-testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-hg5-testTransactionID',
+            'round_id' => 'hg5-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100,
+            'bet_winlose' => 200,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -144,8 +159,8 @@ class Hg5VisualTest extends TestCase
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'hg5-testTransactionID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -173,14 +188,14 @@ class Hg5VisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/orders' .
-                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayID' &&
+                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['starttime'] == '2021-01-01 00:00:00' &&
                 $request['endtime'] == '2021-01-01 00:00:05' &&
                 $request['page'] == 1 &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
     }
 
@@ -188,8 +203,8 @@ class Hg5VisualTest extends TestCase
     public function test_visual_invalidRequest_expectedData($parameter)
     {
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -224,7 +239,7 @@ class Hg5VisualTest extends TestCase
     public function test_visual_invalidBearerToken_expectedData()
     {
         $request = [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'bet_id' => 'testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
@@ -249,14 +264,14 @@ class Hg5VisualTest extends TestCase
     public function test_visual_playerNotFound_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         $request = [
             'play_id' => 'invalidPlayID',
-            'bet_id' => 'testTransactionID',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'currency' => 'IDR',
         ];
 
@@ -277,21 +292,27 @@ class Hg5VisualTest extends TestCase
     public function test_visual_transactionNotFound_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-hg5-testTransactionID',
+            'round_id' => 'hg5-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100,
+            'bet_winlose' => 200,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'bet_id' => 'invalidTransaction',
             'txn_id' => null,
             'currency' => 'IDR'
@@ -316,17 +337,23 @@ class Hg5VisualTest extends TestCase
     public function test_visual_orderQueryThirdPartyApiError_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-hg5-testTransactionID',
+            'round_id' => 'hg5-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100,
+            'bet_winlose' => 200,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -336,8 +363,8 @@ class Hg5VisualTest extends TestCase
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -359,31 +386,37 @@ class Hg5VisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/orders' .
-                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayID' &&
+                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['starttime'] == '2021-01-01 00:00:00' &&
                 $request['endtime'] == '2021-01-01 00:00:05' &&
                 $request['page'] == 1 &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
     }
 
     public function test_visual_orderDetailLinkThirdPartyApiError_expectedData()
     {
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testTransactionID',
-            'bet_amount' => 100.00,
-            'win_amount' => 300.00,
-            'updated_at' => '2021-01-01 00:00:00',
-            'created_at' => '2021-01-01 00:00:00'
+            'ext_id' => 'payout-hg5-testTransactionID',
+            'round_id' => 'hg5-testTransactionID',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_amount' => 100,
+            'bet_winlose' => 200,
+            'created_at' => '2021-01-01 00:00:00',
+            'updated_at' => '2021-01-01 00:00:00'
         ]);
 
         Http::fake([
@@ -409,8 +442,8 @@ class Hg5VisualTest extends TestCase
         ]);
 
         $request = [
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
+            'play_id' => 'testPlayIDu001',
+            'bet_id' => 'payout-hg5-testTransactionID',
             'txn_id' => null,
             'currency' => 'IDR'
         ];
@@ -432,24 +465,24 @@ class Hg5VisualTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/orders' .
-                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayID' &&
+                '?starttime=2021-01-01%2000%3A00%3A00&endtime=2021-01-01%2000%3A00%3A05&page=1&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['starttime'] == '2021-01-01 00:00:00' &&
                 $request['endtime'] == '2021-01-01 00:00:05' &&
                 $request['page'] == 1 &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://wallet-csw-test.hg5games.com:5500/GrandPriest/order/detail' .
-                '?roundid=testTransactionID&account=testPlayID' &&
+                '?roundid=testTransactionID&account=testPlayIDu001' &&
                 $request->hasHeader('Authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJQY' .
                     'XJlbnRJZCI6ImFpeGFkbWluIiwicGFyZW50SWQiOiJhaXhpZHIyIiwiaWF0IjoxNzM2MzIyMjMyfQ.PGHyT' .
                     'KgnYdZKqdwqHe2fIZpuxx4aFEh0svHjskKvSJk') &&
                 $request['roundid'] == 'testTransactionID' &&
-                $request['account'] == 'testPlayID';
+                $request['account'] == 'testPlayIDu001';
         });
     }
 }

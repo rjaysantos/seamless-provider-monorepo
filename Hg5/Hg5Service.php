@@ -5,17 +5,16 @@ namespace Providers\Hg5;
 use Exception;
 use Carbon\Carbon;
 use Providers\Hg5\Hg5Api;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use Providers\Hg5\Hg5Repository;
 use Providers\Hg5\Hg5Credentials;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Providers\Hg5\DTO\Hg5RequestDTO;
 use Illuminate\Support\Facades\Crypt;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hg5\Contracts\ICredentials;
 use App\Exceptions\Casino\PlayerNotFoundException;
@@ -55,76 +54,51 @@ class Hg5Service
         return $response->url;
     }
 
-    private function getFishGameData(ICredentials $credentials, string $playID, object $transactionData): Collection
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequestDTO): string
     {
-        $apiResponse = $this->api->getOrderQuery(
-            credentials: $credentials,
-            playID: $playID,
-            startDate: $transactionData->created_at,
-            endDate: $transactionData->updated_at
-        );
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequestDTO->playID);
 
-        $transactionID = Str::after($transactionData->trx_id, 'hg5-');
-
-        return $apiResponse->where('gameroundid', $transactionID);
-    }
-
-    public function getBetDetailUrl(Request $request): string
-    {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->play_id);
-
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequestDTO->extID);
 
-        if (is_null($transactionData) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $visualTransaction = Hg5TransactionDTO::visualDTO(transactionDTO: $transaction);
 
-        $fishGameData = $this->getFishGameData(
-            credentials: $credentials,
-            playID: $request->play_id,
-            transactionData: $transactionData
-        );
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $visualTransaction->currency);
+
+        $fishGameData = $this->api->getOrderQuery(credentials: $credentials, transactionDTO: $visualTransaction);
 
         if ($fishGameData->isEmpty() === false)
             $url = request()->fullUrl() . '/' .
-                Crypt::encryptString(value: $request->play_id) . '/' .
-                Crypt::encryptString(value: $request->bet_id);
+                Crypt::encryptString(value: $visualTransaction->playID) . '/' .
+                Crypt::encryptString(value: $visualTransaction->roundID);
         else
-            $url = $this->api->getOrderDetailLink(
-                credentials: $credentials,
-                transactionID: $request->bet_id,
-                playID: $request->play_id
-            );
+            $url = $this->api->getOrderDetailLink(credentials: $credentials, transactionDTO: $visualTransaction);
 
         return $url;
     }
 
-    public function getBetDetailData(string $encryptedPlayID, string $encryptedTrxID): array
+    public function getBetDetailData(Hg5RequestDTO $casinoRequestDTO): array
     {
-        $playID = Crypt::decryptString($encryptedPlayID);
-        $trxID = Crypt::decryptString($encryptedTrxID);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequestDTO->playID);
 
-        $playerData = $this->repository->getPlayerByPlayID(playID: $playID);
-
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $trxID);
+        $transaction = $this->repository->getTransactionByRoundID(roundID: "hg5-{$casinoRequestDTO->roundID}");
 
-        if (is_null($transactionData) === true)
+        if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $visualTransaction = Hg5TransactionDTO::visualDTO(transactionDTO: $transaction);
 
-        $fishGameData = $this->getFishGameData(
-            credentials: $credentials,
-            playID: $playID,
-            transactionData: $transactionData
-        );
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $visualTransaction->currency);
+
+        $fishGameData = $this->api->getOrderQuery(credentials: $credentials, transactionDTO: $visualTransaction);
 
         foreach ($fishGameData as $data)
             $roundData[] = [
@@ -134,22 +108,23 @@ class Hg5Service
             ];
 
         return [
-            'playID' => $playID,
-            'currency' => $playerData->currency,
-            'trxID' => $trxID,
+            'playID' => $visualTransaction->playID,
+            'currency' => $visualTransaction->currency,
+            'trxID' => $visualTransaction->roundID,
             'roundData' => $roundData
         ];
     }
 
-    public function getFishGameDetailUrl(Request $request): string
+    public function getFishGameDetailUrl(Hg5RequestDTO $casinoRequestDTO): string
     {
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequestDTO->currency);
 
-        return $this->api->getOrderDetailLink(
-            credentials: $credentials,
-            transactionID: $request->trxID,
-            playID: $request->playID
+        $visualTransaction = new Hg5TransactionDTO(
+            playID: $casinoRequestDTO->playID,
+            roundID: $casinoRequestDTO->roundID
         );
+
+        return $this->api->getOrderDetailLink(credentials: $credentials, transactionDTO: $visualTransaction);
     }
 
     private function validatePlayerAccess(Hg5RequestDTO $requestDTO, ICredentials $credentials): void
