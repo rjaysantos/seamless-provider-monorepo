@@ -2,31 +2,39 @@
 
 namespace Providers\Pla;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
-class PlaRepository
+class PlaRepository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?PlaPlayerDTO
     {
-        return DB::table('pla.players')
+        $data = $this->read->table('pla.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : PlaPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function getPlayGameByPlayIDToken(string $playID, string $token): ?object
+    public function getPlayerByPlayIDToken(string $playID, string $token): ?PlaPlayerDTO
     {
-        return DB::table('pla.playgame')
+        $data = $this->read->table('pla.players')
             ->where('play_id', $playID)
             ->where('token', $token)
             ->first();
+
+        return $data == null ? null : PlaPlayerDTO::fromDB(dbData: $data);
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?PlaTransactionDTO
     {
-        return DB::table('pla.reports')
-            ->where('trx_id', $trxID)
+        $data = $this->read->table('pla.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : PlaTransactionDTO::fromDB(dbData: $data);
     }
 
     public function getTransactionByRefID(string $refID): ?object
@@ -69,23 +77,43 @@ class PlaRepository
             ->delete();
     }
 
-    public function createTransaction(
-        string $trxID,
-        float $betAmount,
-        float $winAmount,
-        string $betTime,
-        ?string $settleTime,
-        string $refID
-    ): void {
-        DB::connection('pgsql_write')
-            ->table('pla.reports')
+    // public function createTransaction(
+    //     string $trxID,
+    //     float $betAmount,
+    //     float $winAmount,
+    //     string $betTime,
+    //     ?string $settleTime,
+    //     string $refID
+    // ): void {
+    //     DB::connection('pgsql_write')
+    //         ->table('pla.reports')
+    //         ->insert([
+    //             'trx_id' => $trxID,
+    //             'bet_amount' => $betAmount,
+    //             'win_amount' => $winAmount,
+    //             'created_at' => $betTime,
+    //             'updated_at' => $settleTime,
+    //             'ref_id' => $refID
+    //         ]);
+    // }
+
+    public function createTransaction(PlaTransactionDTO $transactionDTO): void
+    {
+        $this->write->table('pla.reports')
             ->insert([
-                'trx_id' => $trxID,
-                'bet_amount' => $betAmount,
-                'win_amount' => $winAmount,
-                'created_at' => $betTime,
-                'updated_at' => $settleTime,
-                'ref_id' => $refID
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'ref_id' => $transactionDTO->refID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 

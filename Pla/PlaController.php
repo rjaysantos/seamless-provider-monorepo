@@ -5,6 +5,7 @@ namespace Providers\Pla;
 use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
@@ -15,8 +16,7 @@ class PlaController
     public function __construct(
         private PlaService $service,
         private PlaResponse $response
-    ) {
-    }
+    ) {}
 
     private function validateCasinoRequest(Request $request, array $rules): void
     {
@@ -114,9 +114,11 @@ class PlaController
             'gameCodeName' => 'required|string'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = PlaRequestDTO::fromBetRequest(request: $request);
 
-        return $this->response->bet(request: $request, balance: $balance);
+        $balance = $this->service->wager(requestDTO: $requestDTO);
+
+        return $this->response->bet(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function gameRoundResult(Request $request)

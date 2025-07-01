@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 
 class PlaResponse
 {
@@ -57,12 +58,12 @@ class PlaResponse
     public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
     {
         $country = match ($currency) {
-            'IDR'=> 'ID',
-            'PHP'=> 'PH',
-            'VND'=> 'VN',
-            'USD'=> 'US',
-            'THB'=> 'TH',
-            'MYR'=> 'MY',
+            'IDR' => 'ID',
+            'PHP' => 'PH',
+            'VND' => 'VN',
+            'USD' => 'US',
+            'THB' => 'TH',
+            'MYR' => 'MY',
         };
 
         return response()->json(data: [
@@ -94,15 +95,15 @@ class PlaResponse
         return response()->json(data: ["requestId" => $requestId]);
     }
 
-    public function bet(Request $request, float $balance): JsonResponse
+    public function bet(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
         return response()->json(data: [
-            'requestId' => $request->requestId,
-            'externalTransactionCode' => $request->transactionCode,
-            'externalTransactionDate' => $request->transactionDate,
+            'requestId' => $requestDTO->requestID,
+            'externalTransactionCode' => $requestDTO->roundID,
+            'externalTransactionDate' => $requestDTO->dateTime,
             'balance' => [
                 'real' => $this->formatBalance($balance),
-                'timestamp' => $request->transactionDate
+                'timestamp' => $requestDTO->dateTime
             ]
         ]);
     }
