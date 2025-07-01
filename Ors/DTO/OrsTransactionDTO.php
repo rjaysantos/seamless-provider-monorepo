@@ -52,4 +52,42 @@ class OrsTransactionDTO extends TransactionDTO
             ),
         );
     }
+
+    public static function payout(string $extID, OrsRequestDTO $requestDTO, OrsTransactionDTO $wagerTransactionDTO): self
+    {
+        return new self(
+            extID: $extID,
+            roundID: $wagerTransactionDTO->roundID,
+            playID: $wagerTransactionDTO->playID,
+            username: $wagerTransactionDTO->username,
+            webID: self::getWebID(playID: $wagerTransactionDTO->playID),
+            currency: $wagerTransactionDTO->currency,
+            gameID: $wagerTransactionDTO->gameID,
+            betWinlose: $requestDTO->amount - $wagerTransactionDTO->betAmount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: Carbon::createFromTimestamp($requestDTO->dateTime),
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $requestDTO->amount
+        );
+    }
+
+    public static function cancel(OrsTransactionDTO $wagerTransactionDTO, int $timestamp): self
+    {
+        return new self(
+            extID: "cancel-{$wagerTransactionDTO->roundID}",
+            roundID: $wagerTransactionDTO->roundID,
+            playID: $wagerTransactionDTO->playID,
+            username: $wagerTransactionDTO->username,
+            webID: $wagerTransactionDTO->webID,
+            currency: $wagerTransactionDTO->currency,
+            gameID: $wagerTransactionDTO->gameID,
+            betWinlose: $wagerTransactionDTO->betAmount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: Carbon::createFromTimestamp($timestamp),
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $wagerTransactionDTO->betAmount
+        );
+    }
 }

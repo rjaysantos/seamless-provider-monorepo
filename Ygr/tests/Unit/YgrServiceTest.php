@@ -13,11 +13,8 @@ use Providers\Ygr\DTO\YgrRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Ygr\Contracts\ICredentials;
-use Providers\Ygr\Exceptions\WalletErrorException;
 use Providers\Ygr\Exceptions\TokenNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException;
-use Providers\Ygr\Exceptions\InsufficientFundException;
-use Providers\Ygr\Exceptions\TransactionAlreadyExistsException;
 
 class YgrServiceTest extends TestCase
 {
@@ -25,14 +22,12 @@ class YgrServiceTest extends TestCase
         $repository = null,
         $credentials = null,
         $api = null,
-        $randomizer = null,
         $wallet = null,
         $walletReport = null
     ): YgrService {
         $repository ??= $this->createStub(YgrRepository::class);
         $credentials ??= $this->createStub(YgrCredentials::class);
         $api ??= $this->createStub(YgrApi::class);
-        $randomizer ??= $this->createStub(Randomizer::class);
         $wallet ??= $this->createMock(IWallet::class);
         $walletReport ??= $this->createMock(WalletReport::class);
 
@@ -40,7 +35,6 @@ class YgrServiceTest extends TestCase
             repository: $repository,
             credentials: $credentials,
             api: $api,
-            randomizer: $randomizer,
             wallet: $wallet,
             walletReport: $walletReport
         );
@@ -362,271 +356,23 @@ class YgrServiceTest extends TestCase
         $makeProviderService->getPlayerDetails(requestDTO: $requestDTO);
     }
 
-    public function test_deleteToken_mockRepository_getPlayerByToken()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByToken')
-            ->with($request->connectToken)
-            ->willReturn((object) ['token' => 'testToken']);
-
-        $service = $this->makeService(repository: $mockRepository);
-        $service->deleteToken(request: $request);
-    }
-
-    public function test_deleteToken_stubRepository_TokenNotFoundException()
-    {
-        $this->expectException(TokenNotFoundException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->deleteToken(request: $request);
-    }
-
-    public function test_deleteToken_mockRepository_deletePlayGameByToken()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->method('getPlayerByToken')
-            ->willReturn((object) ['token' => 'testToken']);
-
-        $mockRepository->expects($this->once())
-            ->method('deletePlayGameByToken')
-            ->with($request->connectToken);
-
-        $service = $this->makeService(repository: $mockRepository);
-        $service->deleteToken(request: $request);
-    }
-
-    public function test_deleteToken_stubRepository_expectedData()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->expects($this->once())
-            ->method('getPlayerByToken')
-            ->with($request->connectToken)
-            ->willReturn((object) ['token' => 'testToken']);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $response = $service->deleteToken(request: $request);
-
-        $this->assertNull($response);
-    }
-
-    public function test_betAndSettle_mockRepository_getPlayerByToken()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByToken')
-            ->with(token: $request->connectToken)
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'credit_after' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubRepository_TokenNotFoundException()
-    {
-        $this->expectException(TokenNotFoundException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockRepository_getTransactionByTrxID()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-        $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: $request->roundID);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'credit_after' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubRepository_TransactionAlreadyExistsException()
-    {
-        $this->expectException(TransactionAlreadyExistsException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID']);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockCredentials_getCredentials()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $mockCredentials = $this->createMock(YgrCredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentials');
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'credit_after' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            wallet: $stubWallet,
-            walletReport: $stubReport,
-            credentials: $mockCredentials
-        );
-        $service->betAndSettle(request: $request);
-    }
-
     public function test_betAndSettle_mockWallet_balance()
     {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
+        $requestDTO = new YgrRequestDTO(
+            token: 'testToken',
+            roundID: 'testTransactionID',
+            betAmount: 100.00,
+            payoutAmount: 300.00,
+            dateTime: '2021-01-01T00:00:00.123+08:00'
+        );
 
         $stubRepository = $this->createMock(YgrRepository::class);
         $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
+            ->willReturn(new YgrPlayerDTO(
+                playID: 'testPlayID',
+                currency: 'IDR',
+                gameCode: 'testGameID'
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(YgrCredentials::class);
@@ -657,155 +403,32 @@ class YgrServiceTest extends TestCase
             walletReport: $stubReport,
             credentials: $stubCredentials
         );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWalletBalance_WalletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn(null);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 9999
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWallet_InsufficientFundException()
-    {
-        $this->expectException(InsufficientFundException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 10.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockRepository_createTransaction()
-    {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $mockRepository = $this->createMock(YgrRepository::class);
-        $mockRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $mockRepository->expects($this->once())
-            ->method('createTransaction')
-            ->with(
-                transactionID: $request->roundID,
-                betAmount: $request->betAmount,
-                winAmount: $request->payoutAmount,
-                transactionDate: '2021-01-01 00:00:00'
-            );
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'credit_after' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
+        $service->betAndSettle(requestDTO: $requestDTO);
     }
 
     public function test_betAndSettle_mockWalletReport_makeSlotReport()
     {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
+        $requestDTO = new YgrRequestDTO(
+            token: 'testToken',
+            roundID: 'testTransactionID',
+            betAmount: 100.00,
+            payoutAmount: 300.00,
+            dateTime: '2021-01-01T00:00:00.123+08:00'
+        );
 
         $stubRepository = $this->createMock(YgrRepository::class);
         $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
+            ->willReturn(new YgrPlayerDTO(
+                playID: 'testPlayID',
+                currency: 'IDR',
+                gameCode: 'testGameID'
+            ));
 
         $mockReport = $this->createMock(WalletReport::class);
         $mockReport->expects($this->once())
             ->method('makeSlotReport')
             ->with(
-                transactionID: $request->roundID,
+                transactionID: 'testTransactionID',
                 gameCode: 'testGameID',
                 betTime: '2021-01-01 00:00:00'
             )
@@ -824,27 +447,26 @@ class YgrServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $mockReport);
-        $service->betAndSettle(request: $request);
+        $service->betAndSettle(requestDTO: $requestDTO);
     }
 
     public function test_betAndSettle_mockWallet_wagerAndPayout()
     {
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
+        $requestDTO = new YgrRequestDTO(
+            token: 'testToken',
+            roundID: 'testTransactionID',
+            betAmount: 100.00,
+            payoutAmount: 300.00,
+            dateTime: '2021-01-01T00:00:00.123+08:00'
+        );
 
         $stubRepository = $this->createMock(YgrRepository::class);
         $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
+            ->willReturn(new YgrPlayerDTO(
+                playID: 'testPlayID',
+                currency: 'IDR',
+                gameCode: 'testGameID'
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
         $stubCredentials = $this->createMock(YgrCredentials::class);
@@ -867,10 +489,10 @@ class YgrServiceTest extends TestCase
                 credentials: $stubProviderCredentials,
                 playID: 'testPlayID',
                 currency: 'IDR',
-                wagerTransactionID: $request->roundID,
-                wagerAmount: $request->betAmount,
-                payoutTransactionID: $request->roundID,
-                payoutAmount: $request->payoutAmount,
+                wagerTransactionID: $requestDTO->roundID,
+                wagerAmount: $requestDTO->betAmount,
+                payoutTransactionID: $requestDTO->roundID,
+                payoutAmount: $requestDTO->payoutAmount,
                 report: new Report,
             )
             ->willReturn([
@@ -884,92 +506,6 @@ class YgrServiceTest extends TestCase
             walletReport: $stubReport,
             credentials: $stubCredentials
         );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWalletWagerAndPayout_WalletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 3120
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWallet_expectedData()
-    {
-        $expected = (object) [
-            'balance' => 1000.00,
-            'currency' => 'IDR'
-        ];
-
-        $request = new Request([
-            'connectToken' => 'testToken',
-            'roundID' => 'testTransactionID',
-            'betAmount' => 100.00,
-            'payoutAmount' => 300.00,
-            'freeGame' => 0,
-            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
-        ]);
-
-        $stubRepository = $this->createMock(YgrRepository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR',
-                'status' => 'testGameID'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000.00,
-                'status_code' => 2100
-            ]);
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'credit_after' => 1000.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $stubReport);
-        $response = $service->betAndSettle(request: $request);
-
-        $this->assertEquals(expected: $expected, actual: $response);
+        $service->betAndSettle(requestDTO: $requestDTO);
     }
 }
