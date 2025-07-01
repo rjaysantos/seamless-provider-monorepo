@@ -154,7 +154,7 @@ class Hg5Service
 
     private function validatePlayerAccess(Hg5RequestDTO $requestDTO, ICredentials $credentials): void
     {
-        if ($requestDTO->bearerToken !== $credentials->getAuthorizationToken())
+        if ($requestDTO->token !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
         if ($requestDTO->agentID !== $credentials->getAgentID())
@@ -198,7 +198,7 @@ class Hg5Service
 
     public function authenticate(Hg5RequestDTO $requestDTO): object
     {
-        $player = $this->repository->getPlayerByToken(token: $requestDTO->token);
+        $player = $this->repository->getPlayerByToken(token: $requestDTO->providerToken);
 
         if (is_null($player) === true)
             throw new InvalidTokenException;
