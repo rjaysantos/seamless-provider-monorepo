@@ -59,11 +59,11 @@ class Hg5Api
         ];
     }
 
-    public function getOrderDetailLink(ICredentials $credentials, Hg5TransactionDTO $transactionDTO): string
+    public function getOrderDetailLink(ICredentials $credentials, string $roundID, string $playID): string
     {
         $apiRequest = [
-            'roundid' => $transactionDTO->roundID,
-            'account' => $transactionDTO->playID
+            'roundid' => $roundID,
+            'account' => $playID
         ];
 
         $apiHeader = ['Authorization' => $credentials->getAuthorizationToken()];

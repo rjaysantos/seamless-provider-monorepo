@@ -77,7 +77,11 @@ class Hg5Service
                 Crypt::encryptString(value: $visualTransaction->playID) . '/' .
                 Crypt::encryptString(value: $visualTransaction->roundID);
         else
-            $url = $this->api->getOrderDetailLink(credentials: $credentials, transactionDTO: $visualTransaction);
+            $url = $this->api->getOrderDetailLink(
+                credentials: $credentials,
+                roundID: $visualTransaction->roundID,
+                playID: $visualTransaction->playID
+            );
 
         return $url;
     }
@@ -119,12 +123,11 @@ class Hg5Service
     {
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequestDTO->currency);
 
-        $visualTransaction = new Hg5TransactionDTO(
-            playID: $casinoRequestDTO->playID,
-            roundID: $casinoRequestDTO->roundID
+        return $this->api->getOrderDetailLink(
+            credentials: $credentials,
+            roundID: $casinoRequestDTO->roundID,
+            playID: $casinoRequestDTO->playID
         );
-
-        return $this->api->getOrderDetailLink(credentials: $credentials, transactionDTO: $visualTransaction);
     }
 
     private function validatePlayerAccess(Hg5RequestDTO $requestDTO, ICredentials $credentials): void
