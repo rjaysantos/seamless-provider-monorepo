@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
@@ -24,6 +25,7 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
+use Providers\Pla\DTO\PlaPlayerDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -39,24 +41,15 @@ class PlaService
         private WalletReport $walletReport,
     ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = PlaPlayerDTO::fromPlayRequest(casinoRequest: $casinoRequest);
 
-        if (is_null($player) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                currency: $request->currency,
-                username: $request->username
-            );
+        $this->repository->createOrUpdatePlayer(playerDTO: $player);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $token = "{$credentials->getKioskName()}_{$this->randomizer->createToken()}";
-
-        $this->repository->createOrUpdateToken(playID: $request->playId, token: $token);
-
-        return $this->api->getGameLaunchUrl(credentials: $credentials, request: $request, token: $token);
+        return $this->api->getGameLaunchUrl(credentials: $credentials, requestDTO: $casinoRequest, playerDTO: $player);
     }
 
     public function getBetDetail(Request $request): string

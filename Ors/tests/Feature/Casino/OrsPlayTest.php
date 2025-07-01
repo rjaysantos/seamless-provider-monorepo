@@ -13,22 +13,20 @@ class OrsPlayTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE ors.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE ors.playgame RESTART IDENTITY;');
     }
 
-    public function test_play_validDataNoPlayerYet_expectedData()
+    public function test_play_validRequest_expectedData()
     {
         $request = [
-            'branchId' => 27,
-            'playId' => 'qwe',
-            'username' => 'esterc5',
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
-            'language' => 'en',
-            'country' => 'PH',
-            'gameId' => '76',
-            'host' => 'test',
             'device' => 1,
-            'isTrial' => 0
+            'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Carbon::setTestNow(Carbon::parse('2024-04-18 10:00:00'));
@@ -36,7 +34,7 @@ class OrsPlayTest extends TestCase
         $randomizer = new class extends Randomizer {
             public function createToken(): string
             {
-                return 'test';
+                return 'testToken';
             }
         };
 
@@ -51,7 +49,7 @@ class OrsPlayTest extends TestCase
         ]);
 
         $response = $this->post('ors/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $response->assertJson([
@@ -64,53 +62,44 @@ class OrsPlayTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ors.players', [
-            'play_id' => 'qwe',
-            'username' => 'esterc5',
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
             'currency' => 'IDR',
-        ]);
-
-        $this->assertDatabaseHas('ors.playgame', [
-            'play_id' => 'qwe',
-            'token' => 'test'
+            'token' => 'testToken'
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=qwe&timestamp=1713405600&nickname=qwe&token=test&lang=en&game_id=76&betlimit=164&signature=a30efe42c41d9009d0cb550b54211939' &&
+            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=testGameID&betlimit=164&signature=e0f15223ea9ed024029f72a0f9f4c3f0' &&
                 $request->hasHeader('key', 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x') &&
                 $request->hasHeader('operator-name', 'mog052testidrslot') &&
-                $request['player_id'] == 'qwe' &&
-                $request['nickname'] == 'qwe' &&
+                $request['player_id'] == 'testPlayID' &&
+                $request['nickname'] == 'testPlayID' &&
+                $request['token'] == 'testToken' &&
                 $request['lang'] == 'en' &&
-                $request['game_id'] == 76 &&
+                $request['game_id'] == 'testGameID' &&
                 $request['betlimit'] == 164;
         });
     }
 
-    public function test_play_validDataHasPlayer_expectedData()
+    public function test_play_validRequestPlayerAlreadyExists_expectedData()
     {
         DB::table('ors.players')->insert([
-            'play_id' => 'qwe',
+            'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('ors.playgame')->insert([
-            'play_id' => 'qwe',
-            'token' => 'oldToken',
-            'expired' => 'false'
+            'currency' => 'IDR',
+            'token' => 'testOldToken'
         ]);
 
         $request = [
-            'branchId' => 27,
-            'playId' => 'qwe',
-            'username' => 'esterc5',
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
-            'language' => 'en',
-            'country' => 'PH',
-            'gameId' => '76',
-            'host' => 'test',
             'device' => 1,
-            'isTrial' => 0
+            'gameId' => 'testGameID',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Carbon::setTestNow('2024-04-18 10:00:00');
@@ -118,7 +107,7 @@ class OrsPlayTest extends TestCase
         $randomizer = new class extends Randomizer {
             public function createToken(): string
             {
-                return 'test';
+                return 'testToken';
             }
         };
 
@@ -133,7 +122,7 @@ class OrsPlayTest extends TestCase
         ]);
 
         $response = $this->post('ors/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $response->assertJson([
@@ -145,36 +134,88 @@ class OrsPlayTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseHas('ors.playgame', [
-            'play_id' => 'qwe',
-            'token' => 'test'
+        $this->assertDatabaseHas('ors.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=qwe&timestamp=1713405600&nickname=qwe&token=test&lang=en&game_id=76&betlimit=164&signature=a30efe42c41d9009d0cb550b54211939' &&
+            return $request->url() == 'http://xyz.pwqr820.com:9003/api/v2/platform/games/launch?player_id=testPlayID&timestamp=1713405600&nickname=testPlayID&token=testToken&lang=en&game_id=testGameID&betlimit=164&signature=e0f15223ea9ed024029f72a0f9f4c3f0' &&
                 $request->hasHeader('key', 'OTpcbFdErQ86xTneBpQu7FrI8ZG0uE6x') &&
                 $request->hasHeader('operator-name', 'mog052testidrslot') &&
-                $request['player_id'] == 'qwe' &&
-                $request['nickname'] == 'qwe' &&
+                $request['player_id'] == 'testPlayID' &&
+                $request['nickname'] == 'testPlayID' &&
                 $request['lang'] == 'en' &&
-                $request['game_id'] == 76 &&
+                $request['game_id'] == 'testGameID' &&
                 $request['betlimit'] == 164;
         });
     }
 
-    public function test_play_invalidBearerToken_expectedData()
+    #[DataProvider('playParams')]
+    public function test_play_invalidRequest_expectedData($param)
+    {
+        $expected = [
+            'rs_code' => 'S-100',
+            'rs_message' => 'success',
+            'game_link' => 'test_url'
+        ];
+
+        $request = [
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
+            'currency' => 'IDR',
+            'device' => 1,
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
+        ];
+
+        unset($request[$param]);
+
+        Http::fake([
+            '/api/v2/platform/games/launch*' => Http::response(json_encode($expected))
+        ]);
+
+        $response = $this->post('ors/in/play', $request, [
+            'Authorization' => 'Bearer ' . config('app.bearer'),
+        ]);
+
+        $response->assertJson([
+            'code' => 422,
+            'data' => NULL,
+            'error' => "invalid request format",
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public static function playParams()
+    {
+        return [
+            ['playId'],
+            ['username'],
+            ['currency'],
+            ['gameId'],
+            ['gameId']
+        ];
+    }
+
+    public function test_play_invalidBearerTokenException_expectedData()
     {
         $request = [
-            'branchId' => 27,
-            'playId' => 'qwe',
-            'username' => 'esterc5',
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
-            'language' => 'en',
-            'country' => 'PH',
-            'gameId' => '76',
-            'host' => 'test',
             'device' => 1,
-            'isTrial' => 0
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([
@@ -193,71 +234,48 @@ class OrsPlayTest extends TestCase
         $response->assertStatus(401);
     }
 
-    #[DataProvider('playParams')]
-    public function test_play_invalidRequest_expectedData($param, $message)
+    public function test_play_invalidCurrency_expectedData()
     {
-        $expected = [
-            'rs_code' => 'S-100',
-            'rs_message' => 'success',
-            'game_link' => 'test_url'
-        ];
+        config(['app.env' => 'PRODUCTION']);
 
         $request = [
-            'branchId' => 27,
-            'playId' => 'qv2wj6w9zu027',
-            'username' => 'esterc5',
-            'currency' => 'IDR',
-            'language' => 'id',
-            'country' => 'id',
-            'gameId' => '76',
-            'host' => 'test',
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
+            'currency' => 'NTD',
             'device' => 1,
-            'isTrial' => 0
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
-        unset($request[$param]);
-
-        Http::fake([
-            '/api/v2/platform/games/launch*' => Http::response(json_encode($expected))
-        ]);
-
         $response = $this->post('ors/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer')
         ]);
 
         $response->assertJson([
+            'success' => false,
             'code' => 422,
-            'data' => NULL,
-            'error' => "invalid request format",
+            'error' => 'Currency not supported!',
+            'data' => null
         ]);
 
         $response->assertStatus(200);
     }
 
-    public static function playParams()
-    {
-        return [
-            ['playId', 'play id'],
-            ['username', 'username'],
-            ['currency', 'currency'],
-            ['language', 'language'],
-            ['gameId', 'game id'],
-        ];
-    }
-
     public function test_play_thirdPartyApiError_expectedData()
     {
         $request = [
-            'branchId' => 27,
-            'playId' => 'qv2wj6w9zu027',
-            'username' => 'esterc5',
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
             'currency' => 'IDR',
-            'language' => 'id',
-            'country' => 'id',
-            'gameId' => '76',
-            'host' => 'test',
             'device' => 1,
-            'isTrial' => 0
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
         ];
 
         Http::fake([
@@ -268,7 +286,7 @@ class OrsPlayTest extends TestCase
         ]);
 
         $response = $this->post('ors/in/play', $request, [
-            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN'),
+            'Authorization' => 'Bearer ' . config('app.bearer'),
         ]);
 
         $response->assertJson([
@@ -278,5 +296,52 @@ class OrsPlayTest extends TestCase
             'error' => 'Third Party Api error'
         ]);
         $response->assertStatus(200);
+    }
+
+    #[DataProvider('gameLaunchResponse')]
+    public function test_play_thirdPartyApiErrorMissingResponse_expectedData($param)
+    {
+        $request = [
+            'playId' => 'testPlayID',
+            'memberId' => 123,
+            'username' => 'testUsername',
+            'host' => 'testHost.com',
+            'currency' => 'IDR',
+            'device' => 1,
+            'gameId' => '1',
+            'memberIp' => '127.0.0.1',
+            'language' => 'en',
+        ];
+
+        $apiResponse = [
+            'rs_code' => 'S-100',
+            'game_link' => 'test-launch-url'
+        ];
+
+        unset($apiResponse[$param]);
+
+        Http::fake([
+            '/api/v2/platform/games/launch*' => Http::response(json_encode($apiResponse))
+        ]);
+
+        $response = $this->post('ors/in/play', $request, [
+            'Authorization' => 'Bearer ' . config('app.bearer'),
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+        $response->assertStatus(200);
+    }
+
+    public static function gameLaunchResponse()
+    {
+        return [
+            ['rs_code'],
+            ['game_link']
+        ];
     }
 }

@@ -7,26 +7,15 @@ use Providers\Ors\OrsService;
 use Providers\Ors\OrsResponse;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Casino\InvalidBearerTokenException;
-use App\Exceptions\Casino\InvalidCasinoRequestException;
+use App\Http\Controllers\AbstractCasinoController;
 use Providers\Ors\Exceptions\InvalidProviderRequestException;
 
-class OrsController
+class OrsController extends AbstractCasinoController
 {
-    public function __construct(
-        private OrsService $service,
-        private OrsResponse $response
-    ) {}
-
-    private function validateCasinoRequest(Request $request, array $rules): void
+    public function __construct(OrsService $service, OrsResponse $response)
     {
-        $validate = Validator::make(data: $request->all(), rules: $rules);
-
-        if ($validate->fails())
-            throw new InvalidCasinoRequestException;
-
-        if ($request->bearerToken() != env('FEATURE_TEST_TOKEN'))
-            throw new InvalidBearerTokenException;
+        $this->service = $service;
+        $this->response = $response;
     }
 
     private function validateProviderRequest(Request $request, array $rules): void
@@ -35,40 +24,6 @@ class OrsController
 
         if ($validate->fails())
             throw new InvalidProviderRequestException;
-    }
-
-    public function play(Request $request)
-    {
-        $this->validateCasinoRequest(
-            request: $request,
-            rules: [
-                'playId' => 'required|string',
-                'username' => 'required|string',
-                'currency' => 'required|string',
-                'language' => 'required|string',
-                'gameId' => 'required|string',
-            ]
-        );
-
-        $launchUrl = $this->service->getLaunchUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $launchUrl);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(
-            request: $request,
-            rules: [
-                'play_id' => 'required|string',
-                'bet_id' => 'required|string',
-                'currency' => 'required|string',
-            ]
-        );
-
-        $visualUrl = $this->service->getBetDetailUrl(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
     }
 
     public function authenticate(Request $request)
@@ -132,7 +87,7 @@ class OrsController
         if ($requestDTO->transactionType === 'debit')
             $balance = $this->service->wager(requestDTO: $requestDTO);
         else
-            $balance = $this->service->rollback(request: $request);
+            $balance = $this->service->cancel(requestDTO: $requestDTO);
 
         return $this->response->debit(requestDTO: $requestDTO, balance: $balance);
     }
@@ -179,6 +134,6 @@ class OrsController
 
         $balance = $this->service->bonus(requestDTO: $requestDTO);
 
-        return $this->response->payout(request: $request, balance: $balance);
+        return $this->response->credit(requestDTO: $requestDTO, balance: $balance);
     }
 }

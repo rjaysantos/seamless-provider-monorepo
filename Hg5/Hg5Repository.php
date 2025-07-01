@@ -2,10 +2,12 @@
 
 namespace Providers\Hg5;
 
+use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Providers\Hg5\DTO\Hg5PlayerDTO;
 
-class Hg5Repository
+class Hg5Repository extends AbstractProviderRepository
 {
     public function getPlayerByPlayID(string $playID): ?object
     {
@@ -14,12 +16,13 @@ class Hg5Repository
             ->first();
     }
 
-    public function getPlayerByToken(string $token): ?object
+    public function getPlayerByToken(string $token): ?Hg5PlayerDTO
     {
-        return DB::table('hg5.playgame')
-            ->join('hg5.players', 'hg5.playgame.play_id', '=', 'hg5.players.play_id')
-            ->where('hg5.playgame.token', $token)
+        $data = $this->read->table('hg5.players')
+            ->where('token', $token)
             ->first();
+
+        return $data == null ? null : Hg5PlayerDTO::fromDB(dbData: $data);
     }
 
     public function getTransactionByTrxID(string $trxID): ?object
@@ -40,16 +43,16 @@ class Hg5Repository
             ]);
     }
 
-    public function createOrUpdatePlayGame(string $playID, string $token): void
+    public function createOrUpdatePlayer(Hg5PlayerDTO $playerDTO, string $token): void
     {
-        DB::connection('pgsql_write')
-            ->table('hg5.playgame')
+        $this->write->table('hg5.players')
             ->updateOrInsert(
-                ['play_id' => $playID],
                 [
-                    'token' => $token,
-                    'expired' => 'FALSE'
-                ]
+                    'play_id' => $playerDTO->playID,
+                    'username' => $playerDTO->username,
+                    'currency' => $playerDTO->currency
+                ],
+                ['token' => $token]
             );
     }
 
