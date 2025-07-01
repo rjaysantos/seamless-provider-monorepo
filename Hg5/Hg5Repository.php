@@ -47,12 +47,12 @@ class Hg5Repository extends AbstractProviderRepository
     {
         $this->write->table('hg5.players')
             ->updateOrInsert(
-                ['play_id' => $playerDTO->playID],
                 [
+                    'play_id' => $playerDTO->playID,
                     'username' => $playerDTO->username,
-                    'currency' => $playerDTO->currency,
-                    'token' => $token
-                ]
+                    'currency' => $playerDTO->currency
+                ],
+                ['token' => $token]
             );
     }
 
