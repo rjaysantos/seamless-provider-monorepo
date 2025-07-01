@@ -81,26 +81,6 @@ class PlaRepository extends AbstractProviderRepository
             ->delete();
     }
 
-    // public function createTransaction(
-    //     string $trxID,
-    //     float $betAmount,
-    //     float $winAmount,
-    //     string $betTime,
-    //     ?string $settleTime,
-    //     string $refID
-    // ): void {
-    //     DB::connection('pgsql_write')
-    //         ->table('pla.reports')
-    //         ->insert([
-    //             'trx_id' => $trxID,
-    //             'bet_amount' => $betAmount,
-    //             'win_amount' => $winAmount,
-    //             'created_at' => $betTime,
-    //             'updated_at' => $settleTime,
-    //             'ref_id' => $refID
-    //         ]);
-    // }
-
     public function createTransaction(PlaTransactionDTO $transactionDTO): void
     {
         $this->write->table('pla.reports')
