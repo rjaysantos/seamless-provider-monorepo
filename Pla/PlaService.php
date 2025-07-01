@@ -80,9 +80,8 @@ class PlaService
 
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $playID = explode('_', $requestDTO->username)[1] ?? null;
-
-        $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
+        $player = $requestDTO->playID == null ? null : $this->repository
+            ->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
@@ -104,7 +103,8 @@ class PlaService
     {
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(requestDTO: $requestDTO, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         return $player->currency;
     }

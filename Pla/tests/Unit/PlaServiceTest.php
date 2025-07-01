@@ -340,6 +340,7 @@ class PlaServiceTest extends TestCase
     {
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -347,15 +348,13 @@ class PlaServiceTest extends TestCase
         $player = new PlaPlayerDTO(
             playID: 'playerid',
             currency: 'IDR',
+            token: 'TEST_authToken'
         );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
             ->with(playID: 'playerid')
-            ->willReturn($player);
-
-        $mockRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $service = $this->makeService(repository: $mockRepository);
@@ -386,37 +385,12 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
 
         $service = $this->makeService();
-        $service->authenticate(requestDTO: $requestDTO);
-    }
-
-    public function test_authenticate_mockRepository_getPlayerByPlayIDToken()
-    {
-        $requestDTO = new PlaRequestDTO(
-            requestId: 'TEST_requestToken',
-            username: 'TEST_PLAYERID',
-            token: 'TEST_authToken'
-        );
-
-        $player = new PlaPlayerDTO(
-            playID: 'playerid',
-            currency: 'IDR'
-        );
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
-            ->willReturn($player);
-
-        $service = $this->makeService(repository: $mockRepository);
         $service->authenticate(requestDTO: $requestDTO);
     }
 
@@ -426,6 +400,7 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'token'
         );
@@ -439,8 +414,6 @@ class PlaServiceTest extends TestCase
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayerByPlayIDToken')
-            ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
         $service->authenticate(requestDTO: $requestDTO);
@@ -452,21 +425,19 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
 
         $player = new PlaPlayerDTO(
             playID: 'playerid',
-            currency: 'IDR'
+            currency: 'IDR',
+            token: 'TEST_authToken'
         );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayerByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
             ->willReturn($player);
 
         $service = $this->makeService(repository: $stubRepository);
