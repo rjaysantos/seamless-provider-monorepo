@@ -88,7 +88,7 @@ class PlaService
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
         $player = $requestDTO->playID == null ? null : $this->repository
-            ->getPlayerByPlayID(playID: strtolower($requestDTO->playID));
+            ->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);

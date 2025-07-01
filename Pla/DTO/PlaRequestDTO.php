@@ -16,9 +16,11 @@ class PlaRequestDTO
 
     public static function fromLogoutRequest(Request $request): self
     {
+        $playID = Str::after($request->username, '_');
+
         return new self(
             requestId: $request->requestId,
-            playID: Str::after($request->username, '_'),
+            playID: strtolower($playID),
             username: $request->username,
             token: $request->externalToken
         );
