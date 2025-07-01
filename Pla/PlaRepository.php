@@ -2,17 +2,21 @@
 
 namespace Providers\Pla;
 
+use App\DTO\PlayerDTO;
 use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Facades\DB;
 use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaTransactionDTO;
 
 class PlaRepository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?PlayerDTO
     {
-        return DB::table('pla.players')
+        $data = $this->read->table('pla.players')
             ->where('play_id', $playID)
             ->first();
+
+            return $data == null ? null : PlaPlayerDTO::fromDB(dbData: $data);
     }
 
     public function getPlayGameByPlayIDToken(string $playID, string $token): ?object
@@ -23,11 +27,13 @@ class PlaRepository extends AbstractProviderRepository
             ->first();
     }
 
-    public function getTransactionByExtID(string $extID): ?object
+    public function getTransactionByExtID(string $extID): ?PlaTransactionDTO
     {
-        return DB::table('pla.reports')
+        $data = $this->read->table('pla.reports')
             ->where('ext_id', $extID)
             ->first();
+        
+            return $data == null ? null : PlaTransactionDTO::fromDB(dbData: $data);
     }
 
     public function getTransactionByRefID(string $refID): ?object

@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Providers\Pla\DTO\PlaTransactionDTO;
 use Tests\TestCase;
 use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
@@ -160,14 +161,23 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
             ->with(playID: $casinoRequest->playID)
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $mockRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['ext_id' => 'testTransactionID']);
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
@@ -207,14 +217,23 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $mockRepository->expects($this->once())
             ->method('getTransactionByExtID')
             ->with(extID: $casinoRequest->extID)
-            ->willReturn((object) ['ext_id' => 'testTransactionID']);
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
@@ -234,9 +253,16 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
@@ -257,12 +283,21 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['ext_id' => 'testTransactionID']);
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
         $mockCredentials->expects($this->once())
@@ -285,12 +320,23 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
+        $transaction = new PlaTransactionDTO(
+            extID: 'testTransactionID'
+        );
+
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['ext_id' => 'testTransactionID']);
+            ->willReturn($transaction);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -301,7 +347,7 @@ class PlaServiceTest extends TestCase
         $mockApi = $this->createMock(PlaApi::class);
         $mockApi->expects($this->once())
             ->method('gameRoundStatus')
-            ->with(credentials: $providerCredentials, transactionID: 'testTransactionID')
+            ->with(credentials: $providerCredentials, transactionID: $transaction)
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, api: $mockApi);
@@ -318,12 +364,21 @@ class PlaServiceTest extends TestCase
             currency: 'IDR'
         );
 
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $stubRepository->method('getTransactionByExtID')
-            ->willReturn((object) ['ext_id' => 'testTransactionID']);
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')

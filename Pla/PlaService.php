@@ -49,7 +49,7 @@ class PlaService
         return $this->api->getGameLaunchUrl(credentials: $credentials, requestDTO: $casinoRequest, playerDTO: $player);
     }
 
-    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string  //editing
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string 
     {
         $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
@@ -61,9 +61,9 @@ class PlaService
         if (is_null($transaction) === true)
             throw new CasinoTransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $casinoRequest->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ext_id);
+        return $this->api->gameRoundStatus(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function validateToken(Request $request, ?object $player): void
