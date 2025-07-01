@@ -11,7 +11,6 @@ use App\Libraries\Randomizer;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
-use Providers\Pla\DTO\PlaPlayerDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
@@ -498,6 +497,7 @@ class PlaServiceTest extends TestCase
     {
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -511,9 +511,6 @@ class PlaServiceTest extends TestCase
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
             ->with(playID: 'playerid')
-            ->willReturn($player);
-
-        $mockRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubWallet = $this->createMock(IWallet::class);
@@ -533,6 +530,7 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -551,45 +549,12 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
 
         $service = $this->makeService();
-        $service->getBalance(requestDTO: $requestDTO);
-    }
-
-    public function test_getBalance_mockRepository_getPlayGameByPlayIDToken()
-    {
-        $requestDTO = new PlaRequestDTO(
-            requestId: 'TEST_requestToken',
-            username: 'TEST_PLAYERID',
-            token: 'TEST_authToken'
-        );
-
-        $player = new PlaPlayerDTO(
-            playID: 'playerid',
-            currency: 'IDR',
-            token: 'TEST_authToken'
-        );
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
-            ->willReturn($player);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet);
         $service->getBalance(requestDTO: $requestDTO);
     }
 
@@ -599,8 +564,9 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
-            token: 'TEST_authToken'
+            token: 'TEST_invalidToken'
         );
 
         $player = new PlaPlayerDTO(
@@ -624,6 +590,7 @@ class PlaServiceTest extends TestCase
     {
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -636,9 +603,6 @@ class PlaServiceTest extends TestCase
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
@@ -661,6 +625,7 @@ class PlaServiceTest extends TestCase
     {
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -673,9 +638,6 @@ class PlaServiceTest extends TestCase
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $providerCredentials = $this->createMock(ICredentials::class);
@@ -703,6 +665,7 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -715,9 +678,6 @@ class PlaServiceTest extends TestCase
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubWallet = $this->createMock(IWallet::class);
@@ -736,6 +696,7 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
+            playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
         );
@@ -748,9 +709,6 @@ class PlaServiceTest extends TestCase
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn($player);
 
         $stubWallet = $this->createMock(IWallet::class);
