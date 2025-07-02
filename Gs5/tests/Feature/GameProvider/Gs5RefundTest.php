@@ -14,7 +14,6 @@ class Gs5RefundTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE gs5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -33,28 +32,32 @@ class Gs5RefundTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 0,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.00,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
+
+        Carbon::setTestNow('2024-01-01 00:00:00');
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => '123'
+            'txn_id' => '123456'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -66,35 +69,29 @@ class Gs5RefundTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('gs5.reports', [
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 0,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => null
-        ]);
-
         $this->assertDatabaseHas('gs5.reports', [
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 1000,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00'
+            'ext_id' => 'cancel-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 100.00,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
     }
 
     public function test_refund_tokenNotFound_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = [
@@ -112,23 +109,25 @@ class Gs5RefundTest extends TestCase
     public function test_refund_transactionNotFound_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 0,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.0,
+            'bet_valid' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
 
         $request = ['access_token' => 'testToken', 'txn_id' => 456];
@@ -143,28 +142,45 @@ class Gs5RefundTest extends TestCase
     public function test_refund_transactionAlreadySettled_expectedData()
     {
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 1000,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00'
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.0,
+            'bet_valid' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
+        ]);
+
+        DB::table('gs5.reports')->insert([
+            'ext_id' => 'payout-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.0,
+            'bet_valid' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => '123'
+            'txn_id' => '123456'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -187,28 +203,30 @@ class Gs5RefundTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('gs5.players')->insert([
-            'play_id' => 'testPlayID',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         DB::table('gs5.reports')->insert([
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 0,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 100.0,
+            'bet_valid' => 100.0,
+            'bet_winlose' => 0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
 
         $request = [
             'access_token' => 'testToken',
-            'txn_id' => '123'
+            'txn_id' => '123456'
         ];
 
         $response = $this->get(uri: 'gs5/prov/api/refund/?' . http_build_query($request));
@@ -218,11 +236,18 @@ class Gs5RefundTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('gs5.reports', [
-            'trx_id' => '123',
-            'bet_amount' => 1000,
-            'win_amount' => 1000,
-            'created_at' => '2025-01-01 00:00:00',
-            'updated_at' => '2025-01-01 00:00:00'
+            'ext_id' => 'cancel-123456',
+            'round_id' => '123456',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayIDu001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
+            'bet_amount' => 0,
+            'bet_valid' => 0,
+            'bet_winlose' => 100.0,
+            'updated_at' => '2024-01-01 00:00:00',
+            'created_at' => '2024-01-01 00:00:00'
         ]);
     }
 
