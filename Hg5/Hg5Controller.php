@@ -150,8 +150,7 @@ class Hg5Controller extends AbstractCasinoController
 
         return $this->response->singleTransactionResponse(
             balance: $balance,
-            currency: $request->currency,
-            gameRound: $request->gameRound
+            requestDTO: $requestDTO
         );
     }
 
