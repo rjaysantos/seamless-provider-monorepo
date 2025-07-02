@@ -15,6 +15,8 @@ use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class OrsApi
 {
+    const OG_GAME_TYPE_ID_SLOT = 2;
+
     public function __construct(private LaravelHttpClient $http, private OgSignature $encryption) {}
 
     public function validateResponse(object $response, array $rules): void
@@ -28,7 +30,7 @@ class OrsApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function enterGame(
+    public function gamesLaunch(
         ICredentials $credentials,
         OrsPlayerDTO $playerDTO,
         CasinoRequestDTO $casinoRequest,
@@ -68,12 +70,12 @@ class OrsApi
         return $response->game_link;
     }
 
-    public function getBettingRecords(ICredentials $credentials, OrsTransactionDTO $transactionDTO): string
+    public function transactionHistory(ICredentials $credentials, OrsTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
             'transaction_id' => $transactionDTO->roundID,
             'player_id' => $transactionDTO->playID,
-            'game_type_id' => 2,
+            'game_type_id' => self::OG_GAME_TYPE_ID_SLOT,
         ];
 
         $headers = [

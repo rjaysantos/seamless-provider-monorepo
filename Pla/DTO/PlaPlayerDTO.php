@@ -16,6 +16,7 @@ class PlaPlayerDTO extends PlayerDTO
         public readonly ?string $username = null,
         public readonly ?string $currency = null,
         public readonly ?string $token = null,
+        public readonly ?string $providerUserID = null,
     ) {}
 
     public static function fromDB(object $dbData): self
@@ -27,7 +28,7 @@ class PlaPlayerDTO extends PlayerDTO
             token: $dbData->token,
         );
     }
-    
+
     public static function fromPlayRequest(CasinoRequestDTO $casinoRequest): self{
 
         $randomizer = app(Randomizer::class);

@@ -44,7 +44,7 @@ class OrsService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->enterGame(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
+        return $this->api->gamesLaunch(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
     }
 
     public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
@@ -61,7 +61,7 @@ class OrsService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->getBettingRecords(credentials: $credentials, transactionDTO: $transaction);
+        return $this->api->transactionHistory(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void
