@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Providers\Hg5\DTO\Hg5RequestDTO;
 use Illuminate\Support\Facades\Crypt;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hg5\Contracts\ICredentials;
 use App\Exceptions\Casino\PlayerNotFoundException;
@@ -327,78 +328,74 @@ class Hg5Service
         return $walletResponse['credit_after'];
     }
 
-    private function betTransaction(object $request, string $authorization): float
+    private function betTransaction(Hg5RequestDTO $requestDTO): float
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playerId);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        if ($authorization !== $credentials->getAuthorizationToken())
+        if ($requestDTO->bearerToken !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
-        if ($request->agentId !== $credentials->getAgentID())
+        if ($requestDTO->agentID !== $credentials->getAgentID())
             throw new InvalidAgentIDException;
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->gameRound);
-
-        if (is_null($transactionData) === false)
-            throw new TransactionAlreadyExistsException;
-
-        $balance = $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $request->playerId
+        $wagerTransactionDTO = Hg5TransactionDTO::wager(
+            requestDTO: $requestDTO,
+            playerDTO: $player
         );
 
-        if ($balance < $request->amount)
+        $existingWagerTransaction = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
+
+        if (is_null($existingWagerTransaction) === false)
+            throw new TransactionAlreadyExistsException;
+
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
+
+        if ($balance < $wagerTransactionDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $transactionDate = $this->getConvertedTime(time: $request->eventTime);
+            $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
-            $this->repository->createBetTransaction(
-                trxID: $request->gameRound,
-                betAmount: $request->amount,
-                betTime: $transactionDate,
-            );
-
-            $betID = $this->shortenBetID(betID: $request->gameRound);
+            $betID = $this->shortenBetID(betID: $requestDTO->roundID);
 
             $report = $this->walletReport->makeArcadeReport(
                 transactionID: $betID,
-                gameCode: $request->gameCode,
-                betTime: $transactionDate,
-                opt: json_encode(['txn_id' => $request->gameRound])
+                gameCode: $wagerTransactionDTO->gameID,
+                betTime: $wagerTransactionDTO->dateTime,
+                opt: json_encode(['txn_id' => $requestDTO->roundID])
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $request->playerId,
-                currency: $request->currency,
-                transactionID: "wager-{$request->gameRound}",
-                amount: $request->amount,
+                playID: $wagerTransactionDTO->playID,
+                currency: $wagerTransactionDTO->currency,
+                transactionID: $wagerTransactionDTO->extID,
+                amount: $wagerTransactionDTO->betAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
         return $walletResponse['credit_after'];
     }
 
-    public function bet(Request $request): float
+    public function wager(Hg5RequestDTO $requestDTO): float
     {
-        return $this->betTransaction(request: $request, authorization: $request->header('Authorization'));
+        return $this->betTransaction(requestDTO: $requestDTO);
     }
 
     private function settleTransaction(object $request, string $authorization): float
