@@ -118,14 +118,13 @@ class HcgService
             throw new ProviderPlayerNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-        $conversion = $credentials->getCurrencyConversion();
 
         $wagerPayoutTransactionDTO = HcgTransactionDTO::wager(
             extID: "wagerpayout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player,
-            betAmount: $requestDTO->amount * $conversion,
-            winAmount: $requestDTO->winAmount * $conversion
+            betAmount: $requestDTO->betAmount * $credentials->getCurrencyConversion(),
+            winAmount: $requestDTO->winAmount * $credentials->getCurrencyConversion()
         );
 
         $existingTransactionData = $this->repository->getTransactionByExtID(extID: $wagerPayoutTransactionDTO->extID);
@@ -169,7 +168,7 @@ class HcgService
             throw $e;
         }
 
-        return $betAndSettleResponse['credit_after'] / $conversion;
+        return $betAndSettleResponse['credit_after'] / $credentials->getCurrencyConversion();
     }
 
     private function triggerProviderRequestTimeout(): void

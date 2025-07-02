@@ -372,7 +372,7 @@ class HcgServiceTest extends TestCase
             dateTime: 1723618062,
             roundID: 'testRoundID',
             gameID: '123',
-            amount: 1,
+            betAmount: 1,
             winAmount: 3
         );
 
@@ -435,7 +435,7 @@ class HcgServiceTest extends TestCase
             dateTime: 1723618062,
             roundID: 'testRoundID',
             gameID: '123',
-            amount: 1,
+            betAmount: 1,
             winAmount: 3
         );
 
