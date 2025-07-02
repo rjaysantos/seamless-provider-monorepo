@@ -576,7 +576,7 @@ class OrsServiceTest extends TestCase
         $service->cancel(requestDTO: $requestDTO);
     }
 
-    public function test_payout_mockWallet_balance()
+    public function test_settle_mockWallet_balance()
     {
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -653,10 +653,10 @@ class OrsServiceTest extends TestCase
             report: $stubReport
         );
 
-        $service->payout(requestDTO: $requestDTO);
+        $service->settle(requestDTO: $requestDTO);
     }
 
-    public function test_payout_mockReport_makeSlotReport()
+    public function test_settle_mockReport_makeSlotReport()
     {
         $request = new Request();
 
@@ -731,10 +731,10 @@ class OrsServiceTest extends TestCase
             report: $mockReport
         );
 
-        $service->payout(requestDTO: $requestDTO);
+        $service->settle(requestDTO: $requestDTO);
     }
 
-    public function test_payout_mockReport_makeArcadeReport()
+    public function test_settle_mockReport_makeArcadeReport()
     {
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -809,10 +809,10 @@ class OrsServiceTest extends TestCase
             report: $mockReport
         );
 
-        $service->payout(requestDTO: $requestDTO);
+        $service->settle(requestDTO: $requestDTO);
     }
 
-    public function test_payout_mockWallet_payout()
+    public function test_settle_mockWallet_payout()
     {
         $requestDTO = new OrsRequestDTO(
             key: 'testPublicKey',
@@ -889,7 +889,7 @@ class OrsServiceTest extends TestCase
             report: $stubReport
         );
 
-        $service->payout(requestDTO: $requestDTO);
+        $service->settle(requestDTO: $requestDTO);
     }
 
     public function test_bonus_mockWalletReport_makeBonusReport()

@@ -238,7 +238,7 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function payout(OrsRequestDTO $requestDTO): float
+    public function settle(OrsRequestDTO $requestDTO): float
     {
         $player = $this->getPlayerDetails($requestDTO);
 
