@@ -15,7 +15,6 @@ class HcgTransactionDTO extends TransactionDTO
     private const PROVIDER_API_TIMEZONE = 'GMT+8';
 
     public static function wager(
-        string $extID, 
         HcgRequestDTO $requestDTO, 
         HcgPlayerDTO $playerDTO, 
         float $betAmount,
@@ -23,7 +22,7 @@ class HcgTransactionDTO extends TransactionDTO
     ): self {   
 
         return new self(
-            extID: "wagerpayout-{$extID}",
+            extID: "wagerpayout-{$requestDTO->roundID}",
             roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,

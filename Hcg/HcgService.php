@@ -120,7 +120,6 @@ class HcgService
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $wagerPayoutTransactionDTO = HcgTransactionDTO::wager(
-            extID: $requestDTO->roundID,
             requestDTO: $requestDTO,
             playerDTO: $player,
             betAmount: $requestDTO->betAmount * $credentials->getCurrencyConversion(),
