@@ -23,6 +23,7 @@ use Providers\Hg5\Exceptions\GameNotFoundException;
 use Providers\Hg5\Exceptions\InvalidTokenException;
 use Providers\Hg5\Exceptions\InvalidAgentIDException;
 use App\Exceptions\Casino\TransactionNotFoundException;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
 use Providers\Hg5\Exceptions\InsufficientFundException;
 use Providers\Hg5\Exceptions\TransactionAlreadyExistsException;
 use Providers\Hg5\Exceptions\TransactionAlreadySettledException;
@@ -536,68 +537,62 @@ class Hg5Service
         return $totalData;
     }
 
-    public function multiplayerBet(Request $request): float
+    public function multiplayerBet(Hg5RequestDTO $requestDTO): float
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playerId);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->validatePlayerAccess(
-            request: $request,
-            credentials: $credentials
+        $this->validatePlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
+
+        $transactionDTO = Hg5TransactionDTO::wager(
+            extID: "wager-{$requestDTO->roundID}",
+            requestDTO: $requestDTO,
+            playerDTO: $player
         );
 
-        $transactionData = $this->repository->getTransactionByTrxID(trxID: $request->gameRound);
+        $transactionData = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
 
-        $balance = $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $request->playerId
-        );
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
-        if ($balance < $request->amount)
+        if ($balance < $requestDTO->betAmount)
             throw new InsufficientFundException;
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $transactionDate = $this->getConvertedTime(time: $request->eventTime);
+            $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
-            $this->repository->createBetTransaction(
-                trxID: $request->gameRound,
-                betAmount: $request->amount,
-                betTime: $transactionDate
-            );
-
-            $betID = $this->shortenBetID(betID: $request->gameRound);
+            $betID = $this->shortenBetID(betID: $transactionDTO->roundID);
 
             $report = $this->walletReport->makeArcadeReport(
                 transactionID: $betID,
-                gameCode: $request->gameCode,
-                betTime: $transactionDate,
-                opt: json_encode(['txn_id' => $request->gameRound])
+                gameCode: $transactionDTO->gameID,
+                betTime: $transactionDTO->dateTime,
+                opt: json_encode(['txn_id' => $transactionDTO->roundID])
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $request->playerId,
-                currency: $request->currency,
-                transactionID: "wager-{$request->gameRound}",
-                amount: $request->amount,
+                playID: $transactionDTO->playID,
+                currency: $transactionDTO->currency,
+                transactionID: $transactionDTO->extID,
+                amount: $transactionDTO->betAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] != 2100)
                 throw new ProviderWalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollback();
+            $this->repository->rollback();
             throw $e;
         }
 
