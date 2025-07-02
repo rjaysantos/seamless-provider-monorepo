@@ -123,7 +123,9 @@ class Hg5Controller extends AbstractCasinoController
             'extra.slot.mainGameRound' => 'sometimes|string',
         ]);
 
-        $balance = $this->service->betAndSettle(request: $request);
+        $requestDTO = Hg5RequestDTO::fromWithdrawAndDepositRequest(request: $request);
+
+        $balance = $this->service->betAndSettle(requestDTO: $requestDTO);
 
         return $this->response->singleTransactionResponse(
             balance: $balance,
