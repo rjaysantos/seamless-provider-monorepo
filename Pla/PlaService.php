@@ -23,6 +23,7 @@ use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundExcepti
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
 use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -66,25 +67,12 @@ class PlaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
-    private function validateToken(Request $request, ?object $player): void
+    private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $playGame = $this->repository->getPlayGameByPlayIDToken(
-            playID: $player->play_id,
-            token: $request->externalToken
-        );
-
-        if (is_null($playGame) === true)
-            throw new InvalidTokenException(request: $request);
-    }
-
-    private function getPlayerDetails(Request $request): object
-    {
-        $playID = explode('_', $request->username)[1] ?? null;
-
-        $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(request: $request);
+            throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
 
         return $player;
     }
@@ -99,11 +87,12 @@ class PlaService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): string
+    public function authenticate(PlaRequestDTO $requestDTO): string
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         return $player->currency;
     }
