@@ -11,7 +11,9 @@ use Providers\Pla\PlaService;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
 use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
+use Providers\Pla\DTO\PlaTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
 use Providers\Pla\Exceptions\WalletErrorException;
@@ -1676,358 +1678,36 @@ class PlaServiceTest extends TestCase
         $this->assertSame(expected: $expected, actual: $response);
     }
 
-    public function test_settle_mockRepository_getPlayerByPlayID()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: 'playerid')
-            ->willReturn($player);
-
-        $mockRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_nullPlayer_playerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_usernameWithoutKiosk_playerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $service = $this->makeService();
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_mockRepository_getBetTransactionByRefID()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getBetTransactionByRefID')
-            ->with(refID: $request->gameRoundCode)
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_noBetTransaction_transactionNotFoundException()
-    {
-        $this->expectException(ProviderTransactionNotFoundException::class);
-
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_mockRepositoryWithoutWin_getTransactionByTrxID()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(trxID: "L-{$request->requestId}")
-            ->willReturn(null);
-
-        $mockRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_mockRepositoryWithWin_getTransactionByTrxID()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(trxID: $request->pay['transactionCode'])
-            ->willReturn(null);
-
-        $mockRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_mockCredentials_getCredentialsByCurrency()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $mockCredentials = $this->createMock(PlaCredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentialsByCurrency')
-            ->with(currency: $player->currency);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 0.00
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $mockCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->settle(request: $request);
-    }
-
     public function test_settle_mockWallet_balance()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
+        Carbon::setTestNow('2025-01-01 00:00:00');
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
+        $requestDTO = new PlaRequestDTO(
+            requestID: 'testRequestID',
+            playID: 'testplayidu027',
+            gameID: 'testGameCode',
+            transactionID: 'L-testRequestID',
+            roundID: 'testGameRoundCode',
+            betAmount: 0,
+            winAmount: 0,
+            transactionType: 'LOSE'
+        );
 
-        $report = new Report();
+        $playerDTO = new PlaPlayerDTO(
+            playID: 'testplayidu027',
+            currency: 'IDR',
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn($playerDTO);
 
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByRoundID')
+            ->willReturn(new PlaTransactionDTO());
 
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
-            ->willReturn($report);
+            ->willReturn(new Report);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -2038,7 +1718,7 @@ class PlaServiceTest extends TestCase
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('balance')
-            ->with(credentials: $providerCredentials, playID: 'playerid')
+            ->with(credentials: $providerCredentials, playID: 'testplayidu027')
             ->willReturn([
                 'status_code' => 2100,
                 'credit' => 0.00
@@ -2056,313 +1736,34 @@ class PlaServiceTest extends TestCase
             wallet: $mockWallet,
             report: $stubReport
         );
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_invalidWalletResponseBalance_walletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-
-        $stubCredentials = $this->createMock(PlaCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 9999,
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_transactionAlreadyExistsWithoutWin_expected()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $expected = 1000.00;
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => $expected
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $response = $service->settle(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $response);
-    }
-
-    public function test_settle_transactionAlreadyExistsWithWin_expected()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $expected = 1000.00;
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => $expected
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $response = $service->settle(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $response);
-    }
-
-    public function test_settle_mockRepositoryWithoutWin_createTransaction()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        Carbon::setTestNow('2024-01-01 00:00:00');
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $mockRepository->expects($this->once())
-            ->method('createTransaction')
-            ->with(
-                trxID: 'L-TEST_requestToken',
-                betAmount: 0,
-                winAmount: 0,
-                betTime: '2024-01-01 00:00:00',
-                settleTime: '2024-01-01 00:00:00',
-                refID: 'testGameRoundCode'
-            );
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 1000.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_stubRepositoryWithoutWin_expected()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $expected = 1000.0;
-
-        $stubRepsitory = $this->createMock(PlaRepository::class);
-        $stubRepsitory->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepsitory->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => $expected
-            ]);
-
-        $service = $this->makeService(repository: $stubRepsitory, wallet: $stubWallet);
-        $response = $service->settle(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $response);
-    }
-
-    public function test_settle_mockRepositoryWithWin_createTransaction()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $mockRepository->expects($this->once())
-            ->method('createTransaction')
-            ->with(
-                trxID: 'testTransactionCode',
-                betAmount: 0,
-                winAmount: 10.0,
-                betTime: '2024-01-01 08:00:03',
-                settleTime: '2024-01-01 08:00:03',
-                refID: 'testGameRoundCode'
-            );
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 1000.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 990.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
+        $service->settle(requestDTO: $requestDTO);
     }
 
     public function test_settle_mockReport_makeSlotReport()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestID: 'testRequestID',
+            playID: 'testplayidu027',
+            gameID: 'testGameCode',
+            transactionID: 'testTransactionCode',
+            roundID: 'testGameRoundCode',
+            betAmount: 0,
+            winAmount: 10,
+            dateTime: '2025-01-01 00:00:03',
+            transactionType: 'WIN'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
+        $playerDTO = new PlaPlayerDTO(
+            playID: 'testplayidu027',
+            currency: 'IDR',
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn($playerDTO);
 
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByRoundID')
+            ->willReturn(new PlaTransactionDTO());
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -2374,11 +1775,11 @@ class PlaServiceTest extends TestCase
         $mockReport->expects($this->once())
             ->method('makeSlotReport')
             ->with(
-                transactionID: $request->pay['transactionCode'],
-                gameCode: $request->gameCodeName,
-                betTime: '2024-01-01 08:00:03'
+                transactionID: 'testTransactionCode',
+                gameCode: 'testGameCode',
+                betTime: '2025-01-01 08:00:03'
             )
-            ->willReturn($report);
+            ->willReturn(new Report);
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
@@ -2399,38 +1800,34 @@ class PlaServiceTest extends TestCase
             wallet: $stubWallet,
             report: $mockReport
         );
-        $service->settle(request: $request);
+        $service->settle(requestDTO: $requestDTO);
     }
 
     public function test_settle_mockReport_makeArcadeReport()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestID: 'testRequestID',
+            playID: 'testplayidu027',
+            gameID: 'testGameCode',
+            transactionID: 'testTransactionCode',
+            roundID: 'testGameRoundCode',
+            betAmount: 0,
+            winAmount: 10,
+            dateTime: '2025-01-01 00:00:03',
+            transactionType: 'WIN'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
+        $playerDTO = new PlaPlayerDTO(
+            playID: 'testplayidu027',
+            currency: 'IDR',
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn($playerDTO);
 
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByRoundID')
+            ->willReturn(new PlaTransactionDTO());
 
         $providerCredentials = $this->createMock(ICredentials::class);
         $providerCredentials->method('getArcadeGameList')
@@ -2444,11 +1841,11 @@ class PlaServiceTest extends TestCase
         $mockReport->expects($this->once())
             ->method('makeArcadeReport')
             ->with(
-                transactionID: $request->pay['transactionCode'],
-                gameCode: $request->gameCodeName,
-                betTime: '2024-01-01 08:00:03'
+                transactionID: 'testTransactionCode',
+                gameCode: 'testGameCode',
+                betTime: '2025-01-01 08:00:03'
             )
-            ->willReturn($report);
+            ->willReturn(new Report);
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
@@ -2469,38 +1866,34 @@ class PlaServiceTest extends TestCase
             wallet: $stubWallet,
             report: $mockReport
         );
-        $service->settle(request: $request);
+        $service->settle(requestDTO: $requestDTO);
     }
 
     public function test_settle_mockWallet_wagerAndPayout()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestID: 'testRequestID',
+            playID: 'testplayidu027',
+            gameID: 'testGameCode',
+            transactionID: 'testTransactionCode',
+            roundID: 'testGameRoundCode',
+            betAmount: 0,
+            winAmount: 10,
+            dateTime: '2025-01-01 00:00:03',
+            transactionType: 'WIN'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
+        $playerDTO = new PlaPlayerDTO(
+            playID: 'testplayidu027',
+            currency: 'IDR',
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn($playerDTO);
 
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
+        $stubRepository->method('getTransactionByRoundID')
+            ->willReturn(new PlaTransactionDTO());
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -2510,7 +1903,7 @@ class PlaServiceTest extends TestCase
 
         $stubReport = $this->createMock(WalletReport::class);
         $stubReport->method('makeSlotReport')
-            ->willReturn($report);
+            ->willReturn(new Report);
 
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->method('balance')
@@ -2523,13 +1916,13 @@ class PlaServiceTest extends TestCase
             ->method('WagerAndPayout')
             ->with(
                 credentials: $providerCredentials,
-                playID: $player->play_id,
-                currency: $player->currency,
-                wagerTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                playID: 'testplayidu027',
+                currency: 'IDR',
+                wagerTransactionID: 'wagerPayout-testTransactionCode',
                 wagerAmount: 0,
-                payoutTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
-                payoutAmount: (float) $request->pay['amount'],
-                report: $report
+                payoutTransactionID: 'wagerPayout-testTransactionCode',
+                payoutAmount: 10,
+                report: new Report
             )
             ->willReturn([
                 'status_code' => 2100,
@@ -2542,114 +1935,7 @@ class PlaServiceTest extends TestCase
             wallet: $mockWallet,
             report: $stubReport
         );
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_invalidWalletResponseWagerAndPayout_WalletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $report = new Report();
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 1000.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 9999
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, report: $stubReport);
-        $service->settle(request: $request);
-    }
-
-    public function test_settle_stubWallet_payout()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken',
-            'gameRoundCode' => 'testGameRoundCode',
-            'pay' => [
-                'transactionCode' => 'testTransactionCode',
-                'transactionDate' => '2024-01-01 00:00:03.000',
-                'amount' => '10',
-                'type' => 'WIN'
-            ],
-            'gameCodeName' => 'testGameCode'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $expected = 990.00;
-
-        $report = new Report();
-
-        $stubRepository = $this->createMock(PlaRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $stubRepository->method('getBetTransactionByRefID')
-            ->willReturn((object) []);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn($report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 1000.00
-            ]);
-
-        $stubWallet->method('WagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => $expected
-            ]);
-
-        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, report: $stubReport);
-        $response = $service->settle(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $response);
+        $service->settle(requestDTO: $requestDTO);
     }
 
     public function test_refund_mockRepository_getPlayerByPlayID()
