@@ -13,7 +13,6 @@ class Hg5VisualHtmlTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE hg5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE hg5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE hg5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -66,7 +65,7 @@ class Hg5VisualHtmlTest extends TestCase
         ]);
 
         $playID = Crypt::encryptString('testPlayIDu001');
-        $trxID = Crypt::encryptString('testTransactionID');
+        $trxID = Crypt::encryptString('hg5-testTransactionID');
 
         $response = $this->get("/hg5/in/visual/{$playID}/{$trxID}");
 
@@ -74,8 +73,7 @@ class Hg5VisualHtmlTest extends TestCase
         $response->assertViewIs('/var/www/html/providers/Hg5/views/hg5_visual.blade.php');
 
         $response->assertViewHas('playID', 'testPlayIDu001');
-        $response->assertViewHas('currency', 'IDR');
-        $response->assertViewHas('trxID', 'testTransactionID');
+        $response->assertViewHas('trxID', 'hg5-testTransactionID');
 
         $responseData = $response->viewData('roundData');
         $this->assertEquals([
@@ -119,7 +117,7 @@ class Hg5VisualHtmlTest extends TestCase
         ]);
 
         $playID = Crypt::encryptString('invalidPlayID');
-        $trxID = Crypt::encryptString('testTransactionID');
+        $trxID = Crypt::encryptString('hg5-testTransactionID');
 
         $response = $this->get("/hg5/in/visual/{$playID}/{$trxID}");
 
@@ -205,7 +203,7 @@ class Hg5VisualHtmlTest extends TestCase
         ]);
 
         $playID = Crypt::encryptString('testPlayIDu001');
-        $trxID = Crypt::encryptString('testTransactionID');
+        $trxID = Crypt::encryptString('hg5-testTransactionID');
 
         $response = $this->get("/hg5/in/visual/{$playID}/{$trxID}");
 

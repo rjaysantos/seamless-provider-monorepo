@@ -32,8 +32,7 @@ class Hg5Controller extends AbstractCasinoController
     {
         $validate = Validator::make(data: $request->all(), rules: [
             'trxID' => 'required|string',
-            'playID' => 'required|string',
-            'currency' => 'required|string',
+            'playID' => 'required|string'
         ]);
 
         if ($validate->fails())

@@ -38,8 +38,7 @@ class Hg5RequestDTO
     {
         return new self(
             playID: $request->playID,
-            roundID: $request->trxID,
-            currency: $request->currency
+            roundID: $request->trxID
         );
     }
 }

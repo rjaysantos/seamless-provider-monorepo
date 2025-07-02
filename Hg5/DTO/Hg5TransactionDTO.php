@@ -48,19 +48,4 @@ class Hg5TransactionDTO extends TransactionDTO
             createdAt: $dbData->created_at,
         );
     }
-
-    public static function visualDTO(Hg5TransactionDTO $transactionDTO): self
-    {
-        $updatedAt = Carbon::parse($transactionDTO->updatedAt)
-            ->addSeconds(5)
-            ->format('Y-m-d H:i:s');
-
-        return new self(
-            roundID: Str::after($transactionDTO->roundID, 'hg5-'),
-            playID: $transactionDTO->playID,
-            currency: $transactionDTO->currency,
-            updatedAt: $updatedAt,
-            createdAt: $transactionDTO->createdAt,
-        );
-    }
 }

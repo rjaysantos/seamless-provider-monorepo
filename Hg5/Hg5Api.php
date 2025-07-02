@@ -2,7 +2,8 @@
 
 namespace Providers\Hg5;
 
-use App\DTO\CasinoRequestDTO;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use App\Libraries\LaravelHttpClient;
@@ -59,11 +60,11 @@ class Hg5Api
         ];
     }
 
-    public function getOrderDetailLink(ICredentials $credentials, string $roundID, string $playID): string
+    public function getOrderDetailLink(ICredentials $credentials, Hg5TransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'roundid' => $roundID,
-            'account' => $playID
+            'roundid' => Str::after($transactionDTO->roundID, 'hg5-'),
+            'account' => $transactionDTO->playID
         ];
 
         $apiHeader = ['Authorization' => $credentials->getAuthorizationToken()];
@@ -85,9 +86,13 @@ class Hg5Api
 
     public function getOrderQuery(ICredentials $credentials, Hg5TransactionDTO $transactionDTO): Collection
     {
+        $updatedAt = Carbon::parse($transactionDTO->updatedAt)
+            ->addSeconds(5)
+            ->format('Y-m-d H:i:s');
+
         $apiRequest = [
             'starttime' => $transactionDTO->createdAt,
-            'endtime' => $transactionDTO->updatedAt,
+            'endtime' => $updatedAt,
             'page' => 1,
             'account' => $transactionDTO->playID
         ];
@@ -112,8 +117,9 @@ class Hg5Api
         ]);
 
         $data = collect($response->data->list);
+        $gameRoundID = Str::after($transactionDTO->roundID, 'hg5-');
 
-        return $data->where('gameroundid', $transactionDTO->roundID);
+        return $data->where('gameroundid', $gameRoundID);
     }
 
     public function getGameList(ICredentials $credentials): Collection
