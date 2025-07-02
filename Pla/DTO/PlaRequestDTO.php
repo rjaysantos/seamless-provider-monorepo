@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 
 class PlaRequestDTO
 {
-    private const PROVIDER_API_TIMEZONE = 'GMT+0';
-    
     public function __construct(
         public readonly ?string $requestID = null,
         public readonly ?string $playID = null,
