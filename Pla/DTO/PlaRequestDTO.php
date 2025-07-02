@@ -16,11 +16,9 @@ class PlaRequestDTO
 
     public static function fromGetBalanceRequest(Request $request): self
     {
-        $playID = Str::after($request->username, '_');
-
         return new self(
             requestId: $request->requestId,
-            playID: strtolower($playID),
+            playID: strtolower(Str::after($request->username, '_')),
             username: $request->username,
             token: $request->externalToken
         );
