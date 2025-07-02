@@ -1044,12 +1044,11 @@ class Hg5ServiceTest extends TestCase
     public function test_authenticate_mockWallet_balance()
     {
         $requestDTO = new Hg5RequestDTO(
-            bearerToken: 'testAuthToken',
+            authToken: 'testAuthToken',
             playID: 'testPlayID',
             agentID: 111,
             token: 'testToken'
         );
-
 
         $stubRepository = $this->createMock(Hg5Repository::class);
         $stubRepository->method('getPlayerByToken')
@@ -1071,20 +1070,13 @@ class Hg5ServiceTest extends TestCase
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('balance')
-            ->with(
-                credentials: $stubProviderCredentials,
-                playID: 'testPlayID'
-            )
+            ->with(credentials: $stubProviderCredentials, playID: 'testPlayID')
             ->willReturn([
                 'credit' => 1000,
                 'status_code' => 2100
             ]);
 
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $mockWallet
-        );
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $mockWallet);
         $service->authenticate(requestDTO: $requestDTO);
     }
 
