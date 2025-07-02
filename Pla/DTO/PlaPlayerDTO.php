@@ -15,6 +15,7 @@ class PlaPlayerDTO extends PlayerDTO
         public readonly ?string $playID = null,
         public readonly ?string $username = null,
         public readonly ?string $currency = null,
+        public readonly ?string $providerUserID = null,
         public readonly ?string $token = null,
     ) {}
 
