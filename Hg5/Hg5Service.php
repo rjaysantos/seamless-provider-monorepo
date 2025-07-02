@@ -337,7 +337,7 @@ class Hg5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        if ($requestDTO->bearerToken !== $credentials->getAuthorizationToken())
+        if ($requestDTO->authToken !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
         if ($requestDTO->agentID !== $credentials->getAgentID())

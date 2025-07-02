@@ -2156,7 +2156,7 @@ class Hg5ServiceTest extends TestCase
     public function test_wager_mockWallet_balance()
     {
         $requestDTO = new Hg5RequestDTO(
-            bearerToken: 'testAuthToken',
+            authToken: 'testAuthToken',
             playID: 'testPlayID',
             agentID: 111,
             amount: 200,
@@ -2214,7 +2214,7 @@ class Hg5ServiceTest extends TestCase
     public function test_wager_mockWalletReport_makeArcadeReport()
     {
         $requestDTO = new Hg5RequestDTO(
-            bearerToken: 'testAuthToken',
+            authToken: 'testAuthToken',
             playID: 'testPlayID',
             agentID: 111,
             amount: 200,
@@ -2276,7 +2276,7 @@ class Hg5ServiceTest extends TestCase
     public function test_wager_mockWallet_wager()
     {
         $requestDTO = new Hg5RequestDTO(
-            bearerToken: 'testAuthToken',
+            authToken: 'testAuthToken',
             playID: 'testPlayID',
             agentID: 111,
             amount: 200,
