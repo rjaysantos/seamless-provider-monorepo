@@ -74,21 +74,9 @@ class PlaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
-    private function validateToken(PlaRequestDTO $requestDTO, ?object $player): void
-    {
-        $player = $this->repository->getPlayerByPlayIDToken(
-            playID: $player->playID,
-            token: $player->token
-        );
-
-        if (is_null($player) === true)
-            throw new InvalidTokenException(requestDTO: $requestDTO);
-    }
-
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $player = $requestDTO->playID == null ? null : $this->repository
-            ->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
