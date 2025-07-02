@@ -167,7 +167,7 @@ class PlaService
         if (is_null($existingWagerTransaction) === false)
             return $balance;
 
-        if ($balance < $requestDTO->amount)
+        if ($balance < $wagerTransactionDTO->betAmount)
             throw new InsufficientFundException(requestDTO: $requestDTO);
 
         $this->validateToken(requestDTO: $requestDTO, playerDTO: $player);
