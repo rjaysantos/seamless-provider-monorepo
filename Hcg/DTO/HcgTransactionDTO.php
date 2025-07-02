@@ -23,7 +23,7 @@ class HcgTransactionDTO extends TransactionDTO
     ): self {   
 
         return new self(
-            extID: $extID,
+            extID: "wagerpayout-{$extID}",
             roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
