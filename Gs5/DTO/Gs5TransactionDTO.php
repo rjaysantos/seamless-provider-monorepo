@@ -66,7 +66,7 @@ class Gs5TransactionDTO extends TransactionDTO
             currency: $wagerTransactionDTO->currency,
             gameID: $wagerTransactionDTO->gameID,
             betWinlose: $wagerTransactionDTO->betAmount,
-            dateTime: Carbon::now()->format('Y-m-d H:i:s'),
+            dateTime: $wagerTransactionDTO->dateTime,
         );
     }
 }
