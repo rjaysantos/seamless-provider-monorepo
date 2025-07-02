@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 
 class PlaResponse
 {
@@ -107,16 +108,16 @@ class PlaResponse
         ]);
     }
 
-    public function gameRoundResult(Request $request, float $balance): JsonResponse
+    public function gameRoundResult(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
-        $transactionCode = is_null($request->pay) === true ?
-            Str::substr($request->requestId, 0, 128) : $request->pay['transactionCode'];
+        $transactionCode = ($requestDTO->transactionType === 'LOSE') ?
+            Str::substr($requestDTO->requestID, 0, 128) : $requestDTO->transactionID;
 
-        $transactionDate = is_null($request->pay) === true ?
-            $this->getDateTimeNow() : $request->pay['transactionDate'];
+        $transactionDate = ($requestDTO->transactionType === 'LOSE') ?
+            $this->getDateTimeNow() : $requestDTO->dateTime;
 
         return response()->json(data: [
-            "requestId" => $request->requestId,
+            "requestId" => $requestDTO->requestID,
             'externalTransactionCode' => $transactionCode,
             'externalTransactionDate' => $transactionDate,
             "balance" => [

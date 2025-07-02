@@ -6,6 +6,7 @@ use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
@@ -97,7 +98,7 @@ class PlaController extends AbstractCasinoController
     {
         $this->validateProviderRequest(request: $request, rules: [
             'requestId' => 'required|string',
-            'username' => 'required|string',
+            'username' => 'required|string|regex:/_/',
             'gameRoundCode' => 'required|string',
             'pay' => 'sometimes|array',
             'pay.transactionCode' => 'required_with:pay|string',
@@ -108,12 +109,14 @@ class PlaController extends AbstractCasinoController
             'gameCodeName' => 'required|string',
         ]);
 
-        if (is_null($request->pay) === false && $request->pay['type'] === 'REFUND')
+        $requestDTO = PlaRequestDTO::fromGameRoundResultRequest(request: $request);
+
+        if ($requestDTO->transactionType === 'REFUND')
             $balance = $this->service->refund(request: $request);
         else
-            $balance = $this->service->settle(request: $request);
+            $balance = $this->service->settle(requestDTO: $requestDTO);
 
-        return $this->response->gameRoundResult(request: $request, balance: $balance);
+        return $this->response->gameRoundResult(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function visual(Request $request)
