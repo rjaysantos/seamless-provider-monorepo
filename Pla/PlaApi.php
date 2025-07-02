@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Providers\Pla\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaTransactionDTO;
 
 class PlaApi
 {
@@ -56,10 +57,10 @@ class PlaApi
         return $response->data->url;
     }
     
-    public function gameRoundStatus(ICredentials $credentials, string $transactionID): string
+    public function gameRoundStatus(ICredentials $credentials, PlaTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'game_round' => $transactionID,
+            'game_round' => $transactionDTO->extID,
             'timezone' => 'Asia/Kuala_Lumpur'
         ];
 

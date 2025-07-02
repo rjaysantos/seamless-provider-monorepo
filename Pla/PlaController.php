@@ -115,17 +115,4 @@ class PlaController extends AbstractCasinoController
 
         return $this->response->gameRoundResult(request: $request, balance: $balance);
     }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR'
-        ]);
-
-        $visualUrl = $this->service->getBetDetail(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
-    }
 }
