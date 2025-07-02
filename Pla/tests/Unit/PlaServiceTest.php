@@ -367,7 +367,8 @@ class PlaServiceTest extends TestCase
 
         $requestDTO = new PlaRequestDTO(
             requestId: 'TEST_requestToken',
-            username: 'TEST_PLAYERID',
+            playID: 'playerid001',
+            username: 'TEST_PLAYERID001',
             token: 'TEST_authToken'
         );
 
