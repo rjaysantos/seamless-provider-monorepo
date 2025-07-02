@@ -2,9 +2,10 @@
 
 namespace Providers\Pla;
 
-use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Facades\DB;
 use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class PlaRepository extends AbstractProviderRepository
 {
@@ -23,11 +24,13 @@ class PlaRepository extends AbstractProviderRepository
             ->first();
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?PlaTransactionDTO
     {
-        return DB::table('pla.reports')
-            ->where('trx_id', $trxID)
+        $data = $this->read->table('pla.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : PlaTransactionDTO::fromDB(dbData: $data);
     }
 
     public function getTransactionByRefID(string $refID): ?object
