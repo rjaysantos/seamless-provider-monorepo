@@ -68,14 +68,6 @@ class PlaService
         return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
     }
 
-    private function validateToken(PlaRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): void
-    {
-        $player = $this->repository->getPlayerByPlayIDToken(playID: $playerDTO->playID, token: $requestDTO->token);
-
-        if (is_null($player) === true)
-            throw new InvalidTokenException(requestDTO: $requestDTO);
-    }
-
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
@@ -99,11 +91,12 @@ class PlaService
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): string
+    public function authenticate(PlaRequestDTO $requestDTO): string
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         return $player->currency;
     }

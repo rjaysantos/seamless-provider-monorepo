@@ -36,13 +36,12 @@ class PlaController extends AbstractCasinoController
             'externalToken' => 'required|string'
         ]);
 
-        $currency = $this->service->authenticate(request: $request);
+        $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(
-            requestId: $request->requestId,
-            playID: $request->username,
-            currency: $currency
-        );
+        $currency = $this->service->authenticate(requestDTO: $requestDTO);
+        
+        return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
+        
     }
 
     public function getBalance(Request $request)

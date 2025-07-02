@@ -12,7 +12,6 @@ class PlaAuthenticateTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -22,13 +21,8 @@ class PlaAuthenticateTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => $currency
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => $currency,
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
         $payload = [
@@ -57,13 +51,8 @@ class PlaAuthenticateTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => $currency
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => $currency,
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
         $payload = [
@@ -174,12 +163,6 @@ class PlaAuthenticateTest extends TestCase
             'play_id' => 'player001',
             'username' => 'testPlayer',
             'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
         ]);
 
         $payload = [
