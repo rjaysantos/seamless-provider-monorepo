@@ -69,7 +69,6 @@ class PlaRepository extends AbstractProviderRepository
     {
         $this->write->table('pla.players')
             ->where('play_id', $playID)
-            ->where('token', $token)
             ->update(['token' => null]);
     }
 
