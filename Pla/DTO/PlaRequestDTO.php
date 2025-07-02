@@ -13,7 +13,7 @@ class PlaRequestDTO
         public readonly ?string $refID = null,
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
-        public readonly ?string $amount = null,
+        public readonly ?float $amount = null,
         public readonly ?string $gameID = null,
         public readonly ?string $requestID = null
 
@@ -27,7 +27,7 @@ class PlaRequestDTO
             refID: $request->gameRoundCode,
             roundID: $request->transactionCode,
             dateTime: $request->transactionDate,
-            amount: $request->amount,
+            amount: (float) $request->amount,
             gameID: $request->gameCodeName,
             requestID: $request->requestId,
         );

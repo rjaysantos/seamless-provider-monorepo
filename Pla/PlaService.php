@@ -78,7 +78,7 @@ class PlaService
 
     private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $player = $requestDTO->playID == null ? null : $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
@@ -167,7 +167,7 @@ class PlaService
         if (is_null($existingWagerTransaction) === false)
             return $balance;
 
-        if ($balance < (float) $requestDTO->amount)
+        if ($balance < $requestDTO->amount)
             throw new InsufficientFundException(requestDTO: $requestDTO);
 
         $this->validateToken(requestDTO: $requestDTO, playerDTO: $player);

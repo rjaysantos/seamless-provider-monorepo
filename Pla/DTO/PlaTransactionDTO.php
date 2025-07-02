@@ -37,8 +37,8 @@ class PlaTransactionDTO extends TransactionDTO
             webID: self::getWebID(playID: $playerDTO->playID),
             currency: $playerDTO->currency,
             gameID: $requestDTO->gameID,
-            betValid: (float) $requestDTO->amount,
-            betAmount: (float) $requestDTO->amount,
+            betValid: $requestDTO->amount,
+            betAmount: $requestDTO->amount,
             dateTime: self::convertProviderDateTime(
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE
