@@ -60,7 +60,7 @@ class PlaApi
     public function gameRoundStatus(ICredentials $credentials, PlaTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'game_round' => $transactionDTO->extID,
+            'game_round' => $transactionDTO->roundID,
             'timezone' => 'Asia/Kuala_Lumpur'
         ];
 
