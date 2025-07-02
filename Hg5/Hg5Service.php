@@ -117,12 +117,12 @@ class Hg5Service
         if (is_null($player) === true)
             throw new PlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
-
         $transaction = $this->repository->getTransactionByRoundID(roundID: $casinoRequestDTO->roundID);
 
         if (is_null($transaction) === true)
             throw new TransactionNotFoundException;
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         return $this->api->getOrderDetailLink(credentials: $credentials, transactionDTO: $transaction);
     }
