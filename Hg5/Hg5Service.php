@@ -275,18 +275,16 @@ class Hg5Service
 
             $this->repository->createTransaction(transactionDTO: $transactionDTO);
 
-            $betID = $this->shortenBetID(betID: $transactionDTO->roundID);
-
             if ($this->isSlotGame(credentials: $credentials, gameCode: $transactionDTO->gameID) === true)
                 $report = $this->walletReport->makeSlotReport(
-                    transactionID: $betID,
+                    transactionID: $transactionDTO->walletBetID,
                     gameCode: $transactionDTO->gameID,
                     betTime: $transactionDTO->dateTime,
                     opt: json_encode(['txn_id' => $transactionDTO->roundID])
                 );
             else
                 $report = $this->walletReport->makeArcadeReport(
-                    transactionID: $betID,
+                    transactionID: $transactionDTO->walletBetID,
                     gameCode: $transactionDTO->gameID,
                     betTime: $transactionDTO->dateTime,
                     opt: json_encode(['txn_id' => $transactionDTO->roundID])
