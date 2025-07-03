@@ -7,10 +7,13 @@ use Carbon\Carbon;
 use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
@@ -34,97 +37,76 @@ class PlaService
         private Randomizer $randomizer,
         private IWallet $wallet,
         private WalletReport $report,
-    ) {
+    ) {}
+
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
+    {
+        $player = PlaPlayerDTO::fromPlayRequest(casinoRequest: $casinoRequest);
+
+        $this->repository->createOrUpdatePlayer(playerDTO: $player);
+
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
+        return $this->api->getGameLaunchUrl(credentials: $credentials, requestDTO: $casinoRequest, playerDTO: $player);
     }
 
-    public function getLaunchUrl(Request $request): string
+    public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->playId);
-
-        if (is_null($player) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                currency: $request->currency,
-                username: $request->username
-            );
-
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
-
-        $token = "{$credentials->getKioskName()}_{$this->randomizer->createToken()}";
-
-        $this->repository->createOrUpdateToken(playID: $request->playId, token: $token);
-
-        return $this->api->getGameLaunchUrl(credentials: $credentials, request: $request, token: $token);
-    }
-
-    public function getBetDetail(Request $request): string
-    {
-        $player = $this->repository->getPlayerByPlayID(playID: $request->play_id);
+        $player = $this->repository->getPlayerByPlayID(playID: $casinoRequest->playID);
 
         if (is_null($player) === true)
             throw new CasinoPlayerNotFoundException;
 
-        $transaction = $this->repository->getTransactionByTrxID(trxID: $request->bet_id);
+        $transaction = $this->repository->getTransactionByExtID(extID: $casinoRequest->extID);
 
         if (is_null($transaction) === true)
             throw new CasinoTransactionNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->gameRoundStatus(credentials: $credentials, transactionID: $transaction->ref_id);
+        return $this->api->gameRoundStatus(credentials: $credentials, transactionDTO: $transaction);
     }
 
-    private function validateToken(Request $request, ?object $player): void
+    private function getPlayerDetails(PlaRequestDTO $requestDTO): object
     {
-        $playGame = $this->repository->getPlayGameByPlayIDToken(
-            playID: $player->play_id,
-            token: $request->externalToken
-        );
-
-        if (is_null($playGame) === true)
-            throw new InvalidTokenException(request: $request);
-    }
-
-    private function getPlayerDetails(Request $request): object
-    {
-        $playID = explode('_', $request->username)[1] ?? null;
-
-        $player = $playID == null ? null : $this->repository->getPlayerByPlayID(playID: strtolower($playID));
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(request: $request);
+            throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
 
         return $player;
     }
 
-    private function getPlayerBalance(ICredentials $credentials, Request $request, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, PlaRequestDTO $requestDTO, string $playID): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
         if ($walletResponse['status_code'] !== 2100)
-            throw new WalletErrorException($request);
+            throw new WalletErrorException($requestDTO);
 
         return $walletResponse['credit'];
     }
 
-    public function authenticate(Request $request): string
+    public function authenticate(PlaRequestDTO $requestDTO): string
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         return $player->currency;
     }
 
-    public function getBalance(Request $request): float
+    public function getBalance(PlaRequestDTO $requestDTO): float
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        return $this->getPlayerBalance(credentials: $credentials, requestDTO: $requestDTO, playID: $player->playID);
     }
 
     public function logout(Request $request): void

@@ -20,6 +20,14 @@ class HcgRequestDTO
         return new self(playID: $request->uid);
     }
 
+    public static function fromCancelSettlementRequest(Request $request): self
+    {
+        return new self(
+            playID: $request->uid,
+            roundID: $request->orderNo
+        );
+    }
+
     public static function fromSettlementRequest(Request $request): self
     {
         return new self(

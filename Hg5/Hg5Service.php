@@ -8,6 +8,7 @@ use Providers\Hg5\Hg5Api;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use Providers\Hg5\Hg5Repository;
 use Providers\Hg5\Hg5Credentials;
 use Illuminate\Support\Collection;
@@ -41,29 +42,15 @@ class Hg5Service
         private WalletReport $walletReport
     ) {}
 
-    public function getLaunchUrl(Request $request): string
+    public function getLaunchUrl(CasinoRequestDTO $casinoRequest): string
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playId);
+        $player = Hg5PlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
-        if (is_null($playerData) === true)
-            $this->repository->createPlayer(
-                playID: $request->playId,
-                username: $request->username,
-                currency: $request->currency
-            );
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $request->currency);
+        $response = $this->api->getGameLink(credentials: $credentials, playerDTO: $player, requestDTO: $casinoRequest);
 
-        $response = $this->api->getGameLink(
-            credentials: $credentials,
-            playID: $request->playId,
-            gameCode: $request->gameId
-        );
-
-        $this->repository->createOrUpdatePlayGame(
-            playID: $request->playId,
-            token: $response->token
-        );
+        $this->repository->createOrUpdatePlayer(playerDTO: $player, token: $response->token);
 
         return $response->url;
     }
@@ -167,7 +154,7 @@ class Hg5Service
 
     private function validatePlayerAccess(Hg5RequestDTO $requestDTO, ICredentials $credentials): void
     {
-        if ($requestDTO->bearerToken !== $credentials->getAuthorizationToken())
+        if ($requestDTO->authToken !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
         if ($requestDTO->agentID !== $credentials->getAgentID())
@@ -184,28 +171,22 @@ class Hg5Service
         return $balanceResponse['credit'];
     }
 
-    public function getBalance(Request $request): object
+    public function balance(Hg5RequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playerId);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->validatePlayerAccess(
-            request: $request,
-            credentials: $credentials
-        );
+        $this->validatePlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $request->playerId
-        );
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $player
         ];
     }
 

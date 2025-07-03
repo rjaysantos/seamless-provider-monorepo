@@ -3,15 +3,12 @@
 namespace Providers\Ors;
 
 use Exception;
-use Carbon\Carbon;
 use Providers\Ors\OrsApi;
-use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use Providers\Ors\OgSignature;
 use Providers\Ors\OrsRepository;
 use Providers\Ors\OrsCredentials;
-use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsRequestDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
@@ -30,8 +27,6 @@ use Providers\Ors\Exceptions\TransactionNotFoundException as ProviderTransaction
 
 class OrsService
 {
-    private const PROVIDER_API_TIMEZONE = 'GMT+8';
-
     public function __construct(
         private OrsRepository $repository,
         private OrsCredentials $credentials,
@@ -49,7 +44,7 @@ class OrsService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->enterGame(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
+        return $this->api->gamesLaunch(credentials: $credentials, playerDTO: $player, casinoRequest: $casinoRequest);
     }
 
     public function getBetDetailUrl(CasinoRequestDTO $casinoRequest): string
@@ -66,7 +61,7 @@ class OrsService
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->api->getBettingRecords(credentials: $credentials, transactionDTO: $transaction);
+        return $this->api->transactionHistory(credentials: $credentials, transactionDTO: $transaction);
     }
 
     private function verifyPlayerAccess(OrsRequestDTO $requestDTO, ICredentials $credentials): void
@@ -193,45 +188,49 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function rollback(Request $request): float
+    public function cancel(OrsRequestDTO $requestDTO): float
     {
-        $playerData = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->verifyPlayerAccess(request: $request, credentials: $credentials);
+        $this->verifyPlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        foreach ($request->records as $record) {
-            $betTransaction = $this->repository->getBetTransactionByTrxID(transactionID: $record['transaction_id']);
+        foreach ($requestDTO->transactions as $transaction) {
+            $existingWagerTransaction = $this->repository->getTransactionByExtID(
+                extID: "wager-{$transaction->roundID}"
+            );
 
-            if (is_null($betTransaction) === true)
+            if (is_null($existingWagerTransaction) === true)
                 throw new ProviderTransactionNotFoundException;
+
+            $wagerTransactions[] = $existingWagerTransaction;
         }
 
-        foreach ($request->records as $record) {
-            try {
-                DB::connection('pgsql_write')->beginTransaction();
+        foreach ($wagerTransactions as $wagerTransaction) {
+            $rollbackTransactionDTO = OrsTransactionDTO::cancel(
+                wagerTransactionDTO: $wagerTransaction,
+                timestamp: $requestDTO->dateTime
+            );
 
-                $this->repository->cancelBetTransaction(
-                    transactionID: $record['transaction_id'],
-                    cancelTme: Carbon::parse($request->called_at, self::PROVIDER_API_TIMEZONE)
-                        ->setTimezone('GMT+8')
-                        ->format('Y-m-d H:i:s')
-                );
+            try {
+                $this->repository->beginTransaction();
+
+                $this->repository->createTransaction(transactionDTO: $rollbackTransactionDTO);
 
                 $walletResponse = $this->wallet->cancel(
                     credentials: $credentials,
-                    transactionID: "cancelBet-{$record['transaction_id']}",
-                    amount: $record['amount'],
-                    transactionIDToCancel: "wager-{$record['transaction_id']}"
+                    transactionID: $rollbackTransactionDTO->extID,
+                    amount: $rollbackTransactionDTO->winAmount,
+                    transactionIDToCancel: $wagerTransaction->extID
                 );
 
                 if ($walletResponse['status_code'] !== 2100)
                     throw new WalletErrorException;
 
-                DB::connection('pgsql_write')->commit();
+                $this->repository->commit();
             } catch (Exception $e) {
-                DB::connection('pgsql_write')->rollBack();
+                $this->repository->rollback();
                 throw $e;
             }
         }
@@ -239,7 +238,7 @@ class OrsService
         return $walletResponse['credit_after'];
     }
 
-    public function settle(OrsRequestDTO $requestDTO): float
+    public function payout(OrsRequestDTO $requestDTO): float
     {
         $player = $this->getPlayerDetails($requestDTO);
 

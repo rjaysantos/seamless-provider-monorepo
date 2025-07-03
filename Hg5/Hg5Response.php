@@ -10,12 +10,12 @@ use Illuminate\Support\Facades\View;
 
 class Hg5Response
 {
-    public function casinoSuccess(string $data): JsonResponse
+    public function casinoSuccess(string $url): JsonResponse
     {
         return response()->json([
             'success' => true,
             'code' => 200,
-            'data' => $data,
+            'data' => $url,
             'error' => null
         ]);
     }
@@ -26,12 +26,12 @@ class Hg5Response
         return View::file($path, $data);
     }
 
-    public function balance(object $data): JsonResponse
+    public function balance(float $balance, Hg5PlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'data' => [
-                'balance' => $data->balance,
-                'currency' => $data->currency
+                'balance' => $balance,
+                'currency' => $playerDTO->currency
             ],
             'status' => [
                 'code' => '0',

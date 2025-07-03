@@ -2,10 +2,9 @@
 
 namespace Providers\Ors;
 
-use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
-use App\Repositories\AbstractProviderRepository;
 use Providers\Ors\DTO\OrsTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class OrsRepository extends AbstractProviderRepository
 {
@@ -40,48 +39,6 @@ class OrsRepository extends AbstractProviderRepository
             ->first();
 
         return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
-    }
-
-    public function getBetTransactionByTrxID(string $transactionID): ?object
-    {
-        return DB::table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->first();
-    }
-
-    public function getPlayerByPlayIDToken(string $playID, string $token): ?OrsPlayerDTO
-    {
-        $data = $this->read->table('ors.players')
-            ->where('play_id', $playID)
-            ->where('token', $token)
-            ->first();
-
-        return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
-    }
-
-    public function cancelBetTransaction(string $transactionID, string $cancelTme): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->where('trx_id', $transactionID)
-            ->where('updated_at', null)
-            ->update([
-                'updated_at' => $cancelTme
-            ]);
-    }
-
-    public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->updateOrInsert(
-                ['trx_id' => $transactionID],
-                [
-                    'win_amount' => $winAmount,
-                    'updated_at' => $settleTime
-                ]
-            );
     }
 
     public function createTransaction(OrsTransactionDTO $transactionDTO)

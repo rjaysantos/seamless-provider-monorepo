@@ -4,7 +4,9 @@ namespace Providers\Hg5;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use App\DTO\CasinoRequestDTO;
 use Illuminate\Support\Collection;
+use Providers\Hg5\DTO\Hg5PlayerDTO;
 use App\Libraries\LaravelHttpClient;
 use Illuminate\Support\Facades\Validator;
 use Providers\Hg5\Contracts\ICredentials;
@@ -13,9 +15,7 @@ use Providers\Hg5\Exceptions\ThirdPartyApiErrorException as ProviderThirdPartyAp
 
 class Hg5Api
 {
-    public function __construct(private LaravelHttpClient $http)
-    {
-    }
+    public function __construct(private LaravelHttpClient $http) {}
 
     private function validateResponse(object $response, array $rules): void
     {
@@ -28,11 +28,14 @@ class Hg5Api
             throw new ThirdPartyApiErrorException;
     }
 
-    public function getGameLink(ICredentials $credentials, string $playID, string $gameCode): object
-    {
+    public function getGameLink(
+        ICredentials $credentials,
+        Hg5PlayerDTO $playerDTO,
+        CasinoRequestDTO $requestDTO
+    ): object {
         $apiRequest = [
-            'account' => $playID,
-            'gamecode' => $gameCode
+            'account' => $playerDTO->playID,
+            'gamecode' => $requestDTO->gameID
         ];
 
         $apiHeader = ['Authorization' => $credentials->getAuthorizationToken()];

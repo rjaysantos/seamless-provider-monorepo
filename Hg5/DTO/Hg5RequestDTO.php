@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 class Hg5RequestDTO
 {
     public function __construct(
-        public readonly ?string $bearerToken = null,
+        public readonly ?string $authToken = null,
         public readonly ?string $playID = null,
         public readonly ?int $agentID = null,
         public readonly ?string $token = null,
@@ -16,10 +16,19 @@ class Hg5RequestDTO
     public static function fromAuthenticateRequest(Request $request): self
     {
         return new self(
-            bearerToken: $request->header('Authorization'),
+            authToken: $request->header('Authorization'),
             playID: $request->playerId,
             agentID: $request->agentId,
             token: $request->launchToken
+        );
+    }
+
+    public static function fromBalanceRequest(Request $request): self
+    {
+        return new self(
+            authToken: $request->header('Authorization'),
+            playID: $request->playerId,
+            agentID: $request->agentId,
         );
     }
 }
