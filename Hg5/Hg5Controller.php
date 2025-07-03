@@ -228,7 +228,9 @@ class Hg5Controller extends AbstractCasinoController
             'eventTime' => 'required|string'
         ]);
 
-        $balance = $this->service->multiplayerBet(request: $request);
+        $requestDTO = Hg5RequestDTO::fromRolloutRequest(request: $request);
+
+        $balance = $this->service->multiplayerBet(requestDTO: $requestDTO);
 
         return $this->response->multiplayerTransactionResponse(
             balance: $balance,
