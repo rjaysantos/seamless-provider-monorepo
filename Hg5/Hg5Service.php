@@ -322,7 +322,7 @@ class Hg5Service
         return $walletResponse['credit_after'];
     }
 
-    private function betTransaction(Hg5RequestDTO $requestDTO): float
+    private function betTransaction(Hg5RequestDTO $requestDTO, string $authToken): float
     {
         $playerDTO = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -331,7 +331,7 @@ class Hg5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDTO->currency);
 
-        if ($requestDTO->authToken !== $credentials->getAuthorizationToken())
+        if ($authToken !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
         if ($requestDTO->agentID !== $credentials->getAgentID())
@@ -462,10 +462,10 @@ class Hg5Service
 
     public function multipleBet(Hg5RequestDTO $requestDTO): array
     {
-        foreach ($requestDTO->requestDatas as $requestData) {
+        foreach ($requestDTO->transactions as $transaction) {
 
             try {
-                $balance = $this->betTransaction(requestDTO: $requestData);
+                $balance = $this->betTransaction(requestDTO: $transaction, authToken: $requestDTO->authToken);
 
                 $data = [
                     'code' => '0',
@@ -480,10 +480,10 @@ class Hg5Service
             }
 
             $result = array_merge($data, [
-                'currency' => $requestData->currency,
-                'playerId' => $requestData->playID,
-                'agentId' => $requestData->agentID,
-                'gameRound' => $requestData->roundID
+                'currency' => $transaction->currency,
+                'playerId' => $transaction->playID,
+                'agentId' => $transaction->agentID,
+                'gameRound' => $transaction->roundID
             ]);
 
             $totalData[] = (object) $result;

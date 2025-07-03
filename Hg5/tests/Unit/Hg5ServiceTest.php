@@ -3094,9 +3094,9 @@ class Hg5ServiceTest extends TestCase
     public function test_multipleBet_mockWallet_balance()
     {
         $requestDTO = new Hg5RequestDTO(
-            requestDatas: [
+            authToken: 'validToken',
+            transactions: [
                 new Hg5RequestDTO(
-                    authToken: 'validToken',
                     playID: 'testPlayID1u027',
                     agentID: 111,
                     gameID: 'testGameCode',
@@ -3159,9 +3159,9 @@ class Hg5ServiceTest extends TestCase
     public function test_multipleBet_mockWalletReport_makeArcadeReport()
     {
         $requestDTO = new Hg5RequestDTO(
-            requestDatas: [
+            authToken: 'validToken',
+            transactions: [
                 new Hg5RequestDTO(
-                    authToken: 'validToken',
                     playID: 'testPlayID1u027',
                     agentID: 111,
                     gameID: 'testGameCode',
@@ -3226,9 +3226,9 @@ class Hg5ServiceTest extends TestCase
     public function test_multipleBet_mockWallet_wager()
     {
         $requestDTO = new Hg5RequestDTO(
-            requestDatas: [
+            authToken: 'validToken',
+            transactions: [
                 new Hg5RequestDTO(
-                    authToken: 'validToken',
                     playID: 'testPlayID1u027',
                     agentID: 111,
                     gameID: 'testGameCode',
