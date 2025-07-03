@@ -117,7 +117,7 @@ class PlaLogoutTest extends TestCase
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
             'error' => [
-                'code' => 'CONSTRAINT_VIOLATION'
+                'code' => 'ERR_PLAYER_NOT_FOUND'
             ]
         ]);
     }

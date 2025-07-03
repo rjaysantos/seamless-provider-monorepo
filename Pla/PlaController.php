@@ -93,7 +93,7 @@ class PlaController
     {
         $this->validateProviderRequest(request: $request, rules: [
             'requestId' => 'required|string',
-            'username' => 'required|string|regex:/^[A-Z]{5}_[A-Z0-9]+$/',
+            'username' => 'required|string',
             'externalToken' => 'required|string'
         ]);
 

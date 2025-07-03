@@ -121,7 +121,7 @@ class PlaService
         if ($player->token !== $requestDTO->token)
             throw new InvalidTokenException(requestDTO: $requestDTO);
 
-        $this->repository->resetPlayerToken($player->playID, $player->token);
+        $this->repository->resetPlayerToken($player->playID);
     }
 
     private function makeReport(

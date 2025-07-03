@@ -65,7 +65,7 @@ class PlaRepository extends AbstractProviderRepository
             );
     }
 
-    public function resetPlayerToken(string $playID, string $token): void
+    public function resetPlayerToken(string $playID): void
     {
         $this->write->table('pla.players')
             ->where('play_id', $playID)
