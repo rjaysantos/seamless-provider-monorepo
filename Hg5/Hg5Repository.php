@@ -9,11 +9,13 @@ use Providers\Hg5\DTO\Hg5PlayerDTO;
 
 class Hg5Repository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?Hg5PlayerDTO
     {
-        return DB::table('hg5.players')
+        $data = $this->read->table('hg5.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : Hg5PlayerDTO::fromDB(dbData: $data);
     }
 
     public function getPlayerByToken(string $token): ?Hg5PlayerDTO
