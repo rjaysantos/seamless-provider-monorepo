@@ -10,6 +10,7 @@ use App\Http\Controllers\AbstractCasinoController;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Hg5\Exceptions\InvalidProviderRequestException;
+use Wallet\V1\InSys\CheckBalance\CheckBalanceBasic\Req;
 
 class Hg5Controller extends AbstractCasinoController
 {
@@ -165,13 +166,11 @@ class Hg5Controller extends AbstractCasinoController
             'eventTime' => 'required|string'
         ]);
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = Hg5RequestDTO::fromDepositRequest(request: $request);
 
-        return $this->response->singleTransactionResponse(
-            balance: $balance,
-            currency: $request->currency,
-            gameRound: $request->gameRound
-        );
+        $balance = $this->service->payout(requestDTO: $requestDTO);
+
+        return $this->response->singleTransactionResponse(balance: $balance, requestDTO: $requestDTO);
     }
 
     public function multipleWithdraw(Request $request)

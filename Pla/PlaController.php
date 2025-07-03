@@ -40,9 +40,8 @@ class PlaController extends AbstractCasinoController
         $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
         $currency = $this->service->authenticate(requestDTO: $requestDTO);
-        
+
         return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
-        
     }
 
     public function getBalance(Request $request)
@@ -111,7 +110,7 @@ class PlaController extends AbstractCasinoController
             'gameCodeName' => 'required|string',
         ]);
 
-        if (is_null($request->pay) === false && $request->pay['type'] === 'REFUND')
+        if (is_null($request->pay) === payout && $request->pay['type'] === 'REFUND')
             $balance = $this->service->refund(request: $request);
         else
             $balance = $this->service->settle(request: $request);
