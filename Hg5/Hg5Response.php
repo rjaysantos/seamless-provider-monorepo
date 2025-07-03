@@ -26,12 +26,12 @@ class Hg5Response
         return View::file($path, $data);
     }
 
-    public function balance(object $data): JsonResponse
+    public function balance(float $balance, Hg5PlayerDTO $playerDTO): JsonResponse
     {
         return response()->json([
             'data' => [
-                'balance' => $data->balance,
-                'currency' => $data->currency
+                'balance' => $balance,
+                'currency' => $playerDTO->currency
             ],
             'status' => [
                 'code' => '0',

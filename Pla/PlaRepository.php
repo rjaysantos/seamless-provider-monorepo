@@ -2,10 +2,10 @@
 
 namespace Providers\Pla;
 
-use App\Repositories\AbstractProviderRepository;
 use Illuminate\Support\Facades\DB;
 use Providers\Pla\DTO\PlaPlayerDTO;
 use Providers\Pla\DTO\PlaTransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class PlaRepository extends AbstractProviderRepository
 {
