@@ -46,21 +46,20 @@
         </div>
 
         @foreach ($roundData as $roundDetail)
-            <div class="table-row" data-trx-id="{{ $roundDetail['roundID'] }}">
-                <div class="table-cell">{{ $roundDetail['roundID'] }}</div>
-                <div class="table-cell">{{ $roundDetail['bet'] }}</div>
-                <div class="table-cell">{{ $roundDetail['win'] }}</div>
-            </div>
+        <div class="table-row" data-trx-id="{{ $roundDetail['roundID'] }}">
+            <div class="table-cell">{{ $roundDetail['roundID'] }}</div>
+            <div class="table-cell">{{ $roundDetail['bet'] }}</div>
+            <div class="table-cell">{{ $roundDetail['win'] }}</div>
+        </div>
         @endforeach
     </div>
 
     <script>
         const BASE_URL = "{{ request()->getSchemeAndHttpHost() }}";
         const playID = "{{ $playID }}";
-        const currency = "{{ $currency }}";
 
-        $(document).ready(function () {
-            $('.table-row').not('.table-header').on('click', function () {
+        $(document).ready(function() {
+            $('.table-row').not('.table-header').on('click', function() {
                 const trxID = $(this).data('trx-id');
                 const $clickedRow = $(this);
 
@@ -72,9 +71,8 @@
                     data: {
                         trxID: trxID,
                         playID: playID,
-                        currency: currency
                     },
-                    success: function (response) {
+                    success: function(response) {
                         let content = '';
 
                         if (response.success && response.data) {
@@ -100,7 +98,7 @@
 
                         $clickedRow.after(content);
                     },
-                    error: function (xhr, status, error) {
+                    error: function(xhr, status, error) {
                         console.log('failed');
                     }
                 });

@@ -2,18 +2,20 @@
 
 namespace Providers\Hg5;
 
-use App\Repositories\AbstractProviderRepository;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
+use App\Repositories\AbstractProviderRepository;
 
 class Hg5Repository extends AbstractProviderRepository
 {
-    public function getPlayerByPlayID(string $playID): ?object
+    public function getPlayerByPlayID(string $playID): ?Hg5PlayerDTO
     {
-        return DB::table('hg5.players')
+        $data = $this->read->table('hg5.players')
             ->where('play_id', $playID)
             ->first();
+
+        return $data == null ? null : Hg5PlayerDTO::fromDB(dbData: $data);
     }
 
     public function getPlayerByToken(string $token): ?Hg5PlayerDTO
@@ -25,11 +27,22 @@ class Hg5Repository extends AbstractProviderRepository
         return $data == null ? null : Hg5PlayerDTO::fromDB(dbData: $data);
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?Hg5TransactionDTO
     {
-        return DB::table('hg5.reports')
-            ->where('trx_id', $trxID)
+        $data = $this->read->table('hg5.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : Hg5TransactionDTO::fromDB(dbData: $data);
+    }
+
+    public function getTransactionByRoundID(string $roundID): ?Hg5TransactionDTO
+    {
+        $data = $this->read->table('hg5.reports')
+            ->where('round_id', $roundID)
+            ->first();
+
+        return $data == null ? null : Hg5TransactionDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void

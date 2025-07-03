@@ -4,10 +4,10 @@ namespace Providers\Hg5;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use App\DTO\CasinoRequestDTO;
 use Illuminate\Support\Collection;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use App\Libraries\LaravelHttpClient;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Hg5\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
@@ -60,11 +60,11 @@ class Hg5Api
         ];
     }
 
-    public function getOrderDetailLink(ICredentials $credentials, string $transactionID, string $playID): string
+    public function getOrderDetailLink(ICredentials $credentials, Hg5TransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'roundid' => Str::after($transactionID, 'hg5-'),
-            'account' => $playID
+            'roundid' => Str::after($transactionDTO->roundID, 'hg5-'),
+            'account' => $transactionDTO->playID
         ];
 
         $apiHeader = ['Authorization' => $credentials->getAuthorizationToken()];
@@ -84,21 +84,17 @@ class Hg5Api
         return $response->status->message;
     }
 
-    public function getOrderQuery(
-        ICredentials $credentials,
-        string $playID,
-        string $startDate,
-        string $endDate
-    ): Collection {
-        $endDate = Carbon::parse($endDate)
+    public function getOrderQuery(ICredentials $credentials, Hg5TransactionDTO $transactionDTO): Collection
+    {
+        $updatedAt = Carbon::parse($transactionDTO->updatedAt)
             ->addSeconds(5)
             ->format('Y-m-d H:i:s');
 
         $apiRequest = [
-            'starttime' => $startDate,
-            'endtime' => $endDate,
+            'starttime' => $transactionDTO->createdAt,
+            'endtime' => $updatedAt,
             'page' => 1,
-            'account' => $playID
+            'account' => $transactionDTO->playID
         ];
 
         $apiHeader = ['Authorization' => $credentials->getAuthorizationToken()];
@@ -120,7 +116,10 @@ class Hg5Api
             'status.code' => 'required|string'
         ]);
 
-        return collect($response->data->list);
+        $data = collect($response->data->list);
+        $gameRoundID = Str::after($transactionDTO->roundID, 'hg5-');
+
+        return $data->where('gameroundid', $gameRoundID);
     }
 
     public function getGameList(ICredentials $credentials): Collection
