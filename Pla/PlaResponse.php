@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 
 class PlaResponse
 {
@@ -54,29 +55,29 @@ class PlaResponse
         return $currentDateTime->format('Y-m-d H:i:s') . '.' . $milliseconds;
     }
 
-    public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
+    public function authenticate(PlaRequestDTO $requestDTO, string $currency): JsonResponse
     {
         $country = match ($currency) {
-            'IDR'=> 'ID',
-            'PHP'=> 'PH',
-            'VND'=> 'VN',
-            'USD'=> 'US',
-            'THB'=> 'TH',
-            'MYR'=> 'MY',
+            'IDR' => 'ID',
+            'PHP' => 'PH',
+            'VND' => 'VN',
+            'USD' => 'US',
+            'THB' => 'TH',
+            'MYR' => 'MY',
         };
 
         return response()->json(data: [
-            "requestId" => $requestId,
-            "username" => $playID,
+            "requestId" => $requestDTO->requestID,
+            "username" => $requestDTO->username,
             "currencyCode" => config('app.env') === 'PRODUCTION' ? $currency : 'CNY',
             "countryCode" => config('app.env') === 'PRODUCTION' ? $country : 'CN'
         ]);
     }
 
-    public function getBalance(string $requestId, float $balance): JsonResponse
+    public function balance(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
         return response()->json(data: [
-            "requestId" => $requestId,
+            "requestId" => $requestDTO->requestID,
             "balance" => [
                 "real" => $this->formatBalance($balance),
                 "timestamp" => $this->getDateTimeNow()

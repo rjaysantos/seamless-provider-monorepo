@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Providers\Pla\DTO;
 
@@ -9,15 +9,15 @@ class PlaRequestDTO
 {
     public function __construct(
         public readonly ?string $playID = null,
-        public readonly ?string $requestId = null,
+        public readonly ?string $requestID = null,
         public readonly ?string $username = null,
         public readonly ?string $token = null,
-    ){}
+    ) {}
 
     public static function fromAuthenticateRequest(Request $request): self
     {
         return new self(
-            requestId: $request->requestId,
+            requestID: $request->requestId,
             playID: strtolower(Str::after($request->username, '_')),
             username: $request->username,
             token: $request->externalToken
@@ -27,7 +27,7 @@ class PlaRequestDTO
     public static function fromGetBalanceRequest(Request $request): self
     {
         return new self(
-            requestId: $request->requestId,
+            requestID: $request->requestId,
             playID: strtolower(Str::after($request->username, '_')),
             username: $request->username,
             token: $request->externalToken

@@ -97,7 +97,7 @@ class PlaService
         return $player->currency;
     }
 
-    public function getBalance(PlaRequestDTO $requestDTO): float
+    public function balance(PlaRequestDTO $requestDTO): float
     {
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 

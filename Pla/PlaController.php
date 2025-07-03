@@ -8,7 +8,6 @@ use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
 use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController extends AbstractCasinoController
@@ -40,9 +39,11 @@ class PlaController extends AbstractCasinoController
         $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
         $currency = $this->service->authenticate(requestDTO: $requestDTO);
-        
-        return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
-        
+
+        return $this->response->authenticate(
+            requestDTO: $requestDTO,
+            currency: $currency
+        );
     }
 
     public function getBalance(Request $request)
@@ -55,9 +56,9 @@ class PlaController extends AbstractCasinoController
 
         $requestDTO = PlaRequestDTO::fromGetBalanceRequest(request: $request);
 
-        $balance = $this->service->getBalance(requestDTO: $requestDTO);
+        $balance = $this->service->balance(requestDTO: $requestDTO);
 
-        return $this->response->getBalance(requestId: $requestDTO->requestId, balance: $balance);
+        return $this->response->balance(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function healthCheck()

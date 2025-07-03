@@ -13,7 +13,7 @@ class PlayerNotFoundException extends Exception
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestDTO->requestId,
+            'requestId' => $this->requestDTO->requestID,
             'error' => [
                 'code' => 'ERR_PLAYER_NOT_FOUND'
             ]
