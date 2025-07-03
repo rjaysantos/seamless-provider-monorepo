@@ -54,29 +54,29 @@ class PlaResponse
         return $currentDateTime->format('Y-m-d H:i:s') . '.' . $milliseconds;
     }
 
-    public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
+    public function authenticate(string $requestID, string $playID, string $currency): JsonResponse
     {
         $country = match ($currency) {
-            'IDR'=> 'ID',
-            'PHP'=> 'PH',
-            'VND'=> 'VN',
-            'USD'=> 'US',
-            'THB'=> 'TH',
-            'MYR'=> 'MY',
+            'IDR' => 'ID',
+            'PHP' => 'PH',
+            'VND' => 'VN',
+            'USD' => 'US',
+            'THB' => 'TH',
+            'MYR' => 'MY',
         };
 
         return response()->json(data: [
-            "requestId" => $requestId,
+            "requestId" => $requestID,
             "username" => $playID,
             "currencyCode" => config('app.env') === 'PRODUCTION' ? $currency : 'CNY',
             "countryCode" => config('app.env') === 'PRODUCTION' ? $country : 'CN'
         ]);
     }
 
-    public function getBalance(string $requestId, float $balance): JsonResponse
+    public function getBalance(string $requestID, float $balance): JsonResponse
     {
         return response()->json(data: [
-            "requestId" => $requestId,
+            "requestId" => $requestID,
             "balance" => [
                 "real" => $this->formatBalance($balance),
                 "timestamp" => $this->getDateTimeNow()

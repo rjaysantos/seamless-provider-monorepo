@@ -512,7 +512,8 @@ class PlaServiceTest extends TestCase
         $player = new PlaPlayerDTO(
             playID: 'playerid',
             currency: 'IDR',
-            token: 'TEST_authToken');
+            token: 'TEST_authToken'
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
@@ -631,7 +632,7 @@ class PlaServiceTest extends TestCase
     public function test_getBalance_mockWallet_balance()
     {
         $requestDTO = new PlaRequestDTO(
-            requestId: 'TEST_requestToken',
+            requestID: 'TEST_requestToken',
             playID: 'playerid',
             username: 'TEST_PLAYERID',
             token: 'TEST_authToken'
