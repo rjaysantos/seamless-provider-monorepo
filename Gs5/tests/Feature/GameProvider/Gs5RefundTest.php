@@ -53,8 +53,6 @@ class Gs5RefundTest extends TestCase
             'created_at' => '2024-01-01 00:00:00'
         ]);
 
-        Carbon::setTestNow('2024-01-01 00:00:00');
-
         $request = [
             'access_token' => 'testToken',
             'txn_id' => '123456'

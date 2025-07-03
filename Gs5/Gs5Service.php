@@ -39,9 +39,10 @@ class Gs5Service
     {
         $player = Gs5PlayerDTO::fromPlayRequestDTO(casinoRequestDTO: $casinoRequest);
 
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
+
         $this->repository->createOrUpdatePlayer(playerDTO: $player);
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         return $this->api->getLaunchUrl(
             credentials: $credentials,
