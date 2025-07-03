@@ -40,10 +40,7 @@ class PlaController extends AbstractCasinoController
 
         $currency = $this->service->authenticate(requestDTO: $requestDTO);
 
-        return $this->response->authenticate(
-            requestDTO: $requestDTO,
-            currency: $currency
-        );
+        return $this->response->authenticate(requestDTO: $requestDTO, currency: $currency);
     }
 
     public function getBalance(Request $request)
