@@ -548,15 +548,15 @@ class Hg5Service
 
         $this->validatePlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $transactionDTO = Hg5TransactionDTO::wager(
+        $wagerTransactionDTO = Hg5TransactionDTO::wager(
             extID: "wager-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
 
-        $transactionData = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
+        $transaction = $this->repository->getTransactionByExtID(extID: $wagerTransactionDTO->extID);
 
-        if (is_null($transactionData) === false)
+        if (is_null($transaction) === false)
             throw new TransactionAlreadyExistsException;
 
         $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
@@ -567,23 +567,21 @@ class Hg5Service
         try {
             $this->repository->beginTransaction();
 
-            $this->repository->createTransaction(transactionDTO: $transactionDTO);
-
-            $betID = $this->shortenBetID(betID: $transactionDTO->roundID);
+            $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeArcadeReport(
-                transactionID: $betID,
-                gameCode: $transactionDTO->gameID,
-                betTime: $transactionDTO->dateTime,
-                opt: json_encode(['txn_id' => $transactionDTO->roundID])
+                transactionID: $wagerTransactionDTO->walletBetID,
+                gameCode: $wagerTransactionDTO->gameID,
+                betTime: $wagerTransactionDTO->dateTime,
+                opt: json_encode(['txn_id' => $wagerTransactionDTO->roundID])
             );
 
             $walletResponse = $this->wallet->wager(
                 credentials: $credentials,
-                playID: $transactionDTO->playID,
-                currency: $transactionDTO->currency,
-                transactionID: $transactionDTO->extID,
-                amount: $transactionDTO->betAmount,
+                playID: $wagerTransactionDTO->playID,
+                currency: $wagerTransactionDTO->currency,
+                transactionID: $wagerTransactionDTO->extID,
+                amount: $wagerTransactionDTO->betAmount,
                 report: $report
             );
 
