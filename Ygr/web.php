@@ -12,7 +12,7 @@ Route::prefix('ygr')->group(function () {
     Route::prefix('prov')->group(function () {
         Route::post('token/authorizationConnectToken', [YgrController::class, 'authorizationConnectToken']);
         Route::get('token/getConnectTokenAmount', [YgrController::class, 'getConnectTokenAmount']);
-        Route::post('token/delConnectToken', [YgrController::class, 'deleteToken']);
-        Route::post('transaction/addGameResult', [YgrController::class, 'betAndSettle']);
+        Route::post('token/delConnectToken', [YgrController::class, 'delConnectToken']);
+        Route::post('transaction/addGameResult', [YgrController::class, 'addGameResult']);
     });
 });

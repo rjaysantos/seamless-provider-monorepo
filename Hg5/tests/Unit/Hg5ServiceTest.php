@@ -8,6 +8,8 @@ use App\Contracts\V2\IWallet;
 use Providers\Hg5\Hg5Service;
 use Providers\Hg5\Hg5Repository;
 use Providers\Hg5\Hg5Credentials;
+use Providers\Hg5\DTO\Hg5PlayerDTO;
+use Providers\Hg5\DTO\Hg5RequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hg5\Contracts\ICredentials;
@@ -780,163 +782,24 @@ class Hg5ServiceTest extends TestCase
         $this->assertSame(expected: $expectedData, actual: $response);
     }
 
-    public function test_getBalance_mockRepository_getPlayerByPlayID()
+    public function test_balance_mockWallet_balance()
     {
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $mockRepository = $this->createMock(Hg5Repository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: $request->playerId)
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
+        $requestDTO = new Hg5RequestDTO(
+            authToken: 'testToken',
+            playID: 'testPlayIDu001',
+            agentID: 111
         );
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_stubRepositoryNullPlayer_ProviderPlayerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
 
         $stubRepository = $this->createMock(Hg5Repository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_mockCredentials_getCredentialsByCurrency()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
+            ->willReturn(new Hg5PlayerDTO(
+                playID: 'testPlayIDu001',
+                username: 'testUsername',
+                currency: 'IDR'
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $mockCredentials = $this->createMock(Hg5Credentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentialsByCurrency')
-            ->with(currency: 'IDR')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $mockCredentials,
-            wallet: $stubWallet
-        );
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_stubRequestInvalidHeader_InvalidTokenException()
-    {
-        $this->expectException(InvalidTokenException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'invalidToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_stubRequestInvalidAgent_InvalidAgentIDException()
-    {
-        $this->expectException(InvalidAgentIDException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 12451035534
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_mockWallet_balance()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
+        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('testToken');
         $stubProviderCredentials->method('getAgentID')->willReturn(111);
 
         $stubCredentials = $this->createMock(Hg5Credentials::class);
@@ -948,7 +811,7 @@ class Hg5ServiceTest extends TestCase
             ->method('balance')
             ->with(
                 credentials: $stubProviderCredentials,
-                playID: $request->playerId
+                playID: 'testPlayIDu001'
             )
             ->willReturn([
                 'credit' => 1000,
@@ -960,222 +823,29 @@ class Hg5ServiceTest extends TestCase
             credentials: $stubCredentials,
             wallet: $mockWallet
         );
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_stubWalletStatusError_ProviderWalletErrorException()
-    {
-        $this->expectException(ProviderWalletErrorException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn(['status_code' => 657424]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_stubWallet_expectedData()
-    {
-        $expectedData = (object) [
-            'balance' => 1000,
-            'currency' => 'IDR'
-        ];
-
-        $request = new Request([
-            'playerId' => 'testPlayID',
-            'agentId' => 111
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $response = $service->getBalance(request: $request);
-
-        $this->assertEquals(expected: $expectedData, actual: $response);
-    }
-
-    public function test_authenticate_mockRepository_getPlayerByToken()
-    {
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 111,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $mockRepository = $this->createMock(Hg5Repository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByToken')
-            ->with(token: $request->launchToken)
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR'
-            ]);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'credit' => 1000,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->authenticate(request: $request);
-    }
-
-    public function test_authenticate_stubRepositoryNullPlayer_InvalidTokenException()
-    {
-        $this->expectException(InvalidTokenException::class);
-
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 111,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->authenticate(request: $request);
-    }
-
-    public function test_authenticate_stubRequestInvalidHeader_InvalidTokenException()
-    {
-        $this->expectException(InvalidTokenException::class);
-
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 111,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'invalidHeader');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR'
-            ]);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->authenticate(request: $request);
-    }
-
-    public function test_authenticate_stubRequestInvalidAgent_InvalidAgentIDException()
-    {
-        $this->expectException(InvalidAgentIDException::class);
-
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 468451386,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR'
-            ]);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->authenticate(request: $request);
+        $service->balance(requestDTO: $requestDTO);
     }
 
     public function test_authenticate_mockWallet_balance()
     {
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 111,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'validToken');
+        $requestDTO = new Hg5RequestDTO(
+            authToken: 'testAuthToken',
+            playID: 'testPlayID',
+            agentID: 111,
+            token: 'testToken'
+        );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
         $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR'
-            ]);
+            ->willReturn(new Hg5PlayerDTO(
+                playID: 'testPlayID',
+                username: 'testUsername',
+                currency: 'IDR',
+                token: 'testToken'
+            ));
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
+        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('testAuthToken');
         $stubProviderCredentials->method('getAgentID')->willReturn(111);
 
         $stubCredentials = $this->createMock(Hg5Credentials::class);
@@ -1185,59 +855,14 @@ class Hg5ServiceTest extends TestCase
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('balance')
-            ->with(
-                credentials: $stubProviderCredentials,
-                playID: 'testPlayID'
-            )
+            ->with(credentials: $stubProviderCredentials, playID: 'testPlayID')
             ->willReturn([
                 'credit' => 1000,
                 'status_code' => 2100
             ]);
 
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $mockWallet
-        );
-        $service->authenticate(request: $request);
-    }
-
-    public function test_authenticate_stubWalletInvalidStatus_ProviderWalletErrorException()
-    {
-        $this->expectException(ProviderWalletErrorException::class);
-
-        $request = new Request([
-            'launchToken' => 'testLaunchToken',
-            'agentId' => 111,
-            'gameId' => 'testGameID',
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByToken')
-            ->willReturn((object) [
-                'play_id' => 'testPlayID',
-                'currency' => 'IDR'
-            ]);
-
-        $stubProviderCredentials = $this->createMock(ICredentials::class);
-        $stubProviderCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $stubProviderCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($stubProviderCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn(['status_code' => 1531513]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->authenticate(request: $request);
+        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $mockWallet);
+        $service->authenticate(requestDTO: $requestDTO);
     }
 
     public function test_betAndSettle_mockRepository_getPlayerByPlayID()

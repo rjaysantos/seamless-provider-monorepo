@@ -5,6 +5,7 @@ use Tests\TestCase;
 use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
+use App\DTO\CasinoRequestDTO;
 use App\Libraries\Randomizer;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaRepository;
@@ -12,6 +13,7 @@ use Providers\Pla\PlaCredentials;
 use Providers\Pla\DTO\PlaPlayerDTO;
 use Providers\Pla\DTO\PlaRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
+use Providers\Pla\DTO\PlaTransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
 use Providers\Pla\Exceptions\WalletErrorException;
@@ -45,222 +47,156 @@ class PlaServiceTest extends TestCase
             credentials: $credentials,
             api: $api,
             randomizer: $randomizer,
-            wallet: $wallet, 
+            wallet: $wallet,
             report: $report
         );
     }
 
-    public function test_getLaunchUrl_mockRepository_getPlayerByPlayID()
+    public function test_getLaunchUrl_mockRepository_createOrUpdatePlayer()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            lang: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: $request->playId);
-
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
-    }
-
-    public function test_getLaunchUrl_mockRepository_createPlayer()
-    {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
 
         $mockRepository->expects($this->once())
-            ->method('createPlayer')
-            ->with(
-                playID: $request->playId,
-                currency: $request->currency,
-                username: $request->username
-            );
+            ->method('createOrUpdatePlayer')
+            ->willReturnCallback(function ($player) use (&$requestDTO) {
+                $requestDTO = $player;
+            });
 
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
+        $service = $this->makeService(repository: $mockRepository);
+        $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getLaunchUrl_mockCredentials_getCredentialsByCurrency()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            lang: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
 
         $mockCredentials->expects($this->once())
             ->method('getCredentialsByCurrency')
-            ->with(currency: $request->currency);
+            ->with(currency: $casinoRequest->currency);
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $mockCredentials, api: $stubApi);
-        $service->getLaunchUrl(request: $request);
-    }
-
-    public function test_getLaunchUrl_mockRepository_createOrUpdateToken()
-    {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getKioskName')
-            ->willReturn('testKioskName');
-
-        $stubCredentials = $this->createMock(PlaCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRandomizer = $this->createMock(Randomizer::class);
-        $stubRandomizer->method('createToken')
-            ->willReturn('testToken');
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('createOrUpdateToken')
-            ->with(playID: $request->playId, token: 'testKioskName_testToken');
-
-        $stubApi = $this->createMock(PlaApi::class);
-        $stubApi->method('getGameLaunchUrl')
-            ->willReturn('testUrl.com');
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            api: $stubApi,
-            randomizer: $stubRandomizer
-        );
-        $service->getLaunchUrl(request: $request);
+        $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getLaunchUrl_mockApi_getGameLaunchUrl()
     {
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            lang: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getKioskName')
-            ->willReturn('testKioskName');
 
         $stubCredentials = $this->createMock(PlaCredentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
             ->willReturn($providerCredentials);
 
-        $stubRandomizer = $this->createMock(Randomizer::class);
-        $stubRandomizer->method('createToken')
-            ->willReturn('testToken');
-
         $mockApi = $this->createMock(PlaApi::class);
         $mockApi->expects($this->once())
             ->method('getGameLaunchUrl')
-            ->with(credentials: $providerCredentials, request: $request, token: 'testKioskName_testToken')
+            ->with(
+                $providerCredentials,
+                $casinoRequest,
+                $this->isInstanceOf(PlaPlayerDTO::class)
+            )
             ->willReturn('testUrl.com');
 
-        $service = $this->makeService(credentials: $stubCredentials, api: $mockApi, randomizer: $stubRandomizer);
-        $service->getLaunchUrl(request: $request);
+        $service = $this->makeService(credentials: $stubCredentials, api: $mockApi);
+        $service->getLaunchUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getLaunchUrl_stubApi_expectedData()
     {
         $expected = 'testUrl.com';
 
-        $request = new Request([
-            'playId' => 'testPlayID',
-            'username' => 'testUsername',
-            'currency' => 'IDR',
-            'language' => 'en',
-            'gameId' => 'testGameID',
-            'device' => 1
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            lang: 'en',
+            gameID: 'testGameID',
+            device: 1
+        );
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('getGameLaunchUrl')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(api: $stubApi);
-        $response = $service->getLaunchUrl(request: $request);
+        $response = $service->getLaunchUrl(casinoRequest: $casinoRequest);
 
         $this->assertSame(expected: $expected, actual: $response);
     }
 
     public function test_getBetDetail_mockRepository_getPlayerByPlayID()
     {
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
+
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
             ->method('getPlayerByPlayID')
-            ->with(playID: $request->play_id)
-            ->willReturn((object) []);
+            ->with(playID: $casinoRequest->playID)
+            ->willReturn($player);
 
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $mockRepository->method('getTransactionByExtID')
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getBetDetail_stubRepository_playerNotFoundException()
     {
         $this->expectException(CasinoPlayerNotFoundException::class);
 
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
@@ -271,49 +207,65 @@ class PlaServiceTest extends TestCase
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, api: $stubApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
-    public function test_getBetDetail_mockRepository_getTransactionByTrxID()
+    public function test_getBetDetail_mockRepository_getTransactionByExtID()
     {
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
+
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
         $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(trxID: $request->bet_id)
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+            ->method('getTransactionByExtID')
+            ->with(extID: $casinoRequest->extID)
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $mockRepository, api: $stubApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getBetDetail_stubRepository_transactionNotFoundException()
     {
         $this->expectException(CasinoTransactionNotFoundException::class);
 
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
+
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
-        $stubRepository->method('getTransactionByTrxID')
+        $stubRepository->method('getTransactionByExtID')
             ->willReturn(null);
 
         $stubApi = $this->createMock(PlaApi::class);
@@ -321,51 +273,71 @@ class PlaServiceTest extends TestCase
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, api: $stubApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getBetDetail_mockCredentials_getCredentialsByCurrency()
     {
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
+
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
         $mockCredentials->expects($this->once())
             ->method('getCredentialsByCurrency')
-            ->with(currency: $request->currency);
+            ->with(currency: $casinoRequest->currency);
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials, api: $stubApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getBetDetail_mockApi_gameRoundStatus()
     {
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testTransactionID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
+
+        $player = new PlaPlayerDTO(
+            playID: 'testPlayID',
+            username: 'testUsername',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
+        $transaction = new PlaTransactionDTO(
+            extID: 'testTransactionID'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn($player);
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn($transaction);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -376,58 +348,61 @@ class PlaServiceTest extends TestCase
         $mockApi = $this->createMock(PlaApi::class);
         $mockApi->expects($this->once())
             ->method('gameRoundStatus')
-            ->with(credentials: $providerCredentials, transactionID: 'testRefID')
+            ->with(credentials: $providerCredentials, transactionID: $transaction)
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, api: $mockApi);
-        $service->getBetDetail(request: $request);
+        $service->getBetDetailUrl(casinoRequest: $casinoRequest);
     }
 
     public function test_getBetDetail_stubApi_expectedData()
     {
         $expected = 'testUrl.com';
 
-        $request = new Request([
-            'play_id' => 'testPlayID',
-            'bet_id' => 'testRefID',
-            'currency' => 'IDR'
-        ]);
+        $casinoRequest = new CasinoRequestDTO(
+            playID: 'testPlayID',
+            extID: 'testTransactionID',
+            currency: 'IDR'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) []);
+            ->willReturn(new PlaPlayerDTO(
+                playID: 'testPlayID',
+                username: 'testUsername',
+                currency: 'IDR',
+                token: 'testToken'
+            ));
 
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['trx_id' => 'testTransactionID', 'ref_id' => 'testRefID']);
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn(new PlaTransactionDTO(
+                extID: 'testTransactionID'
+            ));
 
         $stubApi = $this->createMock(PlaApi::class);
         $stubApi->method('gameRoundStatus')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(repository: $stubRepository, api: $stubApi);
-        $response = $service->getBetDetail(request: $request);
+        $response = $service->getBetDetailUrl(casinoRequest: $casinoRequest);
 
         $this->assertSame(expected: $expected, actual: $response);
     }
 
     public function test_authenticate_mockRepository_getPlayerByPlayID()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
@@ -435,157 +410,109 @@ class PlaServiceTest extends TestCase
             ->with(playID: 'playerid')
             ->willReturn($player);
 
-        $mockRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
-
         $service = $this->makeService(repository: $mockRepository);
-        $service->authenticate(request: $request);
+        $service->authenticate(requestDTO: $requestDTO);
     }
 
     public function test_authenticate_nullPlayer_playerNotFoundException()
     {
         $this->expectException(ProviderPlayerNotFoundException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid001',
+            username: 'TEST_PLAYERID001',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->authenticate(request: $request);
+        $service->authenticate(requestDTO: $requestDTO);
     }
 
     public function test_authenticate_usernameWithoutKiosk_playerNotFoundException()
     {
         $this->expectException(ProviderPlayerNotFoundException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'invalidUsername',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
         $service = $this->makeService();
-        $service->authenticate(request: $request);
-    }
-
-    public function test_authenticate_mockRepository_getPlayGameByPlayIDToken()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getPlayGameByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
-            ->willReturn($playGame);
-
-        $service = $this->makeService(repository: $mockRepository);
-        $service->authenticate(request: $request);
+        $service->authenticate(requestDTO: $requestDTO);
     }
 
     public function test_authenticate_nullToken_invalidTokenException()
     {
         $this->expectException(InvalidTokenException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'token'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->authenticate(request: $request);
+        $service->authenticate(requestDTO: $requestDTO);
     }
 
     public function test_authenticate_stubRepository_expected()
     {
         $expected = 'IDR';
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR'
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
-            ->willReturn($playGame);
-
         $service = $this->makeService(repository: $stubRepository);
-        $response = $service->authenticate(request: $request);
+        $response = $service->authenticate(requestDTO: $requestDTO);
 
         $this->assertEquals(expected: $expected, actual: $response);
     }
 
     public function test_getBalance_mockRepository_getPlayerByPlayID()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken');
 
         $mockRepository = $this->createMock(PlaRepository::class);
         $mockRepository->expects($this->once())
@@ -593,9 +520,6 @@ class PlaServiceTest extends TestCase
             ->with(playID: 'playerid')
             ->willReturn($player);
 
-        $mockRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
-
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
             ->willReturn([
@@ -604,134 +528,89 @@ class PlaServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_nullPlayer_playerNotFoundException()
     {
         $this->expectException(ProviderPlayerNotFoundException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_usernameWithoutKiosk_playerNotFoundException()
     {
         $this->expectException(ProviderPlayerNotFoundException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'invalidUsername',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
         $service = $this->makeService();
-        $service->getBalance(request: $request);
-    }
-
-    public function test_getBalance_mockRepository_getPlayGameByPlayIDToken()
-    {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
-
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
-
-        $mockRepository = $this->createMock(PlaRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
-
-        $mockRepository->expects($this->once())
-            ->method('getPlayGameByPlayIDToken')
-            ->with(playID: 'playerid', token: 'TEST_authToken')
-            ->willReturn($playGame);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.00
-            ]);
-
-        $service = $this->makeService(repository: $mockRepository, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_nullToken_invalidTokenException()
     {
         $this->expectException(InvalidTokenException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_invalidToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
 
-        $stubRepository->method('getPlayGameByPlayIDToken')
+        $stubRepository->method('getPlayerByPlayIDToken')
             ->willReturn(null);
 
         $service = $this->makeService(repository: $stubRepository);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_mockCredentials_getCredentialsByCurrency()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
 
         $mockCredentials = $this->createMock(PlaCredentials::class);
         $mockCredentials->expects($this->once())
@@ -746,35 +625,27 @@ class PlaServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $mockCredentials, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_mockWallet_balance()
     {
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
 
         $providerCredentials = $this->createMock(ICredentials::class);
 
@@ -785,44 +656,36 @@ class PlaServiceTest extends TestCase
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('balance')
-            ->with(credentials: $providerCredentials, playID: $player->play_id)
+            ->with(credentials: $providerCredentials, playID: $player->playID)
             ->willReturn([
                 'status_code' => 2100,
                 'credit' => 0.00
             ]);
 
         $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials, wallet: $mockWallet);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_invalidWalletResponse_WalletErrorException()
     {
         $this->expectException(WalletErrorException::class);
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
@@ -831,37 +694,29 @@ class PlaServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $service->getBalance(request: $request);
+        $service->getBalance(requestDTO: $requestDTO);
     }
 
     public function test_getBalance_stubWallet_expected()
     {
         $expected = 0.00;
 
-        $request = new Request([
-            'requestId' => 'TEST_requestToken',
-            'username' => 'TEST_PLAYERID',
-            'externalToken' => 'TEST_authToken'
-        ]);
+        $requestDTO = new PlaRequestDTO(
+            requestId: 'TEST_requestToken',
+            playID: 'playerid',
+            username: 'TEST_PLAYERID',
+            token: 'TEST_authToken'
+        );
 
-        $player = (object) [
-            'play_id' => 'playerid',
-            'currency' => 'IDR',
-            'limit' => null
-        ];
-
-        $playGame = (object) [
-            'play_id' => 'playerid',
-            'token' => 'TEST_authToken',
-            'expired' => 'FALSE'
-        ];
+        $player = new PlaPlayerDTO(
+            playID: 'playerid',
+            currency: 'IDR',
+            token: 'TEST_authToken'
+        );
 
         $stubRepository = $this->createMock(PlaRepository::class);
         $stubRepository->method('getPlayerByPlayID')
             ->willReturn($player);
-
-        $stubRepository->method('getPlayGameByPlayIDToken')
-            ->willReturn($playGame);
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('balance')
@@ -871,7 +726,7 @@ class PlaServiceTest extends TestCase
             ]);
 
         $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet);
-        $response = $service->getBalance(request: $request);
+        $response = $service->getBalance(requestDTO: $requestDTO);
 
         $this->assertSame(expected: $expected, actual: $response);
     }

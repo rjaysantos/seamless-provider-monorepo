@@ -4,17 +4,20 @@ namespace Providers\Ors;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\DTO\CasinoRequestDTO;
 use Providers\Ors\OgSignature;
+use Providers\Ors\DTO\OrsPlayerDTO;
 use App\Libraries\LaravelHttpClient;
+use Providers\Ors\DTO\OrsTransactionDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Ors\Contracts\ICredentials;
 use App\Exceptions\Casino\ThirdPartyApiErrorException;
 
 class OrsApi
 {
-    public function __construct(private LaravelHttpClient $http, private OgSignature $encryption)
-    {
-    }
+    const OG_GAME_TYPE_ID_SLOT = 2;
+
+    public function __construct(private LaravelHttpClient $http, private OgSignature $encryption) {}
 
     public function validateResponse(object $response, array $rules): void
     {
@@ -27,15 +30,18 @@ class OrsApi
             throw new ThirdPartyApiErrorException;
     }
 
-    public function enterGame(ICredentials $credentials, Request $request, string $token): string
-    {
+    public function gamesLaunch(
+        ICredentials $credentials,
+        OrsPlayerDTO $playerDTO,
+        CasinoRequestDTO $casinoRequest,
+    ): string {
         $apiRequest = [
-            'player_id' => $request->playId,
+            'player_id' => $playerDTO->playID,
             'timestamp' => Carbon::now()->timestamp,
-            'nickname' => $request->playId,
-            'token' => $token,
-            'lang' => $request->language,
-            'game_id' => $request->gameId,
+            'nickname' => $playerDTO->playID,
+            'token' => $playerDTO->token,
+            'lang' => $casinoRequest->lang,
+            'game_id' => $casinoRequest->gameID,
             'betlimit' => 164,
         ];
 
@@ -64,12 +70,12 @@ class OrsApi
         return $response->game_link;
     }
 
-    public function getBettingRecords(ICredentials $credentials, string $transactionID, string $playID): string
+    public function transactionHistory(ICredentials $credentials, OrsTransactionDTO $transactionDTO): string
     {
         $apiRequest = [
-            'transaction_id' => $transactionID,
-            'player_id' => $playID,
-            'game_type_id' => 2,
+            'transaction_id' => $transactionDTO->roundID,
+            'player_id' => $transactionDTO->playID,
+            'game_type_id' => self::OG_GAME_TYPE_ID_SLOT,
         ];
 
         $headers = [

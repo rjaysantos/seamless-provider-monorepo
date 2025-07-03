@@ -46,17 +46,6 @@ class RedRepository extends AbstractProviderRepository
         return $data == null ? null : RedTransactionDTO::fromDB(dbData: $data);
     }
 
-    public function createPlayer(string $playID, string $currency, int $userIDProvider): void
-    {
-        $this->write->table('red.players')
-            ->insert([
-                'play_id' => $playID,
-                'username' => $playID,
-                'currency' => $currency,
-                'user_id_provider' => $userIDProvider
-            ]);
-    }
-
     public function createTransaction(RedTransactionDTO $transactionDTO): void
     {
         $this->write->table('red.reports')

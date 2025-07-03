@@ -42,14 +42,14 @@ class HcgBalanceTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playId',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR',
         ]);
 
         $payload = [
             'action' => 1,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: 'IDR');
@@ -80,14 +80,14 @@ class HcgBalanceTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playId',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => $currency,
         ]);
 
         $payload = [
             'action' => 1,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: $currency);
@@ -115,7 +115,7 @@ class HcgBalanceTest extends TestCase
     {
         $payload = [
             'action' => 1,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
         ];
 
         unset($payload[$unset]);
@@ -148,7 +148,7 @@ class HcgBalanceTest extends TestCase
     {
         $payload = [
             'action' => 1,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
             'sign' => 'invalid signature'
         ];
 
@@ -166,7 +166,7 @@ class HcgBalanceTest extends TestCase
     {
         $payload = [
             'action' => 99,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: 'IDR');
@@ -184,7 +184,7 @@ class HcgBalanceTest extends TestCase
     public function test_balance_playerNotFound_expectedData()
     {
         DB::table('hcg.players')->insert([
-            'play_id' => 'playId',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR',
         ]);
@@ -220,14 +220,14 @@ class HcgBalanceTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hcg.players')->insert([
-            'play_id' => 'playId',
+            'play_id' => 'testPlayIDu001',
             'username' => 'testUsername',
             'currency' => 'IDR',
         ]);
 
         $payload = [
             'action' => 1,
-            'uid' => 'playId',
+            'uid' => 'testPlayIDu001',
         ];
 
         $payload['sign'] = $this->createSignature(payload: $payload, currency: 'IDR');

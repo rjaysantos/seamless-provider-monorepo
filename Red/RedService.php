@@ -3,9 +3,7 @@
 namespace Providers\Red;
 
 use Exception;
-use Carbon\Carbon;
 use Providers\Red\RedApi;
-use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
 use Providers\Red\RedRepository;

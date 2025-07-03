@@ -62,12 +62,12 @@ class YgrResponse
         ]);
     }
 
-    public function deleteToken(): JsonResponse
+    public function delConnectToken(): JsonResponse
     {
         return $this->providerSuccessResponse(data: []);
     }
 
-    public function betAndSettle(object $data): JsonResponse
+    public function addGameResult(object $data): JsonResponse
     {
         return $this->providerSuccessResponse(data: [
             'balance' => $this->formatToTwoDecimals(balance: $data->balance),

@@ -3,7 +3,6 @@
 namespace Providers\Pla\Exceptions;
 
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Providers\Pla\DTO\PlaRequestDTO;
 

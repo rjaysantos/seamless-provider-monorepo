@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace Providers\Pla\DTO;
 
@@ -12,7 +12,27 @@ class PlaRequestDTO
         public readonly ?string $requestId = null,
         public readonly ?string $username = null,
         public readonly ?string $token = null,
-    ) {}
+    ){}
+
+    public static function fromAuthenticateRequest(Request $request): self
+    {
+        return new self(
+            requestId: $request->requestId,
+            playID: strtolower(Str::after($request->username, '_')),
+            username: $request->username,
+            token: $request->externalToken
+        );
+    }
+
+    public static function fromGetBalanceRequest(Request $request): self
+    {
+        return new self(
+            requestId: $request->requestId,
+            playID: strtolower(Str::after($request->username, '_')),
+            username: $request->username,
+            token: $request->externalToken
+        );
+    }
 
     public static function fromLogoutRequest(Request $request): self
     {

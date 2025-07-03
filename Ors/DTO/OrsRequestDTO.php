@@ -74,7 +74,22 @@ class OrsRequestDTO
             transactionType: $request->transaction_type,
             totalAmount: $request->total_amount,
             rawRequest: $request,
-            transactions: $transactions
+            transactions: $transactions,
+            dateTime: $request->called_at,
+        );
+    }
+
+    public static function fromCreditRequest(Request $request): self
+    {
+        return new self(
+            key: $request->header('key'),
+            playID: $request->player_id,
+            amount: $request->amount,
+            roundID: $request->transaction_id,
+            gameID: $request->game_id,
+            dateTime: $request->called_at,
+            signature: $request->signature,
+            rawRequest: $request
         );
     }
 }
