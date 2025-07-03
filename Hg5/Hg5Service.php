@@ -359,10 +359,10 @@ class Hg5Service
             $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeArcadeReport(
-                transactionID: $this->shortenBetID(betID: $wagerTransactionDTO->roundID),
+                transactionID: $wagerTransactionDTO->walletBetID,
                 gameCode: $wagerTransactionDTO->gameID,
                 betTime: $wagerTransactionDTO->dateTime,
-                opt: json_encode(['txn_id' => $wagerTransactionDTO->roundID])
+                opt: json_encode(['txn_id' => $requestDTO->roundID])
             );
 
             $walletResponse = $this->wallet->wager(
