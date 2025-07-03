@@ -27,6 +27,15 @@ class Hg5RequestDTO
         );
     }
 
+    public static function fromBalanceRequest(Request $request): self
+    {
+        return new self(
+            authToken: $request->header('Authorization'),
+            playID: $request->playerId,
+            agentID: $request->agentId,
+        );
+    }
+
     public static function fromRollinRequest(Request $request): self
     {
         return new self(

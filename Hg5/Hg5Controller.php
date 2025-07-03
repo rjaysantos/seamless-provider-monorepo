@@ -84,9 +84,14 @@ class Hg5Controller extends AbstractCasinoController
             'agentId' => 'required|int'
         ]);
 
-        $data = $this->service->getBalance(request: $request);
+        $requestDTO = Hg5RequestDTO::fromBalanceRequest(request: $request);
 
-        return $this->response->balance(data: $data);
+        $balanceResponse = $this->service->balance(requestDTO: $requestDTO);
+
+        return $this->response->balance(
+            balance: $balanceResponse->balance,
+            playerDTO: $balanceResponse->player
+        );
     }
 
     public function authenticate(Request $request)
