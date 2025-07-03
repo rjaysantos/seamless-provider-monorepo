@@ -235,11 +235,6 @@ class Hg5Service
         return $gameData->gametype == 'slot';
     }
 
-    private function shortenBetID(string $betID): string
-    {
-        return md5($betID);
-    }
-
     public function betAndSettle(Request $request): float
     {
         $playerData = $this->repository->getPlayerByPlayID(playID: $request->playerId);
@@ -363,13 +358,11 @@ class Hg5Service
 
             $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
-            $betID = $this->shortenBetID(betID: $requestDTO->roundID);
-
             $report = $this->walletReport->makeArcadeReport(
-                transactionID: $betID,
+                transactionID: $wagerTransactionDTO->shortenBetID,
                 gameCode: $wagerTransactionDTO->gameID,
                 betTime: $wagerTransactionDTO->dateTime,
-                opt: json_encode(['txn_id' => $requestDTO->roundID])
+                opt: json_encode(['txn_id' => $wagerTransactionDTO->roundID])
             );
 
             $walletResponse = $this->wallet->wager(
