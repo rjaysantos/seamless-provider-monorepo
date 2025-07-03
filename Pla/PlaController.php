@@ -6,6 +6,7 @@ use App\Http\Controllers\AbstractCasinoController;
 use Illuminate\Http\Request;
 use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
 use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
@@ -36,13 +37,12 @@ class PlaController extends AbstractCasinoController
             'externalToken' => 'required|string'
         ]);
 
-        $currency = $this->service->authenticate(request: $request);
+        $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
-        return $this->response->authenticate(
-            requestId: $request->requestId,
-            playID: $request->username,
-            currency: $currency
-        );
+        $currency = $this->service->authenticate(requestDTO: $requestDTO);
+        
+        return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
+        
     }
 
     public function getBalance(Request $request)
@@ -117,18 +117,5 @@ class PlaController extends AbstractCasinoController
             $balance = $this->service->settle(request: $request);
 
         return $this->response->gameRoundResult(request: $request, balance: $balance);
-    }
-
-    public function visual(Request $request)
-    {
-        $this->validateCasinoRequest(request: $request, rules: [
-            'play_id' => 'required|string',
-            'bet_id' => 'required|string',
-            'currency' => 'required|string|in:IDR,PHP,THB,VND,USD,MYR'
-        ]);
-
-        $visualUrl = $this->service->getBetDetail(request: $request);
-
-        return $this->response->casinoSuccess(data: $visualUrl);
     }
 }

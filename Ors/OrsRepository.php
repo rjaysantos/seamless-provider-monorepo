@@ -2,7 +2,6 @@
 
 namespace Providers\Ors;
 
-use Illuminate\Support\Facades\DB;
 use Providers\Ors\DTO\OrsPlayerDTO;
 use Providers\Ors\DTO\OrsTransactionDTO;
 use App\Repositories\AbstractProviderRepository;
@@ -40,29 +39,6 @@ class OrsRepository extends AbstractProviderRepository
             ->first();
 
         return $data == null ? null : OrsTransactionDTO::fromDB(dbData: $data);
-    }
-
-    public function getPlayerByPlayIDToken(string $playID, string $token): ?OrsPlayerDTO
-    {
-        $data = $this->read->table('ors.players')
-            ->where('play_id', $playID)
-            ->where('token', $token)
-            ->first();
-
-        return $data == null ? null : OrsPlayerDTO::fromDB(dbData: $data);
-    }
-
-    public function settleBetTransaction(string $transactionID, float $winAmount, string $settleTime): void
-    {
-        DB::connection('pgsql_write')
-            ->table('ors.reports')
-            ->updateOrInsert(
-                ['trx_id' => $transactionID],
-                [
-                    'win_amount' => $winAmount,
-                    'updated_at' => $settleTime
-                ]
-            );
     }
 
     public function createTransaction(OrsTransactionDTO $transactionDTO)
