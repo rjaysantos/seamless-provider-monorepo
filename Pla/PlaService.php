@@ -12,6 +12,8 @@ use App\Libraries\Randomizer;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
 use Illuminate\Support\Facades\DB;
+use Providers\Pla\DTO\PlaPlayerDTO;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Pla\Contracts\ICredentials;
@@ -22,8 +24,6 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
-use Providers\Pla\DTO\PlaPlayerDTO;
-use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -77,12 +77,12 @@ class PlaService
         return $player;
     }
 
-    private function getPlayerBalance(ICredentials $credentials, Request $request, string $playID): float
+    private function getPlayerBalance(ICredentials $credentials, PlaRequestDTO $requestDTO, string $playID): float
     {
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playID);
 
         if ($walletResponse['status_code'] !== 2100)
-            throw new WalletErrorException($request);
+            throw new WalletErrorException($requestDTO);
 
         return $walletResponse['credit'];
     }
@@ -97,15 +97,16 @@ class PlaService
         return $player->currency;
     }
 
-    public function getBalance(Request $request): float
+    public function getBalance(PlaRequestDTO $requestDTO): float
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        return $this->getPlayerBalance(credentials: $credentials, requestDTO: $requestDTO, playID: $player->playID);
     }
 
     public function logout(Request $request): void
