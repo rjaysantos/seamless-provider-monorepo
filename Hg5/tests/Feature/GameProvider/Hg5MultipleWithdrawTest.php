@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -30,14 +31,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -47,13 +42,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -61,7 +56,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -70,7 +65,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -97,7 +92,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -106,7 +101,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -121,19 +116,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -143,7 +150,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         $datasArray = [
-            'playerId' => 'testPlayID1',
+            'playerId' => 'testPlayID1u027',
             'agentId' => 111,
             'amount' => 100.00,
             'currency' => 'IDR',
@@ -159,7 +166,7 @@ class Hg5MultipleWithdrawTest extends TestCase
             'datas' => [
                 (object) $datasArray,
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -220,14 +227,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -237,13 +238,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -260,7 +261,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -296,7 +297,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -311,19 +312,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -339,14 +352,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -356,13 +363,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -370,7 +377,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -379,7 +386,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -405,7 +412,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Token Invalid',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -414,7 +421,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Token Invalid',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -429,19 +436,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -457,14 +476,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -474,13 +487,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -488,7 +501,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 3431350,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -497,7 +510,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -524,7 +537,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => "Currency does not match Agent's currency.",
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 3431350,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -533,7 +546,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -548,19 +561,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -576,14 +601,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -593,29 +612,36 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'currency' => 'IDR',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
+            'created_at' => '2024-01-01 12:00:00',
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -624,7 +650,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -651,7 +677,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Transaction service error',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -660,7 +686,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -675,19 +701,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
+            'created_at' => '2024-01-01 12:00:00',
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -706,13 +744,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -720,7 +758,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -729,7 +767,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -756,7 +794,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -765,7 +803,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -780,19 +818,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -808,14 +858,8 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+            public function Wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'credit_after' => 900.00,
                     'status_code' => 2100
@@ -825,13 +869,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -839,7 +883,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 10000.00,
                     'currency' => 'IDR',
@@ -848,7 +892,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -875,7 +919,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Insufficient balance.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -884,7 +928,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => '',
                     'balance' => 900.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -899,19 +943,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 
@@ -927,14 +983,9 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'status_code' => 2100
                 ];
             }
-            public function Wager(
-                IWalletCredentials $credentials,
-                string $playID,
-                string $currency,
-                string $transactionID,
-                float $amount,
-                Wallet\V1\ProvSys\Transfer\Report $report
-            ): array {
+
+            public function wager(IWalletCredentials $credentials, string $playID, string $currency, string $transactionID, float $amount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
                 return [
                     'status_code' => 4586415384
                 ];
@@ -943,13 +994,13 @@ class Hg5MultipleWithdrawTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayID1u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayID2u027',
             'username' => 'testUsername',
             'currency' => 'IDR'
         ]);
@@ -957,7 +1008,7 @@ class Hg5MultipleWithdrawTest extends TestCase
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'amount' => 100.00,
                     'currency' => 'IDR',
@@ -966,7 +1017,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'amount' => 300.00,
                     'currency' => 'IDR',
@@ -993,7 +1044,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayID1u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound1'
                 ],
@@ -1002,7 +1053,7 @@ class Hg5MultipleWithdrawTest extends TestCase
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayID2u027',
                     'agentId' => 111,
                     'gameRound' => 'testGameRound2'
                 ],
@@ -1017,19 +1068,31 @@ class Hg5MultipleWithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound1',
+            'round_id' => 'testGameRound1',
+            'play_id' => 'testPlayID1u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 100,
+            'bet_amount' => 100,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 300.00,
-            'win_amount' => 0.00,
+            'ext_id' => 'wager-testGameRound2',
+            'round_id' => 'testGameRound2',
+            'play_id' => 'testPlayID2u027',
+            'username' => 'testUsername',
+            'web_id' => 27,
+            'game_code' => 'testGameCode',
+            'currency' => 'IDR',
+            'bet_valid' => 300,
+            'bet_amount' => 300,
             'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => null
+            'updated_at' => '2024-01-01 12:00:00',
         ]);
     }
 }

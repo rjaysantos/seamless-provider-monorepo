@@ -11,6 +11,12 @@ class Hg5RequestDTO
         public readonly ?string $playID = null,
         public readonly ?int $agentID = null,
         public readonly ?string $token = null,
+        public readonly ?string $gameID = null,
+        public readonly ?float $amount = null,
+        public readonly ?string $currency = null,
+        public readonly ?string $roundID = null,
+        public readonly ?string $dateTime = null,
+        public readonly ?array $requestDatas = []
     ) {}
 
     public static function fromAuthenticateRequest(Request $request): self
@@ -29,6 +35,26 @@ class Hg5RequestDTO
             authToken: $request->header('Authorization'),
             playID: $request->playerId,
             agentID: $request->agentId,
+        );
+    }
+
+    public static function fromMultipleWithdrawRequest(Request $request): self
+    {
+        foreach ($request->datas as $data) {
+            $requestDatas[] = new self(
+                authToken: $request->header('Authorization'),
+                playID: $data->playerId,
+                agentID: $data->agentId,
+                gameID: $data->gameCode,
+                amount: $data->amount,
+                currency: $data->currency,
+                roundID: $data->gameRound,
+                dateTime: $data->eventTime
+            );
+        }
+
+        return new self(
+            requestDatas: $requestDatas
         );
     }
 }
