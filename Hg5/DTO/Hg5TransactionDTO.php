@@ -11,10 +11,10 @@ class Hg5TransactionDTO extends TransactionDTO
 
     private const PROVIDER_API_TIMEZONE = 'GMT-4';
 
-    public static function wagerAndPayout(string $extID, Hg5RequestDTO $requestDTO, Hg5PlayerDTO $playerDTO): self
+    public static function wagerAndPayout(Hg5RequestDTO $requestDTO, Hg5PlayerDTO $playerDTO): self
     {
         return new self(
-            extID: $extID,
+            extID: $requestDTO->roundID,
             roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,

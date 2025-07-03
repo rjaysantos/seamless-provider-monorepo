@@ -251,21 +251,15 @@ class Hg5Service
 
         $this->validatePlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $transactionDTO = Hg5TransactionDTO::wagerAndPayout(
-            extID: "wagerpayout-{$requestDTO->roundID}",
-            requestDTO: $requestDTO,
-            playerDTO: $player
-        );
+        $transactionDTO = Hg5TransactionDTO::wagerAndPayout(requestDTO: $requestDTO, playerDTO: $player);
 
         $existingTransaction = $this->repository->getTransactionByExtID(extID: $transactionDTO->extID);
 
         if (is_null($existingTransaction) === false)
             throw new TransactionAlreadyExistsException;
 
-        if (is_null($requestDTO->mainGameRound) === false) {
-            $mainRoundTransaction = $this->repository->getTransactionByExtID(
-                extID: "wagerpayout-{$requestDTO->mainGameRound}"
-            );
+        if (is_null($requestDTO->mainRoundID) === false) {
+            $mainRoundTransaction = $this->repository->getTransactionByRoundID(roundID: $requestDTO->mainRoundID);
 
             if (is_null($mainRoundTransaction) === true)
                 throw new ProviderTransactionNotFoundException;

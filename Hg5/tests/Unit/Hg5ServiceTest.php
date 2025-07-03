@@ -1342,9 +1342,9 @@ class Hg5ServiceTest extends TestCase
                 credentials: $providerCredentials,
                 playID: 'testPlayIDu001',
                 currency: 'IDR',
-                wagerTransactionID: "wagerpayout-hg5-testGameRound",
+                wagerTransactionID: 'hg5-testGameRound',
                 wagerAmount: 100.00,
-                payoutTransactionID: "wagerpayout-hg5-testGameRound",
+                payoutTransactionID: 'hg5-testGameRound',
                 payoutAmount: 300.00,
                 report: new Report
             )

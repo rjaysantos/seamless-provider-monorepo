@@ -97,7 +97,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -189,7 +189,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -246,7 +246,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         ]);
 
         DB::table('hg5.reports')->insert([
-            'ext_id' => 'wagerpayout-hg5-testGameRound1',
+            'ext_id' => 'hg5-testGameRound1',
             'round_id' => 'hg5-testGameRound1',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -302,7 +302,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound2',
+            'ext_id' => 'hg5-testGameRound2',
             'round_id' => 'hg5-testGameRound2',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -510,7 +510,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         ]);
 
         DB::table('hg5.reports')->insert([
-            'ext_id' => 'wagerpayout-hg5-testGameRound1',
+            'ext_id' => 'hg5-testGameRound1',
             'round_id' => 'hg5-testGameRound1',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -573,7 +573,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         ]);
 
         DB::table('hg5.reports')->insert([
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -779,7 +779,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -844,7 +844,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -931,7 +931,7 @@ class Hg5WithdrawAndDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'ext_id' => 'wagerpayout-hg5-testGameRound',
+            'ext_id' => 'hg5-testGameRound',
             'round_id' => 'hg5-testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',

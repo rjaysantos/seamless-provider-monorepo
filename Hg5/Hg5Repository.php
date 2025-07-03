@@ -37,6 +37,15 @@ class Hg5Repository extends AbstractProviderRepository
         return $data == null ? null : Hg5TransactionDTO::fromDB(dbData: $data);
     }
 
+    public function getTransactionByRoundID(string $roundID): ?Hg5TransactionDTO
+    {
+        $data = $this->read->table('hg5.reports')
+            ->where('round_id', $roundID)
+            ->first();
+
+        return $data == null ? null : Hg5TransactionDTO::fromDB(dbData: $data);
+    }
+
     public function createPlayer(string $playID, string $username, string $currency): void
     {
         DB::connection('pgsql_write')

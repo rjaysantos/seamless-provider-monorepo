@@ -17,7 +17,7 @@ class Hg5RequestDTO
         public readonly ?string $gameID = null,
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
-        public readonly ?string $mainGameRound = null,
+        public readonly ?string $mainRoundID = null,
     ) {}
 
     public static function fromAuthenticateRequest(Request $request): self
@@ -42,7 +42,7 @@ class Hg5RequestDTO
             gameID: $request->gameCode,
             roundID: $request->gameRound,
             dateTime: $request->eventTime,
-            mainGameRound: $request->extra['slot']['mainGameRound'] ?? null
+            mainRoundID: $request->extra['slot']['mainGameRound'] ?? null
         );
     }
 }
