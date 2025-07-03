@@ -19,7 +19,6 @@ class PlaRequestDTO
         return new self(
             requestId: $request->requestId,
             playID: strtolower(Str::after($request->username, '_')),
-            username: $request->username,
             token: $request->externalToken
         );
     }
