@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 
@@ -11,7 +12,6 @@ class Gs5AuthenticateTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE gs5.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE gs5.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE gs5.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -32,13 +32,8 @@ class Gs5AuthenticateTest extends TestCase
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'testToken'];
@@ -68,10 +63,11 @@ class Gs5AuthenticateTest extends TestCase
 
     public function test_authenticate_tokenNotFound_expectedData()
     {
-        DB::table('gs5.playgame')->insert([
+        DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'invalidToken'];
@@ -98,13 +94,8 @@ class Gs5AuthenticateTest extends TestCase
         DB::table('gs5.players')->insert([
             'play_id' => 'testPlayID',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('gs5.playgame')->insert([
-            'play_id' => 'testPlayID',
+            'currency' => 'IDR',
             'token' => 'testToken',
-            'expired' => 'FALSE'
         ]);
 
         $request = ['access_token' => 'testToken'];
