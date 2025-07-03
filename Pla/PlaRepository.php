@@ -72,13 +72,11 @@ class PlaRepository extends AbstractProviderRepository
             );
     }
 
-    public function deleteToken(string $playID, string $token): void
+    public function resetPlayerToken(string $playID): void
     {
-        DB::connection('pgsql_write')
-            ->table('pla.playgame')
+        $this->write->table('pla.players')
             ->where('play_id', $playID)
-            ->where('token', $token)
-            ->delete();
+            ->update(['token' => null]);
     }
 
     public function createTransaction(

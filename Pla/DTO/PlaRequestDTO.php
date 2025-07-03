@@ -33,4 +33,13 @@ class PlaRequestDTO
             token: $request->externalToken
         );
     }
+
+    public static function fromLogoutRequest(Request $request): self
+    {
+        return new self(
+            requestId: $request->requestId,
+            playID: strtolower(Str::after($request->username, '_')),
+            token: $request->externalToken
+        );
+    }
 }

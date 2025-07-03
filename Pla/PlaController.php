@@ -8,7 +8,6 @@ use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
 use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController extends AbstractCasinoController
@@ -73,7 +72,9 @@ class PlaController extends AbstractCasinoController
             'externalToken' => 'required|string'
         ]);
 
-        $this->service->logout(request: $request);
+        $requestDTO = PlaRequestDTO::fromLogoutRequest(request: $request);
+
+        $this->service->logout(requestDTO: $requestDTO);
 
         return $this->response->logout(requestId: $request->requestId);
     }
