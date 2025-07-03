@@ -14,7 +14,6 @@ class PlaGetBalanceTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -23,13 +22,8 @@ class PlaGetBalanceTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
         $wallet = new class extends TestWallet {
@@ -144,13 +138,8 @@ class PlaGetBalanceTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
         $payload = [
@@ -176,13 +165,8 @@ class PlaGetBalanceTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
 
@@ -225,13 +209,8 @@ class PlaGetBalanceTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN123456789',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'PLAUC_TOKEN123456789'
         ]);
 
         $payload = [

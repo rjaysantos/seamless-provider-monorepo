@@ -172,28 +172,22 @@ class Hg5Service
         return $balanceResponse['credit'];
     }
 
-    public function getBalance(Request $request): object
+    public function balance(Hg5RequestDTO $requestDTO): object
     {
-        $playerData = $this->repository->getPlayerByPlayID(playID: $request->playerId);
+        $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
-        if (is_null($playerData) === true)
+        if (is_null($player) === true)
             throw new ProviderPlayerNotFoundException;
 
-        $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerData->currency);
+        $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $this->validatePlayerAccess(
-            request: $request,
-            credentials: $credentials
-        );
+        $this->validatePlayerAccess(requestDTO: $requestDTO, credentials: $credentials);
 
-        $balance = $this->getPlayerBalance(
-            credentials: $credentials,
-            playID: $request->playerId
-        );
+        $balance = $this->getPlayerBalance(credentials: $credentials, playerDTO: $player);
 
         return (object) [
             'balance' => $balance,
-            'currency' => $playerData->currency
+            'player' => $player
         ];
     }
 
