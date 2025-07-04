@@ -19,10 +19,11 @@ class PlaTransactionDTO extends TransactionDTO
         public readonly ?int $webID = null,
         public readonly ?string $currency = null,
         public readonly ?string $gameID = null,
-        public readonly ?float $betAmount = null,
-        public readonly ?float $betValid = null,
+        public readonly ?float $betAmount = 0,
+        public readonly ?float $betValid = 0,
         public readonly ?float $betWinlose = 0,
         public readonly ?string $dateTime = null,
+        public readonly ?float $winAmount = 0,
     ) {}
 
     public static function wager(PlaRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): self
@@ -41,6 +42,25 @@ class PlaTransactionDTO extends TransactionDTO
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
+        );
+    }
+
+    public static function payout(PlaRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): self
+    {
+        return new self(
+            extID: $requestDTO->extID,
+            roundID: $requestDTO->roundID,
+            playID: $playerDTO->playID,
+            username: $playerDTO->username,
+            webID: self::getWebID(playID: $playerDTO->playID),
+            currency: $playerDTO->currency,
+            gameID: $requestDTO->gameID,
+            betWinlose: $requestDTO->amount,
+            dateTime: self::convertProviderDateTime(
+                dateTime: $requestDTO->dateTime,
+                providerTimezone: self::PROVIDER_API_TIMEZONE
+            ),
+            winAmount: $requestDTO->amount
         );
     }
 }

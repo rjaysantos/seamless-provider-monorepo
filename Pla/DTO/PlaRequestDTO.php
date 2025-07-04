@@ -16,7 +16,9 @@ class PlaRequestDTO
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
         public readonly ?float $amount = null,
-        public readonly ?string $gameID = null
+        public readonly ?string $gameID = null,
+        public readonly ?string $transactionType = null,
+        public readonly ?string $betExtID = null,
     ) {}
 
     public static function fromAuthenticateRequest(Request $request): self
@@ -59,6 +61,21 @@ class PlaRequestDTO
             amount: (float) $request->amount,
             gameID: $request->gameCodeName,
             requestId: $request->requestId,
+        );
+    }
+
+    public static function fromGameRoundResultRequest(Request $request): self
+    {
+        return new self(
+            playID: strtolower(Str::after($request->username, '_')),
+            extID: $request->input('pay.transactionCode'),
+            roundID: $request->gameRoundCode,
+            dateTime: $request->input('pay.transactionDate'),
+            amount: (float) $request->input('pay.amount'),
+            gameID: $request->gameCodeName,
+            requestId: $request->requestId,
+            transactionType: $request->input('pay.type'),
+            betExtID: $request->input('pay.relatedTransactionCode')
         );
     }
 }
