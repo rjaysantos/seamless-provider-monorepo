@@ -25,6 +25,7 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
+use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -113,13 +114,14 @@ class PlaService
         return $this->getPlayerBalance(credentials: $credentials, requestDTO: $requestDTO, playID: $player->playID);
     }
 
-    public function logout(Request $request): void
+    public function logout(PlaRequestDTO $requestDTO): void
     {
-        $player = $this->getPlayerDetails(request: $request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $this->validateToken(request: $request, player: $player);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException(requestDTO: $requestDTO);
 
-        $this->repository->deleteToken($player->play_id, $request->externalToken);
+        $this->repository->resetPlayerToken($player->playID);
     }
 
     private function makeReport(

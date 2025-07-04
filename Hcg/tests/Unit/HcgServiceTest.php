@@ -363,256 +363,34 @@ class HcgServiceTest extends TestCase
         $service->getBalance(requestDTO: $requestDTO);
     }
 
-    public function test_betAndSettle_mockRepository_getPlayerByPlayID()
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $providerCredentials->method('getTransactionIDPrefix')
-            ->willReturn('0');
-
-        $mockRepository = $this->createMock(HcgRepository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: $request->uid)
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000.0
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubRepositoryNullPlayer_playerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockRepository_getTransactionByTrxID()
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $providerCredentials->method('getTransactionIDPrefix')
-            ->willReturn('0');
-
-        $mockRepository = $this->createMock(HcgRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(transactionID: "0-{$request->orderNo}")
-            ->willReturn(null);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000.0
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubRepositoryTransactionExist_transactionAlreadyExistException()
-    {
-        $this->expectException(TransactionAlreadyExistException::class);
-
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) []);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockCredentials_getCredentialsByCurrency()
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $mockCredentials = $this->createMock(HcgCredentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentialsByCurrency')
-            ->with(currency: 'IDR')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000.0
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $mockCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->betAndSettle(request: $request);
-    }
-
     public function test_betAndSettle_mockWallet_balance()
     {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
+        $credentials = new HcgStagingIDR();
 
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
+        $requestDTO = new HcgRequestDTO(
+            playID: 'testPlayIDu001',
+            dateTime: 1723618062,
+            roundID: 'testRoundID',
+            gameID: '123',
+            betAmount: 1,
+            winAmount: 3
+        );
 
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
+        $playerDTO = new HcgPlayerDTO(
+            playID: 'testPlayIDu001',
+            username: 'testUsername',
+            currency: 'IDR'
+        );
 
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
+        $walletReport = new Report;
 
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('balance')
-            ->with(credentials: $providerCredentials, playID: $request->uid)
+            ->with(
+                credentials: $credentials, 
+                playerDTO: 'testPlayIDu001'
+            )
             ->willReturn([
                 'status_code' => 2100,
                 'credit' => 2000.0
@@ -624,397 +402,97 @@ class HcgServiceTest extends TestCase
                 'credit_after' => 4000.0
             ]);
 
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
+        $stubWalletReport = $this->createMock(WalletReport::class);
+        $stubWalletReport->method('makeSlotReport')
+            ->willReturn($walletReport);
+
+        $stubRepository = $this->createMock(HcgRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($playerDTO);
+
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn(null);
+
+        $stubCredentials = $this->createMock(HcgCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($credentials);
 
         $service = $this->makeService(
             repository: $stubRepository,
             credentials: $stubCredentials,
             wallet: $mockWallet,
-            report: $stubReport
+            report: $stubWalletReport
         );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWalletBalanceError_walletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 'invalid'
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWalletInsufficientFunds_insufficientFundException()
-    {
-        $this->expectException(InsufficientFundException::class);
-
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 0.0
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockRepository_createSettleTransaction()
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 123456789,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-            'sign' => 'testSign'
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $providerCredentials->method('getTransactionIDPrefix')
-            ->willReturn('0');
-
-        $mockRepository = $this->createMock(HcgRepository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $mockRepository->expects($this->once())
-            ->method('createSettleTransaction')
-            ->with(
-                transactionID: "0-{$request->orderNo}",
-                betAmount: 1000,
-                winAmount: 3000
-            );
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000.0
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_mockReport_makeSlotReport()
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 1723618062,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $providerCredentials->method('getTransactionIDPrefix')
-            ->willReturn('0');
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000.0
-            ]);
-
-        $mockReport = $this->createMock(WalletReport::class);
-        $mockReport->expects($this->once())
-            ->method('makeSlotReport')
-            ->with(
-                transactionID: "0-{$request->orderNo}",
-                gameCode: $request->gameCode,
-                betTime: '2024-08-14 14:47:42'
-            )
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $mockReport
-        );
-        $service->betAndSettle(request: $request);
+        $service->betAndSettle(requestDTO: $requestDTO);
     }
 
     public function test_betAndSettle_mockWallet_wagerAndPayout()
     {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 1723618062,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-        ]);
+        $credentials = new HcgStagingIDR();
 
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
+        $requestDTO = new HcgRequestDTO(
+            playID: 'testPlayIDu001',
+            dateTime: 1723618062,
+            roundID: 'testRoundID',
+            gameID: '123',
+            betAmount: 1,
+            winAmount: 3
+        );
 
-        $providerCredentials->method('getTransactionIDPrefix')
-            ->willReturn('0');
+        $playerDTO = new HcgPlayerDTO(
+            playID: 'testPlayIDu001',
+            username: 'testUsername',
+            currency: 'IDR'
+        );
 
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
+        $walletReport = new Report;
 
         $mockWallet = $this->createMock(IWallet::class);
-        $mockWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $mockWallet->expects($this->once())
-            ->method('wagerAndPayout')
+        $mockWallet->method('wagerAndPayout')
             ->with(
-                credentials: $providerCredentials,
-                playID: $request->uid,
+                credentials: $credentials,
+                playID: 'testPlayIDu001',
                 currency: 'IDR',
-                wagerTransactionID: "wagerpayout-0-{$request->orderNo}",
+                wagerTransactionID: "wagerpayout-{$requestDTO->roundID}",
                 wagerAmount: 1000,
-                payoutTransactionID: "wagerpayout-0-{$request->orderNo}",
+                payoutTransactionID: "wagerpayout-{$requestDTO->roundID}",
                 payoutAmount: 3000,
-                report: new Report
+                report: $walletReport
             )
             ->willReturn([
                 'status_code' => 2100,
                 'credit_after' => 4000.0
             ]);
 
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
+        $mockWallet->expects($this->once())
+            ->method('balance')
+            ->willReturn([
+                'status_code' => 2100,
+                'credit' => 2000.0
+            ]);
+
+        $stubWalletReport = $this->createMock(WalletReport::class);
+        $stubWalletReport->method('makeSlotReport')
+            ->willReturn($walletReport);
+
+        $stubRepository = $this->createMock(HcgRepository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($playerDTO);
+
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturn(null);
+
+        $stubCredentials = $this->createMock(HcgCredentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($credentials);
 
         $service = $this->makeService(
             repository: $stubRepository,
             credentials: $stubCredentials,
             wallet: $mockWallet,
-            report: $stubReport
+            report: $stubWalletReport
         );
-        $service->betAndSettle(request: $request);
-    }
-
-    public function test_betAndSettle_stubWalletWagerAndPayoutError_walletErrorException()
-    {
-        $this->expectException(WalletErrorException::class);
-
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 1723618062,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn(1000);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => 'IDR']);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 'invalid'
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $service->betAndSettle(request: $request);
-    }
-
-    #[DataProvider('currencyConversionExpectedData')]
-    public function test_betAndSettle_stubWallet_expectedData($currency, $conversionRatio, $expected)
-    {
-        $request = new Request([
-            'action' => 2,
-            'uid' => 'testPlayID',
-            'timestamp' => 1723618062,
-            'orderNo' => 'testTransactionID',
-            'gameCode' => '123',
-            'bet' => 1,
-            'win' => 3,
-        ]);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getCurrencyConversion')
-            ->willReturn($conversionRatio);
-
-        $stubRepository = $this->createMock(HcgRepository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['currency' => $currency]);
-
-        $stubCredentials = $this->createMock(HcgCredentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('balance')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit' => 2000.0
-            ]);
-
-        $stubWallet->method('wagerAndPayout')
-            ->willReturn([
-                'status_code' => 2100,
-                'credit_after' => 4000
-            ]);
-
-        $stubReport = $this->createMock(WalletReport::class);
-        $stubReport->method('makeSlotReport')
-            ->willReturn(new Report);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            wallet: $stubWallet,
-            report: $stubReport
-        );
-        $result = $service->betAndSettle(request: $request);
-
-        $this->assertSame(expected: $expected, actual: $result);
-    }
-
-    public static function currencyConversionExpectedData()
-    {
-        return [
-            ['IDR', 1000, 4.0],
-            ['PHP', 1, 4000.0],
-        ];
+        $service->betAndSettle(requestDTO: $requestDTO);
     }
 
     public function test_cancelBetAndSettle_mockRepository_getPlayerByPlayID()

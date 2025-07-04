@@ -71,7 +71,9 @@ class PlaController extends AbstractCasinoController
             'externalToken' => 'required|string'
         ]);
 
-        $this->service->logout(request: $request);
+        $requestDTO = PlaRequestDTO::fromLogoutRequest(request: $request);
+
+        $this->service->logout(requestDTO: $requestDTO);
 
         return $this->response->logout(requestId: $request->requestId);
     }
