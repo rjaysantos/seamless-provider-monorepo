@@ -8,12 +8,10 @@ use Illuminate\Http\JsonResponse;
 
 class RefundTransactionNotFoundException extends Exception
 {
-    public function __construct(private Request $request) {}
-
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->request->requestId,
+            'requestId' => request()->input('requestId'),
             'error' => [
                 'code' => 'ERR_NO_BET'
             ]

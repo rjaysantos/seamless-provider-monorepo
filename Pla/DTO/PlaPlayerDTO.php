@@ -29,7 +29,8 @@ class PlaPlayerDTO extends PlayerDTO
         );
     }
 
-    public static function fromPlayRequest(CasinoRequestDTO $casinoRequest): self{
+    public static function fromPlayRequest(CasinoRequestDTO $casinoRequest): self
+    {
 
         $randomizer = app(Randomizer::class);
 

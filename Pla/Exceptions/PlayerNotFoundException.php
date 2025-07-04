@@ -8,12 +8,10 @@ use Providers\Pla\DTO\PlaRequestDTO;
 
 class PlayerNotFoundException extends Exception
 {
-    public function __construct(private PlaRequestDTO $requestDTO) {}
-
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestDTO->requestId,
+            'requestId' => request()->input('requestId'),
             'error' => [
                 'code' => 'ERR_PLAYER_NOT_FOUND'
             ]

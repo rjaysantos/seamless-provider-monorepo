@@ -25,7 +25,7 @@ class PlaController extends AbstractCasinoController
         $validate = Validator::make(data: $request->all(), rules: $rules);
 
         if ($validate->fails())
-            throw new InvalidProviderRequestException(request: $request);
+            throw new InvalidProviderRequestException;
     }
 
     public function authenticate(Request $request)
@@ -39,9 +39,8 @@ class PlaController extends AbstractCasinoController
         $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
         $currency = $this->service->authenticate(requestDTO: $requestDTO);
-        
+
         return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
-        
     }
 
     public function getBalance(Request $request)
@@ -92,9 +91,11 @@ class PlaController extends AbstractCasinoController
             'gameCodeName' => 'required|string'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = PlaRequestDTO::fromBetRequest(request: $request);
 
-        return $this->response->bet(request: $request, balance: $balance);
+        $balance = $this->service->wagerAndPayout(requestDTO: $requestDTO);
+
+        return $this->response->bet(requestDTO: $requestDTO, balance: $balance);
     }
 
     public function gameRoundResult(Request $request)
