@@ -14,7 +14,8 @@ class Hg5RequestDTO
         public readonly ?string $roundID = null,
         public readonly ?float $winAmount = null,
         public readonly ?string $gameID = null,
-        public readonly ?string $dateTime = null
+        public readonly ?string $dateTime = null,
+        public readonly ?string $currency = null
     ) {}
 
     public static function fromAuthenticateRequest(Request $request): self
@@ -46,7 +47,8 @@ class Hg5RequestDTO
             roundID: $request->gameRound,
             winAmount: $request->amount,
             gameID: $request->gameCode,
-            dateTime: $request->eventTime
+            dateTime: $request->eventTime,
+            currency: $request->currency
         );
     }
 }

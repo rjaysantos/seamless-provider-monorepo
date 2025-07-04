@@ -259,7 +259,7 @@ class Hg5Controller extends AbstractCasinoController
 
         return $this->response->multiplayerTransactionResponse(
             balance: $balance,
-            currency: $request->currency
+            currency: $requestDTO->currency
         );
     }
 }
