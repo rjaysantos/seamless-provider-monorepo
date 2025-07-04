@@ -113,6 +113,17 @@ class YgrService
         $this->repository->deletePlayGameByToken(token: $request->connectToken);
     }
 
+    private function isSlotGame(ICredentials $credentials, string $gameID): bool
+    {
+        if (in_array($gameID, $credentials->getArcadeGameList()) === true)
+            return false;
+
+        if (in_array($gameID, $credentials->getFishGameList()) === true)
+            return false;
+
+        return true;
+    }
+
     public function betAndSettle(Request $request): object
     {
         $playerData = $this->repository->getPlayerByToken(token: $request->connectToken);
@@ -146,11 +157,18 @@ class YgrService
                 transactionDate: $transactionDate
             );
 
-            $report = $this->walletReport->makeSlotReport(
-                transactionID: $request->roundID,
-                gameCode: $playerData->status, // gameID inserted from play api
-                betTime: $transactionDate
-            );
+            if ($this->isSlotGame(credentials: $credentials, gameID: $playerData->status) === true)
+                $report = $this->walletReport->makeSlotReport(
+                    transactionID: $request->roundID,
+                    gameCode: $playerData->status, // gameID inserted from play api
+                    betTime: $transactionDate
+                );
+            else
+                $report = $this->walletReport->makeArcadeReport(
+                    transactionID: $request->roundID,
+                    gameCode: $playerData->status, // gameID inserted from play api
+                    betTime: $transactionDate
+                );
 
             $walletResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,

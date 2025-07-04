@@ -940,7 +940,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testSlotGameID'
             ]);
 
         $mockReport = $this->createMock(WalletReport::class);
@@ -948,7 +948,111 @@ class YgrServiceTest extends TestCase
             ->method('makeSlotReport')
             ->with(
                 transactionID: $request->roundID,
-                gameCode: 'testGameID',
+                gameCode: 'testSlotGameID',
+                betTime: '2021-01-01 00:00:00'
+            )
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('balance')
+            ->willReturn([
+                'credit' => 1000.00,
+                'status_code' => 2100
+            ]);
+        $stubWallet->method('wagerAndPayout')
+            ->willReturn([
+                'credit_after' => 1000.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(
+            repository: $stubRepository,
+            wallet: $stubWallet,
+            walletReport: $mockReport
+        );
+        $service->betAndSettle(request: $request);
+    }
+
+    public function test_betAndSettle_mockWalletReportArcadeGame_makeArcadeReport()
+    {
+        $request = new Request([
+            'connectToken' => 'testToken',
+            'roundID' => 'testTransactionID',
+            'betAmount' => 100.00,
+            'payoutAmount' => 300.00,
+            'freeGame' => 0,
+            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
+        ]);
+
+        $stubRepository = $this->createMock(YgrRepository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR',
+                'status' => 'testArcadeGameID'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getArcadeGameList')->willReturn(['testArcadeGameID']);
+        $stubCredentials = $this->createMock(YgrCredentials::class);
+        $stubCredentials->method('getCredentials')->willReturn($providerCredentials);
+
+        $mockReport = $this->createMock(WalletReport::class);
+        $mockReport->expects($this->once())
+            ->method('makeSlotReport')
+            ->with(
+                transactionID: $request->roundID,
+                gameCode: 'testArcadeGameID',
+                betTime: '2021-01-01 00:00:00'
+            )
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('balance')
+            ->willReturn([
+                'credit' => 1000.00,
+                'status_code' => 2100
+            ]);
+        $stubWallet->method('wagerAndPayout')
+            ->willReturn([
+                'credit_after' => 1000.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $mockReport);
+        $service->betAndSettle(request: $request);
+    }
+
+    public function test_betAndSettle_mockWalletReportFishGame_makeArcadeReport()
+    {
+        $request = new Request([
+            'connectToken' => 'testToken',
+            'roundID' => 'testTransactionID',
+            'betAmount' => 100.00,
+            'payoutAmount' => 300.00,
+            'freeGame' => 0,
+            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
+        ]);
+
+        $stubRepository = $this->createMock(YgrRepository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR',
+                'status' => 'testFishGameID'
+            ]);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getFishGameList')->willReturn(['testFishGameID']);
+        $stubCredentials = $this->createMock(YgrCredentials::class);
+        $stubCredentials->method('getCredentials')->willReturn($providerCredentials);
+
+        $mockReport = $this->createMock(WalletReport::class);
+        $mockReport->expects($this->once())
+            ->method('makeSlotReport')
+            ->with(
+                transactionID: $request->roundID,
+                gameCode: 'testFishGameID',
                 betTime: '2021-01-01 00:00:00'
             )
             ->willReturn(new Report);

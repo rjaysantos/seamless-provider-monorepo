@@ -40,4 +40,28 @@ class YgrStaging implements ICredentials
     {
         return 'AIX';
     }
+
+    public function getArcadeGameList(): array
+    {
+        return [
+            '047',
+            '046',
+            '037'
+        ];
+    }
+
+    public function getFishGameList(): array
+    {
+        return [
+            '070',
+            '068',
+            '060',
+            '052',
+            '030',
+            '020',
+            '018',
+            '017',
+            '012'
+        ];
+    }
 }
