@@ -72,32 +72,29 @@ class PlaRepository extends AbstractProviderRepository
             );
     }
 
-    public function deleteToken(string $playID, string $token): void
+    public function resetPlayerToken(string $playID): void
     {
-        DB::connection('pgsql_write')
-            ->table('pla.playgame')
+        $this->write->table('pla.players')
             ->where('play_id', $playID)
-            ->where('token', $token)
-            ->delete();
+            ->update(['token' => null]);
     }
 
-    public function createTransaction(
-        string $trxID,
-        float $betAmount,
-        float $winAmount,
-        string $betTime,
-        ?string $settleTime,
-        string $refID
-    ): void {
-        DB::connection('pgsql_write')
-            ->table('pla.reports')
+    public function createTransaction(PlaTransactionDTO $transactionDTO): void
+    {
+        $this->write->table('pla.reports')
             ->insert([
-                'trx_id' => $trxID,
-                'bet_amount' => $betAmount,
-                'win_amount' => $winAmount,
-                'created_at' => $betTime,
-                'updated_at' => $settleTime,
-                'ref_id' => $refID
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 

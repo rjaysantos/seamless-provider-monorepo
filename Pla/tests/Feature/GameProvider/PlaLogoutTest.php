@@ -12,7 +12,6 @@ class PlaLogoutTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
 
@@ -21,13 +20,8 @@ class PlaLogoutTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
+            'currency' => 'IDR',
             'token' => 'PLAUC_TOKEN88888888',
-            'expired' => 'FALSE'
         ]);
 
         $payload = [
@@ -38,16 +32,21 @@ class PlaLogoutTest extends TestCase
 
         $response = $this->post('pla/prov/logout', $payload);
 
-        $response->assertStatus(200);
 
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b'
         ]);
 
-        $this->assertDatabaseMissing('pla.playgame', [
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('pla.players', [
             'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN88888888',
-            'expired' => 'FALSE'
+            'token' => 'PLAUC_TOKEN88888888'
+        ]);
+
+        $this->assertDatabaseHas('pla.players', [
+            'play_id' => 'player001',
+            'token' => null,
         ]);
     }
 
@@ -93,21 +92,21 @@ class PlaLogoutTest extends TestCase
 
         $response = $this->post('pla/prov/logout', $payload);
 
-        $response->assertStatus(200);
-
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
             'error' => [
                 'code' => 'ERR_PLAYER_NOT_FOUND'
             ]
         ]);
+
+        $response->assertStatus(200);
     }
 
     public function test_logout_usernameWithoutKiosk_expectedData()
     {
         $payload = [
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
-            'username' => 'invalidUsername',
+            'username' => 'PLAYER001',
             'externalToken' => 'PLAUC_TOKEN88888888'
         ];
 
@@ -128,13 +127,8 @@ class PlaLogoutTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'player001',
             'username' => 'testPlayer',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUC_TOKEN88888888',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'PLAUC_TOKEN88888888'
         ]);
 
         $payload = [
@@ -145,13 +139,13 @@ class PlaLogoutTest extends TestCase
 
         $response = $this->post('pla/prov/logout', $payload);
 
-        $response->assertStatus(200);
-
         $response->assertJson([
             'requestId' => 'f2b26f85-021e-4326-80cf-490932c45a2b',
             'error' => [
                 'code' => 'ERR_AUTHENTICATION_FAILED'
             ]
         ]);
+
+        $response->assertStatus(200);
     }
 }
