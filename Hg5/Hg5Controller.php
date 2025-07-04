@@ -10,7 +10,6 @@ use App\Http\Controllers\AbstractCasinoController;
 use App\Exceptions\Casino\InvalidBearerTokenException;
 use App\Exceptions\Casino\InvalidCasinoRequestException;
 use Providers\Hg5\Exceptions\InvalidProviderRequestException;
-use Wallet\V1\InSys\CheckBalance\CheckBalanceBasic\Req;
 
 class Hg5Controller extends AbstractCasinoController
 {
