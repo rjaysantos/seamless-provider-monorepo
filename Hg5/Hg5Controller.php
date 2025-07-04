@@ -253,11 +253,13 @@ class Hg5Controller extends AbstractCasinoController
             'eventTime' => 'required|string'
         ]);
 
-        $balance = $this->service->multiplayerSettle(request: $request);
+        $requestDTO = Hg5RequestDTO::fromRollinRequest(request: $request);
+
+        $balance = $this->service->multiplayerSettle(requestDTO: $requestDTO);
 
         return $this->response->multiplayerTransactionResponse(
             balance: $balance,
-            currency: $request->currency
+            currency: $requestDTO->currency
         );
     }
 }

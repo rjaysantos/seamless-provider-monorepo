@@ -11,6 +11,7 @@ use Providers\Hg5\Hg5Credentials;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Providers\Hg5\DTO\Hg5RequestDTO;
 use Wallet\V1\ProvSys\Transfer\Report;
+use Providers\Hg5\DTO\Hg5TransactionDTO;
 use App\Libraries\Wallet\V2\WalletReport;
 use Providers\Hg5\Contracts\ICredentials;
 use App\Exceptions\Casino\PlayerNotFoundException;
@@ -5440,403 +5441,54 @@ class Hg5ServiceTest extends TestCase
         $this->assertSame(expected: $expectedData, actual: $response);
     }
 
-    public function test_multiplayerSettle_mockRepository_getPlayerByPlayID()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $mockRepository = $this->createMock(Hg5Repository::class);
-        $mockRepository->expects($this->once())
-            ->method('getPlayerByPlayID')
-            ->with(playID: 'testPlayID1')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubRepositoryNullPlayer_ProviderPlayerNotFoundException()
-    {
-        $this->expectException(ProviderPlayerNotFoundException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository);
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_mockCredentials_getCredentialsByCurrency()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $mockCredentials = $this->createMock(Hg5Credentials::class);
-        $mockCredentials->expects($this->once())
-            ->method('getCredentialsByCurrency')
-            ->with(currency: 'IDR')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $mockCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubRequestInvalidHeader_InvalidTokenException()
-    {
-        $this->expectException(InvalidTokenException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'invalidToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubRequestInvalidAgentID_InvalidAgentIDException()
-    {
-        $this->expectException(InvalidAgentIDException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 153513513,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_mockRepository_getTransactionByTrxID()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $mockRepository = $this->createMock(Hg5Repository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $mockRepository->expects($this->once())
-            ->method('getTransactionByTrxID')
-            ->with(trxID: 'testGameRound1')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubRepositoryTransactionNotFound_ProviderTransactionNotFoundException()
-    {
-        $this->expectException(ProviderTransactionNotFoundException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn(null);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubRepositoryTransactionAlreadySettled_TransactionAlreadySettledException()
-    {
-        $this->expectException(TransactionAlreadySettledException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => '2024-01-01 12:00:00']);
-
-        $service = $this->makeService(repository: $stubRepository, credentials: $stubCredentials);
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_mockRepository_settleTransaction()
-    {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $mockRepository = $this->createMock(Hg5Repository::class);
-        $mockRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $mockRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $mockRepository->expects($this->once())
-            ->method('settleTransaction')
-            ->with(
-                trxID: $request->gameRound,
-                winAmount: $request->amount,
-                settleTime: '2024-01-01 12:00:00'
-            );
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $mockRepository,
-            credentials: $stubCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $service->multiplayerSettle(request: $request);
-    }
-
     public function test_multiplayerSettle_mockWalletReport_makeArcadeReport()
     {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
+        $requestDTO = new Hg5RequestDTO(
+            authToken: 'testAuthToken',
+            playID: 'testPlayID',
+            agentID: 111,
+            token: 'testToken',
+            roundID: 'testRoundID',
+            winAmount: 200,
+            gameID: 'testGameID',
+            dateTime: '2024-01-01T00:00:00-04:00',
+        );
 
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
+        $playerDTO = new Hg5PlayerDTO(
+            playID: 'test-play-idu001',
+            username: 'test-username',
+            currency: 'IDR',
+            token: 'testToken'
+        );
 
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
+        $wagerTransaction = new Hg5TransactionDTO(
+            extID: 'wager-testRoundID',
+            roundID: 'testRoundID',
+            playID: 'test-play-idu001',
+            username: 'test-username',
+            webID: 1,
+            currency: 'IDR',
+            gameID: 'testGameID',
+            betAmount: 100
+        );
 
         $mockWalletReport = $this->createMock(WalletReport::class);
         $mockWalletReport->expects($this->once())
             ->method('makeArcadeReport')
             ->with(
-                transactionID: 'a242ef935b602ef8d3fe2abe4802d509', // "$request->gameRound",
-                gameCode: $request->gameCode,
+                transactionID: md5('testRoundID'),
+                gameCode: 'testGameID',
                 betTime: '2024-01-01 12:00:00',
-                opt: json_encode(['txn_id' => $request->gameRound])
+                opt: json_encode(['txn_id' => 'testRoundID'])
             )
             ->willReturn(new Report);
+
+        $stubRepository = $this->createMock(Hg5Repository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($playerDTO);        
+        
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturnOnConsecutiveCalls($wagerTransaction, null);
 
         $stubWallet = $this->createMock(IWallet::class);
         $stubWallet->method('payout')
@@ -5844,6 +5496,17 @@ class Hg5ServiceTest extends TestCase
                 'credit_after' => 1200.00,
                 'status_code' => 2100
             ]);
+
+        $credentials = $this->createMock(ICredentials::class);
+        $credentials->method('getAuthorizationToken')
+            ->willReturn('testAuthToken');
+
+        $credentials->method('getAgentID')
+            ->willReturn(111);
+
+        $stubCredentials = $this->createMock(Hg5Credentials::class);
+        $stubCredentials->method('getCredentialsByCurrency')
+            ->willReturn($credentials);
 
         $service = $this->makeService(
             repository: $stubRepository,
@@ -5851,56 +5514,88 @@ class Hg5ServiceTest extends TestCase
             walletReport: $mockWalletReport,
             wallet: $stubWallet
         );
-        $service->multiplayerSettle(request: $request);
+
+        $service->multiplayerSettle(requestDTO: $requestDTO);
     }
 
     public function test_multiplayerSettle_mockWallet_payout()
     {
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
+        $credentials = new Hg5Credentials;
 
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
+        $requestDTO = new Hg5RequestDTO(
+            authToken: 'testAuthToken',
+            playID: 'testPlayID',
+            agentID: 111,
+            token: 'testToken',
+            roundID: 'testRoundID',
+            winAmount: 200,
+            gameID: 'testGameID',
+            dateTime: '2024-01-01T00:00:00-04:00',
+        );
 
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
+        $playerDTO = new Hg5PlayerDTO(
+            playID: 'test-play-idu001',
+            username: 'test-username',
+            currency: 'IDR',
+            token: 'testToken'
+        );
+
+        $wagerTransaction = new Hg5TransactionDTO(
+            extID: 'wager-testRoundID',
+            roundID: 'testRoundID',
+            playID: 'test-play-idu001',
+            username: 'test-username',
+            webID: 1,
+            currency: 'IDR',
+            gameID: 'testGameID',
+            betAmount: 100
+        );
+
+        $walletReport = new Report;
+
+        $credentials = $this->createMock(ICredentials::class);
+        $credentials->method('getAuthorizationToken')
+            ->willReturn('testAuthToken');
+
+        $credentials->method('getAgentID')
+            ->willReturn(111);
 
         $stubCredentials = $this->createMock(Hg5Credentials::class);
         $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
+            ->willReturn($credentials);
 
         $mockWallet = $this->createMock(IWallet::class);
         $mockWallet->expects($this->once())
             ->method('payout')
             ->with(
-                credentials: $providerCredentials,
-                playID: $request->playerId,
-                currency: $request->currency,
-                transactionID: "payout-{$request->gameRound}",
-                amount: $request->amount,
-                report: new Report
+                $credentials,
+                'test-play-idu001',
+                'IDR',
+                'payout-testRoundID',
+                200,
+                $walletReport
             )
             ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
+                'status_code' => 2100,
+                'credit_after' => 1000
             ]);
+
+        $mockWallet->method('balance')
+            ->willReturn([
+                'status_code' => 2100,
+                'credit' => 1000
+            ]);
+
+        $stubRepository = $this->createMock(Hg5Repository::class);
+        $stubRepository->method('getPlayerByPlayID')
+            ->willReturn($playerDTO);        
+        
+        $stubRepository->method('getTransactionByExtID')
+            ->willReturnOnConsecutiveCalls($wagerTransaction, null);
+
+        $stubWalletReport = $this->createMock(WalletReport::class);
+        $stubWalletReport->method('makeArcadeReport')
+            ->willReturn($walletReport);
 
         $service = $this->makeService(
             repository: $stubRepository,
@@ -5908,105 +5603,7 @@ class Hg5ServiceTest extends TestCase
             walletReport: $stubWalletReport,
             wallet: $mockWallet
         );
-        $service->multiplayerSettle(request: $request);
-    }
 
-    public function test_multiplayerSettle_stubWalletWagerAndPayoutFail_ProviderWalletErrorException()
-    {
-        $this->expectException(ProviderWalletErrorException::class);
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn(['status_code' => 51.31534]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $service->multiplayerSettle(request: $request);
-    }
-
-    public function test_multiplayerSettle_stubWallet_expectedData()
-    {
-        $expectedData = 1200.00;
-
-        $request = new Request([
-            'playerId' => 'testPlayID1',
-            'agentId' => 111,
-            'amount' => 200,
-            'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
-        ]);
-        $request->headers->set('Authorization', 'validToken');
-
-        $stubRepository = $this->createMock(Hg5Repository::class);
-        $stubRepository->method('getPlayerByPlayID')
-            ->willReturn((object) ['play_id' => 'testPlayID1']);
-
-        $providerCredentials = $this->createMock(ICredentials::class);
-        $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
-        $providerCredentials->method('getAgentID')->willReturn(111);
-
-        $stubCredentials = $this->createMock(Hg5Credentials::class);
-        $stubCredentials->method('getCredentialsByCurrency')
-            ->willReturn($providerCredentials);
-
-        $stubRepository->method('getTransactionByTrxID')
-            ->willReturn((object) ['updated_at' => null]);
-
-        $stubWalletReport = $this->createMock(WalletReport::class);
-        $stubWalletReport->method('makeArcadeReport')
-            ->willReturn(new Report);
-
-        $stubWallet = $this->createMock(IWallet::class);
-        $stubWallet->method('payout')
-            ->willReturn([
-                'credit_after' => 1200.00,
-                'status_code' => 2100
-            ]);
-
-        $service = $this->makeService(
-            repository: $stubRepository,
-            credentials: $stubCredentials,
-            walletReport: $stubWalletReport,
-            wallet: $stubWallet
-        );
-        $response = $service->multiplayerSettle(request: $request);
-
-        $this->assertSame(expected: $expectedData, actual: $response);
+        $service->multiplayerSettle(requestDTO: $requestDTO);
     }
 }
