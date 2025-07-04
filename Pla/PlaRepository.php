@@ -87,7 +87,6 @@ class PlaRepository extends AbstractProviderRepository
             ->insert([
                 'ext_id' => $transactionDTO->extID,
                 'round_id' => $transactionDTO->roundID,
-                'ref_id' => $transactionDTO->refID,
                 'username' => $transactionDTO->username,
                 'play_id' => $transactionDTO->playID,
                 'web_id' => $transactionDTO->webID,

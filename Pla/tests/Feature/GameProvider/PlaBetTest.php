@@ -14,7 +14,6 @@ class PlaBetTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE pla.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -53,7 +52,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken',
+            'token' => 'testToken',
         ]);
 
         $payload = [
@@ -83,9 +82,8 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'ext_id' => 'wagerPayout-testTransactionCode',
-            'round_id' => 'testTransactionCode',
-            'ref_id' => 'testRoundCode',
+            'ext_id' => 'testTransactionCode',
+            'round_id' => 'testRoundCode',
             'username' => 'testUsername',
             'play_id' => 'playeru001',
             'web_id' => 1,
@@ -134,13 +132,12 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken',
+            'token' => 'testToken',
         ]);
 
         DB::table('pla.reports')->insert([
-            'ext_id' => 'wagerPayout-testTransactionCode',
+            'ext_id' => 'testTransactionCode',
             'round_id' => 'testTransactionCode',
-            'ref_id' => 'testRoundCode',
             'username' => 'testUsername',
             'play_id' => 'playeru001',
             'web_id' => 1,
@@ -180,9 +177,8 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'ext_id' => 'wagerPayout-testTransactionCode2',
-            'round_id' => 'testTransactionCode2',
-            'ref_id' => 'testRoundCode',
+            'ext_id' => 'testTransactionCode2',
+            'round_id' => 'testRoundCode',
             'username' => 'testUsername',
             'play_id' => 'playeru001',
             'web_id' => 1,
@@ -245,7 +241,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken'
+            'token' => 'testToken'
         ]);
 
         $payload = [
@@ -316,13 +312,12 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken'
+            'token' => 'testToken'
         ]);
 
         DB::table('pla.reports')->insert([
-            'ext_id' => 'wagerPayout-testTransactionCode',
-            'round_id' => 'testTransactionCode',
-            'ref_id' => 'testRoundCode',
+            'ext_id' => 'testTransactionCode',
+            'round_id' => 'testRoundCode',
             'username' => 'testUsername',
             'play_id' => 'playeru001',
             'web_id' => 1,
@@ -379,7 +374,8 @@ class PlaBetTest extends TestCase
         DB::table('pla.players')->insert([
             'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $payload = [
@@ -432,7 +428,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken',
+            'token' => 'testToken',
         ]);
 
         $payload = [
@@ -476,7 +472,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken'
+            'token' => 'testToken'
         ]);
 
         $payload = [
@@ -508,7 +504,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken',
+            'token' => 'testToken',
         ]);
 
         $wallet = new class extends TestWallet {
@@ -564,7 +560,6 @@ class PlaBetTest extends TestCase
         $this->assertDatabaseMissing('pla.reports', [
             'ext_id' => 'wagerPayout-testTransactionCode',
             'round_id' => 'testTransactionCode',
-            'ref_id' => 'testRoundCode',
             'username' => 'testUsername',
             'play_id' => 'playeru001',
             'web_id' => 1,
@@ -585,7 +580,7 @@ class PlaBetTest extends TestCase
             'play_id' => 'playeru001',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'token' => 'PLAUCN_testToken'
+            'token' => 'testToken'
         ]);
 
         app()->bind(IWallet::class, $wallet::class);

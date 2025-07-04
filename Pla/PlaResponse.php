@@ -67,7 +67,7 @@ class PlaResponse
         };
 
         return response()->json(data: [
-            "requestId" => $requestId,
+            'requestId' => request()->input('requestId'),
             "username" => $playID,
             "currencyCode" => config('app.env') === 'PRODUCTION' ? $currency : 'CNY',
             "countryCode" => config('app.env') === 'PRODUCTION' ? $country : 'CN'
@@ -77,7 +77,7 @@ class PlaResponse
     public function getBalance(string $requestId, float $balance): JsonResponse
     {
         return response()->json(data: [
-            "requestId" => $requestId,
+            'requestId' => request()->input('requestId'),
             "balance" => [
                 "real" => $this->formatBalance($balance),
                 "timestamp" => $this->getDateTimeNow()
@@ -98,8 +98,8 @@ class PlaResponse
     public function bet(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
         return response()->json(data: [
-            'requestId' => $requestDTO->requestID,
-            'externalTransactionCode' => $requestDTO->roundID,
+            'requestId' => request()->input('requestId'),
+            'externalTransactionCode' => $requestDTO->extID,
             'externalTransactionDate' => $requestDTO->dateTime,
             'balance' => [
                 'real' => $this->formatBalance($balance),
@@ -117,7 +117,7 @@ class PlaResponse
             $this->getDateTimeNow() : $request->pay['transactionDate'];
 
         return response()->json(data: [
-            "requestId" => $request->requestId,
+            'requestId' => request()->input('requestId'),
             'externalTransactionCode' => $transactionCode,
             'externalTransactionDate' => $transactionDate,
             "balance" => [

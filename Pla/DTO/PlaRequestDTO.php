@@ -12,7 +12,7 @@ class PlaRequestDTO
         public readonly ?string $requestId = null,
         public readonly ?string $username = null,
         public readonly ?string $token = null,
-        public readonly ?string $refID = null,
+        public readonly ?string $extID = null,
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
         public readonly ?float $amount = null,
@@ -43,13 +43,13 @@ class PlaRequestDTO
     {
         return new self(
             playID: strtolower(Str::after($request->username, '_')),
-            token: $request->externalToken,
-            refID: $request->gameRoundCode,
-            roundID: $request->transactionCode,
+            token: Str::after($request->externalToken, '_'),
+            extID: $request->transactionCode,
+            roundID: $request->gameRoundCode,
             dateTime: $request->transactionDate,
             amount: (float) $request->amount,
             gameID: $request->gameCodeName,
-            requestID: $request->requestId,
+            requestId: $request->requestId,
         );
     }
 }

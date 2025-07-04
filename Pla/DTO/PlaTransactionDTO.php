@@ -23,15 +23,13 @@ class PlaTransactionDTO extends TransactionDTO
         public readonly ?float $betValid = null,
         public readonly ?float $betWinlose = 0,
         public readonly ?string $dateTime = null,
-        public readonly ?string $refID = null,
     ) {}
 
-    public static function wager(string $extID, PlaRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): self
+    public static function wager(PlaRequestDTO $requestDTO, PlaPlayerDTO $playerDTO): self
     {
         return new self(
-            extID: $extID,
+            extID: $requestDTO->extID,
             roundID: $requestDTO->roundID,
-            refID: $requestDTO->refID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
             webID: self::getWebID(playID: $playerDTO->playID),

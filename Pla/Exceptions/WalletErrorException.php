@@ -8,12 +8,10 @@ use Providers\Pla\DTO\PlaRequestDTO;
 
 class WalletErrorException extends Exception
 {
-    public function __construct(private PlaRequestDTO $requestDTO) {}
-
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->requestDTO->requestID,
+            'requestId' => request()->input('requestId'),
             'error' => [
                 'code' => 'INTERNAL_ERROR'
             ]

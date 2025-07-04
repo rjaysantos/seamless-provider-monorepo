@@ -73,7 +73,7 @@ class PlaService
         $player = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
         if (is_null($player) === true)
-            throw new ProviderPlayerNotFoundException(requestDTO: $requestDTO);
+            throw new ProviderPlayerNotFoundException;
 
         return $player;
     }
@@ -86,7 +86,7 @@ class PlaService
         $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
 
         if ($walletResponse['status_code'] !== 2100)
-            throw new WalletErrorException(requestDTO: $requestDTO);
+            throw new WalletErrorException;
 
         return $walletResponse['credit'];
     }
@@ -96,7 +96,7 @@ class PlaService
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
         if ($player->token !== $requestDTO->token)
-            throw new InvalidTokenException(requestDTO: $requestDTO);
+            throw new InvalidTokenException;
 
         return $player->currency;
     }
@@ -106,7 +106,7 @@ class PlaService
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
         if ($player->token !== $requestDTO->token)
-            throw new InvalidTokenException(requestDTO: $requestDTO);
+            throw new InvalidTokenException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
@@ -142,14 +142,13 @@ class PlaService
         );
     }
 
-    public function wager(PlaRequestDTO $requestDTO): float
+    public function wagerAndPayout(PlaRequestDTO $requestDTO): float
     {
         $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
         $wagerTransactionDTO = PlaTransactionDTO::wager(
-            extID: "wagerPayout-{$requestDTO->roundID}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
@@ -161,10 +160,11 @@ class PlaService
         if (is_null($existingWagerTransaction) === false)
             return $balance;
 
-        if ($balance < $wagerTransactionDTO->betAmount)
-            throw new InsufficientFundException(requestDTO: $requestDTO);
+        if ($player->token !== $requestDTO->token)
+            throw new InvalidTokenException;
 
-        $this->validateToken(requestDTO: $requestDTO, playerDTO: $player);
+        if ($balance < $wagerTransactionDTO->betAmount)
+            throw new InsufficientFundException;
 
         try {
             $this->repository->beginTransaction();
@@ -173,7 +173,7 @@ class PlaService
 
             $report = $this->makeReport(
                 credentials: $credentials,
-                transactionID: $wagerTransactionDTO->roundID,
+                transactionID: $wagerTransactionDTO->extID,
                 gameCode: $wagerTransactionDTO->gameID,
                 betTime: $wagerTransactionDTO->dateTime
             );
@@ -190,7 +190,7 @@ class PlaService
             );
 
             if ($walletResponse['status_code'] !== 2100)
-                throw new WalletErrorException(requestDTO: $requestDTO);
+                throw new WalletErrorException;
 
             $this->repository->commit();
         } catch (Exception $e) {
@@ -208,7 +208,7 @@ class PlaService
         $betTransaction = $this->repository->getBetTransactionByRefID(refID: $request->gameRoundCode);
 
         if (is_null($betTransaction) === true)
-            throw new ProviderTransactionNotFoundException(request: $request);
+            throw new ProviderTransactionNotFoundException;
 
         $trxID = is_null($request->pay) === true ? "L-{$request->requestId}" : $request->pay['transactionCode'];
 
@@ -293,7 +293,7 @@ class PlaService
         $betTransaction = $this->repository->getBetTransactionByTrxID(trxID: $request->pay['relatedTransactionCode']);
 
         if (is_null($betTransaction) === true)
-            throw new RefundTransactionNotFoundException(request: $request);
+            throw new RefundTransactionNotFoundException;
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 

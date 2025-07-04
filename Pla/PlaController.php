@@ -8,7 +8,6 @@ use Providers\Pla\PlaService;
 use Providers\Pla\PlaResponse;
 use Providers\Pla\DTO\PlaRequestDTO;
 use Illuminate\Support\Facades\Validator;
-use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\InvalidProviderRequestException;
 
 class PlaController extends AbstractCasinoController
@@ -26,7 +25,7 @@ class PlaController extends AbstractCasinoController
         $validate = Validator::make(data: $request->all(), rules: $rules);
 
         if ($validate->fails())
-            throw new InvalidProviderRequestException(request: $request);
+            throw new InvalidProviderRequestException;
     }
 
     public function authenticate(Request $request)
@@ -40,9 +39,8 @@ class PlaController extends AbstractCasinoController
         $requestDTO = PlaRequestDTO::fromAuthenticateRequest(request: $request);
 
         $currency = $this->service->authenticate(requestDTO: $requestDTO);
-        
+
         return $this->response->authenticate(requestId: $requestDTO->requestId, playID: $requestDTO->username, currency: $currency);
-        
     }
 
     public function getBalance(Request $request)
@@ -93,7 +91,7 @@ class PlaController extends AbstractCasinoController
 
         $requestDTO = PlaRequestDTO::fromBetRequest(request: $request);
 
-        $balance = $this->service->wager(requestDTO: $requestDTO);
+        $balance = $this->service->wagerAndPayout(requestDTO: $requestDTO);
 
         return $this->response->bet(requestDTO: $requestDTO, balance: $balance);
     }
