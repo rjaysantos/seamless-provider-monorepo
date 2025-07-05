@@ -41,8 +41,8 @@ class Hg5TransactionDTO extends TransactionDTO
             webID: self::getWebID(playID: $playerDTO->playID),
             currency: $playerDTO->currency,
             gameID: $requestDTO->gameID,
-            betValid: $requestDTO->amount,
-            betAmount: $requestDTO->amount,
+            betValid: $requestDTO->betAmount,
+            betAmount: $requestDTO->betAmount,
             dateTime: self::convertProviderDateTime(
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE

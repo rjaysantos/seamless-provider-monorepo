@@ -12,7 +12,7 @@ class Hg5RequestDTO
         public readonly ?int $agentID = null,
         public readonly ?string $token = null,
         public readonly ?string $gameID = null,
-        public readonly ?float $amount = null,
+        public readonly ?float $betAmount = null,
         public readonly ?string $currency = null,
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
@@ -46,7 +46,7 @@ class Hg5RequestDTO
                 playID: $data->playerId,
                 agentID: $data->agentId,
                 gameID: $data->gameCode,
-                amount: $data->amount,
+                betAmount: $data->amount,
                 currency: $data->currency,
                 roundID: $data->gameRound,
                 dateTime: $data->eventTime
