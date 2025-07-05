@@ -1,11 +1,12 @@
 <?php
 
 use Carbon\Carbon;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class Hg5MultipleDepositTest extends TestCase
 {
@@ -34,51 +35,65 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null,
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
         ]);
 
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -100,18 +115,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '0',
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -123,36 +138,34 @@ class Hg5MultipleDepositTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
-        ]);
-
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
-        ]);
-
-        $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 
@@ -162,12 +175,12 @@ class Hg5MultipleDepositTest extends TestCase
         Carbon::setTestNow('2024-01-01 12:00:00');
 
         $datasArray = [
-            'playerId' => 'testPlayID1',
+            'playerId' => 'testPlayeru001',
             'agentId' => 111,
-            'amount' => 100.00,
+            'amount' => 200.00,
             'currency' => 'IDR',
-            'gameCode' => 'testGameCode',
-            'gameRound' => 'testGameRound1',
+            'gameCode' => '1',
+            'gameRound' => 'testTransactionID1',
             'eventTime' => '2024-01-01T00:00:00-04:00'
         ];
 
@@ -178,12 +191,12 @@ class Hg5MultipleDepositTest extends TestCase
             'datas' => [
                 (object) $datasArray,
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 300.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -243,31 +256,45 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
         ]);
 
         $request = [
@@ -277,17 +304,17 @@ class Hg5MultipleDepositTest extends TestCase
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -311,16 +338,16 @@ class Hg5MultipleDepositTest extends TestCase
                     'currency' => 'IDR',
                     'playerId' => 'invalidPlayer',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '0',
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -333,35 +360,61 @@ class Hg5MultipleDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
-        ]);
-
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
-        ]);
-
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
+        ]);
+
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
+        ]);
+
+        $this->assertDatabaseMissing('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 
@@ -381,51 +434,65 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
         ]);
 
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -446,18 +513,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => 'Token Invalid',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '3',
                     'message' => 'Token Invalid',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -486,51 +553,65 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
         ]);
 
-        $request = [
+       $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 31535351,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -552,18 +633,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => "Currency does not match Agent's currency.",
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 31535351,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '0',
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -576,35 +657,61 @@ class Hg5MultipleDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
-        ]);
-
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
-        ]);
-
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2025-01-01 00:00:00",
+            "created_at" => "2025-01-01 00:00:00"
+        ]);
+
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
+        ]);
+
+        $this->assertDatabaseMissing('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 
@@ -624,51 +731,65 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
-        $request = [
+         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'invalidGameRound',
+                    'gameCode' => '1',
+                    'gameRound' => 'invalidTransactionID',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -690,18 +811,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => 'GameRound not existed.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
-                    'gameRound' => 'invalidGameRound'
+                    'gameRound' => 'invalidTransactionID'
                 ],
                 [
                     'code' => '0',
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -713,20 +834,62 @@ class Hg5MultipleDepositTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
+        ]);
+
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
+        ]);
+
+        $this->assertDatabaseMissing('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 
@@ -746,51 +909,80 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
+        ]);
+
+        DB::table('hg5.reports')->insert([
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -812,18 +1004,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => 'Transaction service error',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '0',
                     'message' => '',
                     'balance' => 1200.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -835,20 +1027,62 @@ class Hg5MultipleDepositTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
+        ]);
+
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
+        ]);
+
+        $this->assertDatabaseHas('hg5.reports', [
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 
@@ -867,51 +1101,65 @@ class Hg5MultipleDepositTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID1',
+            'play_id' => 'testPlayeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.players')->insert([
-            'play_id' => 'testPlayID2',
+            'play_id' => 'testPlayeru002',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         DB::table('hg5.reports')->insert([
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 0,
-            'created_at' => '2024-01-01 00:00:00',
-            'updated_at' => null
+            'ext_id' => 'wager-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 1,
+            'bet_amount' => 100.0,
+            'bet_winlose' => 0,
+            "updated_at" => "2024-01-01 00:00:00",
+            "created_at" => "2024-01-01 00:00:00"
         ]);
 
         $request = [
             'datas' => [
                 (object) [
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
                     'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound1',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID1',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ],
                 (object) [
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'amount' => 500.00,
+                    'amount' => 200.00,
                     'currency' => 'IDR',
-                    'gameCode' => 'testGameCode',
-                    'gameRound' => 'testGameRound2',
+                    'gameCode' => '1',
+                    'gameRound' => 'testTransactionID2',
                     'eventTime' => '2024-01-01T00:00:00-04:00'
                 ]
             ]
@@ -933,18 +1181,18 @@ class Hg5MultipleDepositTest extends TestCase
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID1',
+                    'playerId' => 'testPlayeru001',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound1'
+                    'gameRound' => 'testTransactionID1'
                 ],
                 [
                     'code' => '105',
                     'message' => 'Wallet service error.',
                     'balance' => 0.00,
                     'currency' => 'IDR',
-                    'playerId' => 'testPlayID2',
+                    'playerId' => 'testPlayeru002',
                     'agentId' => 111,
-                    'gameRound' => 'testGameRound2'
+                    'gameRound' => 'testTransactionID2'
                 ],
             ],
             'status' => [
@@ -957,19 +1205,33 @@ class Hg5MultipleDepositTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound1',
-            'bet_amount' => 100.00,
-            'win_amount' => 200.00,
-            'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'payout-testTransactionID1',
+            'round_id' => 'testTransactionID1',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'trx_id' => 'testGameRound2',
-            'bet_amount' => 200.00,
-            'win_amount' => 500.00,
-            'created_at' => '2024-01-01 12:00:00',
-            'updated_at' => '2024-01-01 12:00:00'
+            'ext_id' => 'payout-testTransactionID2',
+            'round_id' => 'testTransactionID2',
+            'username' => 'testUsername',
+            'play_id' => 'testPlayeru002',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => '1',
+            'bet_valid' => 0,
+            'bet_amount' => 0,
+            'bet_winlose' => 100,
+            "updated_at" => "2024-01-01 12:00:00",
+            "created_at" => "2024-01-01 12:00:00"
         ]);
     }
 }

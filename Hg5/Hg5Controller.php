@@ -216,7 +216,9 @@ class Hg5Controller extends AbstractCasinoController
             ]
         );
 
-        $data = $this->service->multipleSettle(request: $request);
+        $requestDTO = Hg5RequestDTO::fromMultipleDepositRequest(request: $request);
+
+        $data = $this->service->multipleSettle(requestDTO: $requestDTO);
 
         return $this->response->multipleTransactionResponse(data: $data);
     }
