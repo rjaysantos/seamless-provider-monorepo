@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Providers\Pla\DTO\PlaRequestDTO;
 
 class PlaResponse
 {
@@ -57,16 +58,16 @@ class PlaResponse
     public function authenticate(string $requestId, string $playID, string $currency): JsonResponse
     {
         $country = match ($currency) {
-            'IDR'=> 'ID',
-            'PHP'=> 'PH',
-            'VND'=> 'VN',
-            'USD'=> 'US',
-            'THB'=> 'TH',
-            'MYR'=> 'MY',
+            'IDR' => 'ID',
+            'PHP' => 'PH',
+            'VND' => 'VN',
+            'USD' => 'US',
+            'THB' => 'TH',
+            'MYR' => 'MY',
         };
 
         return response()->json(data: [
-            "requestId" => $requestId,
+            'requestId' => request()->input('requestId'),
             "username" => $playID,
             "currencyCode" => config('app.env') === 'PRODUCTION' ? $currency : 'CNY',
             "countryCode" => config('app.env') === 'PRODUCTION' ? $country : 'CN'
@@ -76,7 +77,7 @@ class PlaResponse
     public function getBalance(string $requestId, float $balance): JsonResponse
     {
         return response()->json(data: [
-            "requestId" => $requestId,
+            'requestId' => request()->input('requestId'),
             "balance" => [
                 "real" => $this->formatBalance($balance),
                 "timestamp" => $this->getDateTimeNow()
@@ -94,15 +95,15 @@ class PlaResponse
         return response()->json(data: ["requestId" => $requestId]);
     }
 
-    public function bet(Request $request, float $balance): JsonResponse
+    public function bet(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
         return response()->json(data: [
-            'requestId' => $request->requestId,
-            'externalTransactionCode' => $request->transactionCode,
-            'externalTransactionDate' => $request->transactionDate,
+            'requestId' => request()->input('requestId'),
+            'externalTransactionCode' => $requestDTO->extID,
+            'externalTransactionDate' => $requestDTO->dateTime,
             'balance' => [
                 'real' => $this->formatBalance($balance),
-                'timestamp' => $request->transactionDate
+                'timestamp' => $requestDTO->dateTime
             ]
         ]);
     }
@@ -116,7 +117,7 @@ class PlaResponse
             $this->getDateTimeNow() : $request->pay['transactionDate'];
 
         return response()->json(data: [
-            "requestId" => $request->requestId,
+            'requestId' => request()->input('requestId'),
             'externalTransactionCode' => $transactionCode,
             'externalTransactionDate' => $transactionDate,
             "balance" => [

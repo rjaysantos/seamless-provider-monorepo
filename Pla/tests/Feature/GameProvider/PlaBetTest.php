@@ -14,7 +14,6 @@ class PlaBetTest extends TestCase
     {
         parent::setUp();
         DB::statement('TRUNCATE TABLE pla.players RESTART IDENTITY;');
-        DB::statement('TRUNCATE TABLE pla.playgame RESTART IDENTITY;');
         DB::statement('TRUNCATE TABLE pla.reports RESTART IDENTITY;');
         app()->bind(IWallet::class, TestWallet::class);
     }
@@ -50,20 +49,15 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'testToken',
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -88,12 +82,18 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => 'testTransactionCode',
+            'ext_id' => 'testTransactionCode',
+            'round_id' => 'testRoundCode',
+            'username' => 'testUsername',
+            'play_id' => 'playeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
+            'updated_at' => '2021-01-01 08:00:00',
         ]);
     }
 
@@ -129,29 +129,30 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'testToken',
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => 'testTransactionCode',
+            'ext_id' => 'testTransactionCode',
+            'round_id' => 'testTransactionCode',
+            'username' => 'testUsername',
+            'play_id' => 'playeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
+            'updated_at' => '2021-01-01 08:00:00',
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode2',
@@ -176,12 +177,18 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('pla.reports', [
-            'trx_id' => 'testTransactionCode2',
+            'ext_id' => 'testTransactionCode2',
+            'round_id' => 'testRoundCode',
+            'username' => 'testUsername',
+            'play_id' => 'playeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 50.00,
-            'win_amount' => 0,
+            'bet_valid' => 50.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 08:00:02',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
+            'updated_at' => '2021-01-01 08:00:02',
         ]);
     }
 
@@ -190,7 +197,7 @@ class PlaBetTest extends TestCase
     {
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -231,9 +238,10 @@ class PlaBetTest extends TestCase
     public function test_bet_playerNotFound_expectedData()
     {
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $payload = [
@@ -301,23 +309,30 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         DB::table('pla.reports')->insert([
-            'trx_id' => 'testTransactionCode',
+            'ext_id' => 'testTransactionCode',
+            'round_id' => 'testRoundCode',
+            'username' => 'testUsername',
+            'play_id' => 'playeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
+            'updated_at' => '2021-01-01 08:00:00',
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -357,14 +372,15 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -409,20 +425,15 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'testToken',
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_invalidToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -442,15 +453,6 @@ class PlaBetTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-
-        $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => 'testTransactionCode',
-            'bet_amount' => 100.00,
-            'win_amount' => 0,
-            'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
-        ]);
     }
 
     public function test_bet_invalidWalletResponseBalance_expectedData()
@@ -467,14 +469,15 @@ class PlaBetTest extends TestCase
         app()->bind(IWallet::class, $wallet::class);
 
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -498,15 +501,10 @@ class PlaBetTest extends TestCase
     public function test_bet_invalidWalletResponseWagerAndPayout_expectedData()
     {
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'testToken',
         ]);
 
         $wallet = new class extends TestWallet {
@@ -538,7 +536,7 @@ class PlaBetTest extends TestCase
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',
@@ -560,12 +558,18 @@ class PlaBetTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pla.reports', [
-            'trx_id' => 'testTransactionCode',
+            'ext_id' => 'wagerPayout-testTransactionCode',
+            'round_id' => 'testTransactionCode',
+            'username' => 'testUsername',
+            'play_id' => 'playeru001',
+            'web_id' => 1,
+            'currency' => 'IDR',
+            'game_code' => 'testGameID',
             'bet_amount' => 100.00,
-            'win_amount' => 0,
+            'bet_valid' => 100.00,
+            'bet_winlose' => 0,
             'created_at' => '2021-01-01 08:00:00',
-            'updated_at' => null,
-            'ref_id' => 'testRoundCode'
+            'updated_at' => '2021-01-01 08:00:00',
         ]);
     }
 
@@ -573,22 +577,17 @@ class PlaBetTest extends TestCase
     public function test_bet_validDataGiven_expectedData($wallet, $expectedBalance)
     {
         DB::table('pla.players')->insert([
-            'play_id' => 'player001',
+            'play_id' => 'playeru001',
             'username' => 'testUsername',
-            'currency' => 'IDR'
-        ]);
-
-        DB::table('pla.playgame')->insert([
-            'play_id' => 'player001',
-            'token' => 'PLAUCN_testToken',
-            'expired' => 'FALSE'
+            'currency' => 'IDR',
+            'token' => 'testToken'
         ]);
 
         app()->bind(IWallet::class, $wallet::class);
 
         $payload = [
             'requestId' => 'testRequestID',
-            'username' => 'PLAUCN_PLAYER001',
+            'username' => 'PLAUCN_PLAYERU001',
             'externalToken' => 'PLAUCN_testToken',
             'gameRoundCode' => 'testRoundCode',
             'transactionCode' => 'testTransactionCode',

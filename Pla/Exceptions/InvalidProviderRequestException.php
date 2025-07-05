@@ -8,12 +8,10 @@ use Illuminate\Http\Request;
 
 class InvalidProviderRequestException extends Exception
 {
-    public function __construct(private Request $request) {}
-
     public function render(): JsonResponse
     {
         return response()->json([
-            'requestId' => $this->request->requestId,
+            'requestId' => request()->input('requestId'),
             'error' => [
                 'code' => 'CONSTRAINT_VIOLATION'
             ]
