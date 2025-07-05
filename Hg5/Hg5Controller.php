@@ -195,7 +195,9 @@ class Hg5Controller extends AbstractCasinoController
             ]
         );
 
-        $data = $this->service->multipleBet(request: $request);
+        $requestDTO = Hg5RequestDTO::fromMultipleWithdrawRequest(request: $request);
+
+        $data = $this->service->multipleBet(requestDTO: $requestDTO);
 
         return $this->response->multipleTransactionResponse(data: $data);
     }

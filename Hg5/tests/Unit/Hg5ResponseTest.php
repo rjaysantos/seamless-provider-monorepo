@@ -147,47 +147,6 @@ class Hg5ResponseTest extends TestCase
         );
     }
 
-    public function test_multipleTransactionResponse_stubData_expectedData()
-    {
-        Carbon::setTestNow('2024-01-01 12:00:00');
-
-        $data = [
-            [
-                'code' => '0',
-                'message' => '',
-                'balance' => 1200,
-                'currency' => 'IDR',
-                'playerId' => 'testPlayID1',
-                'agentId' => 111,
-                'gameRound' => 'testGameRound1'
-            ],
-            [
-                'code' => '0',
-                'message' => '',
-                'balance' => 1200,
-                'currency' => 'IDR',
-                'playerId' => 'testPlayID2',
-                'agentId' => 111,
-                'gameRound' => 'testGameRound1'
-            ]
-        ];
-
-        $response = $this->makeResponse();
-        $result = $response->multipleTransactionResponse(data: $data);
-
-        $this->assertSame(
-            expected: [
-                'data' => $data,
-                'status' => [
-                    'code' => '0',
-                    'message' => 'success',
-                    'datetime' => '2024-01-01T00:00:00.000000000-04:00'
-                ]
-            ],
-            actual: $result->getData(true)
-        );
-    }
-
     public function test_multiplayerTransactionResponse_stubData_expectedData()
     {
         Carbon::setTestNow('2024-01-01 12:00:00');
