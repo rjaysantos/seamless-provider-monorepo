@@ -16,7 +16,7 @@ class Hg5RequestDTO
         public readonly ?string $gameID = null,
         public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
-        public readonly ?string $mtCode = null
+        public readonly ?string $extID = null
 
     ) {}
 
@@ -50,7 +50,7 @@ class Hg5RequestDTO
             gameID: $request->gameCode,
             roundID: $request->gameRound,
             dateTime: $request->eventTime,
-            mtCode: $request->mtCode
+            extID: $request->mtCode
         );
     }
 }

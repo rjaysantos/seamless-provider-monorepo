@@ -1949,7 +1949,7 @@ class Hg5ServiceTest extends TestCase
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00',
-            mtCode: 'testMtCode'
+            extID: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
@@ -2008,7 +2008,7 @@ class Hg5ServiceTest extends TestCase
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00',
-            mtCode: 'testMtCode'
+            extID: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
@@ -2071,7 +2071,7 @@ class Hg5ServiceTest extends TestCase
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00',
-            mtCode: 'testMtCode'
+            extID: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
