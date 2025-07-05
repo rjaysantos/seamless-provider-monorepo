@@ -7,6 +7,7 @@ use Providers\Hg5\Hg5DateTime;
 use Illuminate\Http\JsonResponse;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
 use Illuminate\Support\Facades\View;
+use Providers\Hg5\DTO\Hg5RequestDTO;
 
 class Hg5Response
 {
@@ -58,13 +59,13 @@ class Hg5Response
         ]);
     }
 
-    public function singleTransactionResponse(float $balance, string $currency, string $gameRound): JsonResponse
+    public function singleTransactionResponse(float $balance, Hg5RequestDTO $requestDTO): JsonResponse
     {
         return response()->json([
             'data' => [
                 'balance' => $balance,
-                'currency' => $currency,
-                'gameRound' => $gameRound
+                'currency' => $requestDTO->currency,
+                'gameRound' => $requestDTO->roundID
             ],
             'status' => [
                 'code' => '0',

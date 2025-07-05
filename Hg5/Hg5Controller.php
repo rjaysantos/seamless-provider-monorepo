@@ -170,13 +170,11 @@ class Hg5Controller extends AbstractCasinoController
             'eventTime' => 'required|string'
         ]);
 
-        $balance = $this->service->settle(request: $request);
+        $requestDTO = Hg5RequestDTO::fromDepositRequest(request: $request);
 
-        return $this->response->singleTransactionResponse(
-            balance: $balance,
-            currency: $request->currency,
-            gameRound: $request->gameRound
-        );
+        $balance = $this->service->payout(requestDTO: $requestDTO);
+
+        return $this->response->singleTransactionResponse(balance: $balance, requestDTO: $requestDTO);
     }
 
     public function multipleWithdraw(Request $request)

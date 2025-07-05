@@ -3,9 +3,9 @@
 namespace Providers\Hg5;
 
 use App\Repositories\AbstractProviderRepository;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Providers\Hg5\DTO\Hg5PlayerDTO;
+use Providers\Hg5\DTO\HG5TransactionDTO;
 
 class Hg5Repository extends AbstractProviderRepository
 {
@@ -27,11 +27,13 @@ class Hg5Repository extends AbstractProviderRepository
         return $data == null ? null : Hg5PlayerDTO::fromDB(dbData: $data);
     }
 
-    public function getTransactionByTrxID(string $trxID): ?object
+    public function getTransactionByExtID(string $extID): ?HG5TransactionDTO
     {
-        return DB::table('hg5.reports')
-            ->where('trx_id', $trxID)
+        $data = $this->read->table('hg5.reports')
+            ->where('ext_id', $extID)
             ->first();
+
+        return $data == null ? null : HG5TransactionDTO::fromDB(dbData: $data);
     }
 
     public function createPlayer(string $playID, string $username, string $currency): void
@@ -91,17 +93,22 @@ class Hg5Repository extends AbstractProviderRepository
             ]);
     }
 
-    public function settleTransaction(
-        string $trxID,
-        float $winAmount,
-        string $settleTime
-    ): void {
-        DB::connection('pgsql_write')
-            ->table('hg5.reports')
-            ->where('trx_id', $trxID)
-            ->update([
-                'win_amount' => $winAmount,
-                'updated_at' => $settleTime
+    public function createTransaction(Hg5TransactionDTO $transactionDTO): void
+    {
+        $this->write->table('hg5.reports')
+            ->insert([
+                'ext_id' => $transactionDTO->extID,
+                'round_id' => $transactionDTO->roundID,
+                'username' => $transactionDTO->username,
+                'play_id' => $transactionDTO->playID,
+                'web_id' => $transactionDTO->webID,
+                'currency' => $transactionDTO->currency,
+                'game_code' => $transactionDTO->gameID,
+                'bet_amount' => $transactionDTO->betAmount,
+                'bet_valid' => $transactionDTO->betValid,
+                'bet_winlose' => $transactionDTO->betWinlose,
+                'updated_at' => $transactionDTO->dateTime,
+                'created_at' => $transactionDTO->dateTime
             ]);
     }
 }
