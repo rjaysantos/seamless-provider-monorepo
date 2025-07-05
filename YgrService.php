@@ -134,15 +134,15 @@ class YgrService
 
     public function betAndSettle(Request $request): object
     {
-        $playerData = $this->repository->getPlayerByToken(token: $request->connectToken);
-
-        if (is_null($playerData) === true)
-            throw new TokenNotFoundException;
-
         $transactionData = $this->repository->getTransactionByTrxID(transactionID: $request->roundID);
 
         if (is_null($transactionData) === false)
             throw new TransactionAlreadyExistsException;
+
+        $playerData = $this->repository->getPlayerByToken(token: $request->connectToken);
+
+        if (is_null($playerData) === true)
+            throw new TokenNotFoundException;
 
         $credentials = $this->credentials->getCredentials();
 
