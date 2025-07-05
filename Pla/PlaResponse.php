@@ -108,16 +108,13 @@ class PlaResponse
         ]);
     }
 
-    public function gameRoundResult(Request $request, float $balance): JsonResponse
+    public function gameRoundResult(PlaRequestDTO $requestDTO, float $balance): JsonResponse
     {
-        $transactionCode = is_null($request->pay) === true ?
-            Str::substr($request->requestId, 0, 128) : $request->pay['transactionCode'];
-
-        $transactionDate = is_null($request->pay) === true ?
-            $this->getDateTimeNow() : $request->pay['transactionDate'];
+        $transactionCode = $requestDTO->extID ?? Str::substr($requestDTO->requestId, 0, 128);
+        $transactionDate = $requestDTO->dateTime ?? $this->getDateTimeNow();
 
         return response()->json(data: [
-            'requestId' => request()->input('requestId'),
+            "requestId" => $requestDTO->requestId,
             'externalTransactionCode' => $transactionCode,
             'externalTransactionDate' => $transactionDate,
             "balance" => [
