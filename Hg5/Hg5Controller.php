@@ -146,15 +146,17 @@ class Hg5Controller extends AbstractCasinoController
             'currency' => 'required|string',
             'gameCode' => 'required|string',
             'gameRound' => 'required|string',
-            'eventTime' => 'required|string'
+            'eventTime' => 'required|string',
+            'mtCode' => 'required|string'
         ]);
 
-        $balance = $this->service->bet(request: $request);
+        $requestDTO = Hg5RequestDTO::fromWithdrawRequest(request: $request);
+
+        $balance = $this->service->wager(requestDTO: $requestDTO);
 
         return $this->response->singleTransactionResponse(
             balance: $balance,
-            currency: $request->currency,
-            gameRound: $request->gameRound
+            requestDTO: $requestDTO
         );
     }
 
