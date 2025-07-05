@@ -3,6 +3,8 @@
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
 use App\Libraries\Randomizer;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Libraries\Wallet\V2\TestWallet;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -36,6 +38,20 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
+            '/GameList' => Http::response(json_encode([
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 1
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ])),
+
             '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 0,
                 'Data' => (object) [
@@ -66,8 +82,12 @@ class YgrPlayTest extends TestCase
         $this->assertDatabaseHas('ygr.playgame', [
             'play_id' => 'testPlayID',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
@@ -109,6 +129,20 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
+            '/GameList' => Http::response(json_encode([
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 5
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ])),
+
             '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 0,
                 'Data' => (object) [
@@ -139,8 +173,12 @@ class YgrPlayTest extends TestCase
         $this->assertDatabaseHas('ygr.playgame', [
             'play_id' => 'testPlayID',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'status' => 'testGameID-arcade'
         ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
@@ -212,7 +250,7 @@ class YgrPlayTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_play_thirdPartyApiErrorException_expectedData()
+    public function test_play_GameListThirdPartyApiErrorException_expectedData()
     {
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
@@ -244,6 +282,179 @@ class YgrPlayTest extends TestCase
         app()->bind(Randomizer::class, $randomizer::class);
 
         Http::fake([
+            '/GameList' => Http::response(json_encode([
+                'ErrorCode' => 1536482,
+                'Data' => []
+            ]))
+        ]);
+
+        $response = $this->post('ygr/in/play', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $this->assertDatabaseHas('ygr.playgame', [
+            'play_id' => 'testPlayID',
+            'token' => 'oldToken',
+            'status' => 'oldGameID'
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
+    }
+
+    #[DataProvider('apiResponseGameList')]
+    public function test_play_invalidGameListAPIResponseThirdPartyApiErrorException_expectedData($parameter)
+    {
+        DB::table('ygr.players')->insert([
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('ygr.playgame')->insert([
+            'play_id' => 'testPlayID',
+            'token' => 'oldToken',
+            'expired' => 'FALSE',
+            'status' => 'oldGameID'
+        ]);
+
+        $request = [
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'gameId' => 'testGameID',
+            'language' => 'id'
+        ];
+
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+        app()->bind(Randomizer::class, $randomizer::class);
+
+        $apiResponse = [
+            'ErrorCode' => 0,
+            'Data' => [
+                [
+                    'GameId' => 'testGameID',
+                    'GameCategoryId' => 1
+                ],
+            ]
+        ];
+
+        if (isset($apiResponse[$parameter]) === true)
+            unset($apiResponse[$parameter]);
+        else
+            unset($apiResponse['Data'][0][$parameter]);
+
+        Http::fake([
+            '/GameList' => Http::response(json_encode($apiResponse))
+        ]);
+
+        $response = $this->post('ygr/in/play', $request, [
+            'Authorization' => 'Bearer ' . env('FEATURE_TEST_TOKEN')
+        ]);
+
+        $response->assertJson([
+            'success' => false,
+            'code' => 422,
+            'data' => null,
+            'error' => 'Third Party Api error'
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('ygr.players', [
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        $this->assertDatabaseHas('ygr.playgame', [
+            'play_id' => 'testPlayID',
+            'token' => 'oldToken',
+            'status' => 'oldGameID'
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
+    }
+
+    public static function apiResponseGameList()
+    {
+        return [
+            ['ErrorCode'],
+            ['Data'],
+            ['GameId'],
+            ['GameCategoryId']
+        ];
+    }
+
+    public function test_play_launchThirdPartyApiErrorException_expectedData()
+    {
+        DB::table('ygr.players')->insert([
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('ygr.playgame')->insert([
+            'play_id' => 'testPlayID',
+            'token' => 'oldToken',
+            'expired' => 'FALSE',
+            'status' => 'oldGameID'
+        ]);
+
+        $request = [
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'gameId' => 'testGameID',
+            'language' => 'id'
+        ];
+
+        $randomizer = new class extends Randomizer {
+            public function createToken(): string
+            {
+                return 'testToken';
+            }
+        };
+        app()->bind(Randomizer::class, $randomizer::class);
+
+        Http::fake([
+            '/GameList' => Http::response(json_encode([
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 1
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ])),
+
             '/launch*' => Http::response(json_encode([
                 'ErrorCode' => 8001,
                 'Message' => '/token/authorizationConnectToken http request error!!!! ENOTFOUND(9998)',
@@ -273,8 +484,12 @@ class YgrPlayTest extends TestCase
         $this->assertDatabaseHas('ygr.playgame', [
             'play_id' => 'testPlayID',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
@@ -284,8 +499,8 @@ class YgrPlayTest extends TestCase
         });
     }
 
-    #[DataProvider('apiResponse')]
-    public function test_play_invalidAPIResponseThirdPartyApiErrorException_expectedData($parameter)
+    #[DataProvider('apiResponseLaunch')]
+    public function test_play_invalidLaunchAPIResponseThirdPartyApiErrorException_expectedData($parameter)
     {
         DB::table('ygr.players')->insert([
             'play_id' => 'testPlayID',
@@ -329,6 +544,20 @@ class YgrPlayTest extends TestCase
             unset($apiResponse['Data'][$parameter]);
 
         Http::fake([
+            '/GameList' => Http::response(json_encode([
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 1
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ])),
+
             '/launch*' => Http::response(json_encode($apiResponse))
         ]);
 
@@ -354,8 +583,12 @@ class YgrPlayTest extends TestCase
         $this->assertDatabaseHas('ygr.playgame', [
             'play_id' => 'testPlayID',
             'token' => 'testToken',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() == 'https://tyche8wmix-service.yahutech.com/GameList';
+        });
 
         Http::assertSent(function ($request) {
             return $request->url() == 'https://tyche8wmix-service.yahutech.com/launch?token=testToken&language=id-ID' &&
@@ -365,7 +598,7 @@ class YgrPlayTest extends TestCase
         });
     }
 
-    public static function apiResponse()
+    public static function apiResponseLaunch()
     {
         return [
             ['ErrorCode'],

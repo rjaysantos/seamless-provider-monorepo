@@ -4,6 +4,7 @@ namespace Providers\Ygr;
 
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\Libraries\Randomizer;
@@ -29,6 +30,20 @@ class YgrService
         private WalletReport $walletReport
     ) {}
 
+    private function getGameType(ICredentials $credentials, string $gameID): string
+    {
+        $apiResponse = $this->api->getGameList(credentials: $credentials);
+
+        $gameList = collect($apiResponse);
+
+        $gameData = $gameList->firstWhere('GameId', $gameID);
+
+        if ($gameData->GameCategoryId == 1)
+            return 'slot';
+
+        return 'arcade';
+    }
+
     public function getLaunchUrl(Request $request): string
     {
         $player = $this->repository->getPlayerByPlayID(playID: $request->playId);
@@ -40,15 +55,17 @@ class YgrService
                 currency: $request->currency
             );
 
+        $credentials = $this->credentials->getCredentials();
+
+        $gameType = $this->getGameType(credentials: $credentials, gameID: $request->gameId);
+
         $token = $this->randomizer->createToken();
 
         $this->repository->createOrUpdatePlayGame(
             playID: $request->playId,
             token: $token,
-            gameID: $request->gameId
+            gameID: "{$request->gameId}-{$gameType}"
         );
-
-        $credentials = $this->credentials->getCredentials();
 
         return $this->api->launch(
             credentials: $credentials,
@@ -92,10 +109,12 @@ class YgrService
 
         $credentials = $this->credentials->getCredentials();
 
+        $gameID = Str::beforeLast($playerData->status, '-');
+
         return (object) [
             'ownerId' => $credentials->getVendorID(),
             'parentId' => $credentials->getVendorID(),
-            'gameId' => $playerData->status, // gameID inserted in status column of playgame table
+            'gameId' => $gameID, // gameID inserted in status column of playgame table
             'userId' => $playerData->play_id,
             'nickname' => $playerData->username,
             'currency' => $playerData->currency,
@@ -146,11 +165,21 @@ class YgrService
                 transactionDate: $transactionDate
             );
 
-            $report = $this->walletReport->makeSlotReport(
-                transactionID: $request->roundID,
-                gameCode: $playerData->status, // gameID inserted from play api
-                betTime: $transactionDate
-            );
+            $gameID = Str::beforeLast($playerData->status, '-');
+            $gameCategory = Str::afterLast($playerData->status, '-');
+
+            if ($gameCategory == 'arcade')
+                $report = $this->walletReport->makeArcadeReport(
+                    transactionID: $request->roundID,
+                    gameCode: $gameID, // gameID inserted from play api
+                    betTime: $transactionDate
+                );
+            else
+                $report = $this->walletReport->makeSlotReport(
+                    transactionID: $request->roundID,
+                    gameCode: $gameID, // gameID inserted from play api
+                    betTime: $transactionDate
+                );
 
             $walletResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,

@@ -50,7 +50,7 @@ class YgrServiceTest extends TestCase
             'playId' => 'testPlayID',
             'username' => 'testUsername',
             'currency' => 'IDR',
-            'gameId' => 'testGameId',
+            'gameId' => 'testGameID',
             'language' => 'id'
         ]);
 
@@ -60,6 +60,14 @@ class YgrServiceTest extends TestCase
             ->with($request->playId);
 
         $stubApi = $this->createMock(YgrApi::class);
+        $stubApi->method('getGameList')
+            ->willReturn([
+                (object) [
+                    'GameId' => 'testGameID',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $stubApi->method('launch')
             ->willReturn('testUrl.com');
 
@@ -90,6 +98,14 @@ class YgrServiceTest extends TestCase
             );
 
         $stubApi = $this->createMock(YgrApi::class);
+        $stubApi->method('getGameList')
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $stubApi->method('launch')
             ->willReturn('testUrl.com');
 
@@ -117,9 +133,21 @@ class YgrServiceTest extends TestCase
 
         $mockRepository->expects($this->once())
             ->method('createOrUpdatePlayGame')
-            ->with(playID: $request->playId, token: 'testToken', status: $request->gameId);
+            ->with(
+                playID: $request->playId,
+                token: 'testToken',
+                status: "{$request->gameId}-slot"
+            );
 
         $stubApi = $this->createMock(YgrApi::class);
+        $stubApi->method('getGameList')
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $stubApi->method('launch')
             ->willReturn('testUrl.com');
 
@@ -142,10 +170,92 @@ class YgrServiceTest extends TestCase
             ->method('getCredentials');
 
         $stubApi = $this->createMock(YgrApi::class);
+        $stubApi->method('getGameList')
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $stubApi->method('launch')
             ->willReturn('testUrl.com');
 
         $service = $this->makeService(credentials: $mockCredentials, api: $stubApi);
+        $service->getLaunchUrl(request: $request);
+    }
+
+    public function test_getLaunchUrl_mockApiSlot_getGameList()
+    {
+        $request = new Request([
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'gameId' => 'testGameId',
+            'language' => 'id'
+        ]);
+
+        $stubRandomizer = $this->createMock(Randomizer::class);
+        $stubRandomizer->method('createToken')
+            ->willReturn('testToken');
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(YgrCredentials::class);
+        $stubCredentials->method('getCredentials')
+            ->willReturn($providerCredentials);
+
+        $mockApi = $this->createMock(YgrApi::class);
+        $mockApi->expects($this->once())
+            ->method('getGameList')
+            ->with($providerCredentials)
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
+        $mockApi->method('launch')->willReturn('testUrl.com');
+
+        $service = $this->makeService(credentials: $stubCredentials, randomizer: $stubRandomizer, api: $mockApi);
+        $service->getLaunchUrl(request: $request);
+    }
+
+    public function test_getLaunchUrl_mockApiArcade_getGameList()
+    {
+        $request = new Request([
+            'playId' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR',
+            'gameId' => 'testGameId',
+            'language' => 'id'
+        ]);
+
+        $stubRandomizer = $this->createMock(Randomizer::class);
+        $stubRandomizer->method('createToken')
+            ->willReturn('testToken');
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+
+        $stubCredentials = $this->createMock(YgrCredentials::class);
+        $stubCredentials->method('getCredentials')
+            ->willReturn($providerCredentials);
+
+        $mockApi = $this->createMock(YgrApi::class);
+        $mockApi->expects($this->once())
+            ->method('getGameList')
+            ->with($providerCredentials)
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 5
+                ]
+            ]);
+
+        $mockApi->method('launch')->willReturn('testUrl.com');
+
+        $service = $this->makeService(credentials: $stubCredentials, randomizer: $stubRandomizer, api: $mockApi);
         $service->getLaunchUrl(request: $request);
     }
 
@@ -170,6 +280,14 @@ class YgrServiceTest extends TestCase
             ->willReturn($providerCredentials);
 
         $mockApi = $this->createMock(YgrApi::class);
+        $mockApi->method('getGameList')
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $mockApi->expects($this->once())
             ->method('launch')
             ->with(credentials: $providerCredentials, token: 'testToken', language: 'id')
@@ -192,6 +310,14 @@ class YgrServiceTest extends TestCase
         ]);
 
         $stubApi = $this->createMock(YgrApi::class);
+        $stubApi->method('getGameList')
+            ->willReturn([
+                (object)[
+                    'GameId' => 'testGameId',
+                    'GameCategoryId' => 1
+                ]
+            ]);
+
         $stubApi->method('launch')
             ->willReturn('testUrl.com');
 
@@ -590,7 +716,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -650,7 +776,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
         $mockRepository->expects($this->once())
             ->method('getTransactionByTrxID')
@@ -694,7 +820,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
         $stubRepository->method('getTransactionByTrxID')
             ->willReturn((object) ['trx_id' => 'testTransactionID']);
@@ -719,7 +845,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $mockCredentials = $this->createMock(YgrCredentials::class);
@@ -767,7 +893,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -820,7 +946,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
         $stubRepository->method('getTransactionByTrxID')
             ->willReturn(null);
@@ -857,7 +983,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -891,7 +1017,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -940,12 +1066,57 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $mockReport = $this->createMock(WalletReport::class);
         $mockReport->expects($this->once())
             ->method('makeSlotReport')
+            ->with(
+                transactionID: $request->roundID,
+                gameCode: 'testGameID',
+                betTime: '2021-01-01 00:00:00'
+            )
+            ->willReturn(new Report);
+
+        $stubWallet = $this->createMock(IWallet::class);
+        $stubWallet->method('balance')
+            ->willReturn([
+                'credit' => 1000.00,
+                'status_code' => 2100
+            ]);
+        $stubWallet->method('wagerAndPayout')
+            ->willReturn([
+                'credit_after' => 1000.00,
+                'status_code' => 2100
+            ]);
+
+        $service = $this->makeService(repository: $stubRepository, wallet: $stubWallet, walletReport: $mockReport);
+        $service->betAndSettle(request: $request);
+    }
+
+    public function test_betAndSettle_mockWalletReport_makeArcadeReport()
+    {
+        $request = new Request([
+            'connectToken' => 'testToken',
+            'roundID' => 'testTransactionID',
+            'betAmount' => 100.00,
+            'payoutAmount' => 300.00,
+            'freeGame' => 0,
+            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
+        ]);
+
+        $stubRepository = $this->createMock(YgrRepository::class);
+        $stubRepository->method('getPlayerByToken')
+            ->willReturn((object) [
+                'play_id' => 'testPlayID',
+                'currency' => 'IDR',
+                'status' => 'testGameID-arcade'
+            ]);
+
+        $mockReport = $this->createMock(WalletReport::class);
+        $mockReport->expects($this->once())
+            ->method('makeArcadeReport')
             ->with(
                 transactionID: $request->roundID,
                 gameCode: 'testGameID',
@@ -985,7 +1156,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubProviderCredentials = $this->createMock(ICredentials::class);
@@ -1047,7 +1218,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubReport = $this->createMock(WalletReport::class);
@@ -1090,7 +1261,7 @@ class YgrServiceTest extends TestCase
             ->willReturn((object) [
                 'play_id' => 'testPlayID',
                 'currency' => 'IDR',
-                'status' => 'testGameID'
+                'status' => 'testGameID-slot'
             ]);
 
         $stubReport = $this->createMock(WalletReport::class);

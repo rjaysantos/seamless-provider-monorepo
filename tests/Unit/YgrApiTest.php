@@ -268,4 +268,131 @@ class YgrApiTest extends TestCase
             ['Url']
         ];
     }
+
+    public function test_getGameList_mockHttp_post()
+    {
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getApiUrl')->willReturn('testUrl.com');
+
+        $mockHttp = $this->createMock(LaravelHttpClient::class);
+        $mockHttp->expects($this->once())
+            ->method('post')
+            ->with(
+                url: $providerCredentials->getApiUrl() . '/GameList',
+                request: []
+            )
+            ->willReturn((object) [
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 1
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ]);
+
+        $api = $this->makeApi(http: $mockHttp);
+        $api->getGameList(credentials: $providerCredentials);
+    }
+
+    public function test_getGameList_stubHttp_expectedData()
+    {
+        $expected = [
+            (object) [
+                'GameId' => 'testGameID',
+                'GameCategoryId' => 1
+            ],
+            (object) [
+                'GameId' => 'testGameID2',
+                'GameCategoryId' => 1
+            ],
+        ];
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getApiUrl')->willReturn('testUrl.com');
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) [
+                'ErrorCode' => 0,
+                'Data' => [
+                    (object) [
+                        'GameId' => 'testGameID',
+                        'GameCategoryId' => 1
+                    ],
+                    (object) [
+                        'GameId' => 'testGameID2',
+                        'GameCategoryId' => 1
+                    ],
+                ]
+            ]);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $response = $api->getGameList(credentials: $providerCredentials);
+
+        $this->assertEquals(expected: $expected, actual: $response);
+    }
+
+    public function test_getGameList_stubHttpErrorCodeNot200_thirdPartyApiErrorException()
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getApiUrl')->willReturn('testUrl.com');
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) [
+                'ErrorCode' => 100
+            ]);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameList(credentials: $providerCredentials);
+    }
+
+    #[DataProvider('apiResponseGameList')]
+    public function test_getGameList_stubHttpMissingResponse_thirdPartyApiErrorException($parameter)
+    {
+        $this->expectException(ThirdPartyApiErrorException::class);
+
+        $providerCredentials = $this->createMock(ICredentials::class);
+        $providerCredentials->method('getApiUrl')
+            ->willReturn('testUrl.com');
+
+        $apiResponse = [
+            'ErrorCode' => 0,
+            'Data' => [
+                [
+                    'GameId' => 'testGameID',
+                    'GameCategoryId' => 1
+                ],
+            ]
+        ];
+
+        if (isset($apiResponse[$parameter]) === true)
+            unset($apiResponse[$parameter]);
+        else
+            unset($apiResponse['Data'][0][$parameter]);
+
+        $stubHttp = $this->createMock(LaravelHttpClient::class);
+        $stubHttp->method('post')
+            ->willReturn((object) $apiResponse);
+
+        $api = $this->makeApi(http: $stubHttp);
+        $api->getGameList(credentials: $providerCredentials);
+    }
+
+    public static function apiResponseGameList()
+    {
+        return [
+            ['ErrorCode'],
+            ['Data'],
+            ['GameId'],
+            ['GameCategoryId']
+        ];
+    }
 }

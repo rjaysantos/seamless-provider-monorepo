@@ -72,4 +72,24 @@ class YgrApi
 
         return $response->Data->Url;
     }
+
+    public function getGameList(ICredentials $credentials): array
+    {
+        $response = $this->http->post(
+            url: $credentials->getApiUrl() . '/GameList',
+            request: []
+        );
+
+        $validate = Validator::make(data: json_decode(json_encode($response), true), rules: [
+            'ErrorCode' => 'required|integer',
+            'Data' => 'required|array',
+            'Data.*.GameId' => 'required|string',
+            'Data.*.GameCategoryId' => 'required|int'
+        ]);
+
+        if ($validate->fails() || $response->ErrorCode != 0)
+            throw new ThirdPartyApiErrorException;
+
+        return $response->Data;
+    }
 }

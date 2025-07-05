@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Contracts\V2\IWallet;
+use Illuminate\Support\Facades\DB;
 use App\Libraries\Wallet\V2\TestWallet;
 use App\Contracts\V2\IWalletCredentials;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,7 +19,7 @@ class YgrBetAndSettleTest extends TestCase
         app()->bind(IWallet::class, TestWallet::class);
     }
 
-    public function test_betAndSettle_validRequest_expectedData()
+    public function test_betAndSettle_validRequestSlot_expectedData()
     {
         Carbon::setTestNow('2021-01-01 00:00:00');
 
@@ -32,7 +33,81 @@ class YgrBetAndSettleTest extends TestCase
             'play_id' => 'testPlayID',
             'token' => 'testToken',
             'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
+        ]);
+
+        $request = [
+            'connectToken' => 'testToken',
+            'roundID' => 'testTransactionID',
+            'betAmount' => 100.00,
+            'payoutAmount' => 300.00,
+            'freeGame' => 0,
+            'wagersTime' => '2021-01-01T00:00:00.123+08:00'
+        ];
+
+        $wallet = new class extends TestWallet {
+            public function balance(IWalletCredentials $credentials, string $playID): array
+            {
+                return [
+                    'credit' => 1000.123456789,
+                    'status_code' => 2100
+                ];
+            }
+
+            public function WagerAndPayout(IWalletCredentials $credentials, string $playID, string $currency, string $wagerTransactionID, float $wagerAmount, string $payoutTransactionID, float $payoutAmount, Wallet\V1\ProvSys\Transfer\Report $report): array
+            {
+                return [
+                    'credit_after' => 1300.123456789,
+                    'status_code' => 2100
+                ];
+            }
+        };
+
+        app()->bind(IWallet::class, $wallet::class);
+
+        $response = $this->post('ygr/prov/transaction/addGameResult', $request);
+
+        $response->assertJson([
+            'data' => [
+                'balance' => 1300.12,
+                'currency' => 'IDR'
+            ],
+            'status' => [
+                'code' => '0',
+                'message' => 'Success',
+                'dateTime' => '2021-01-01T00:00:00+08:00'
+                // 'traceCode' => Str::uuid()->toString(),
+            ]
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('ygr.reports', [
+            'trx_id' => 'testTransactionID',
+            'bet_amount' => 100.00,
+            'win_amount' => 300.00,
+            'updated_at' => '2021-01-01 00:00:00',
+            'created_at' => '2021-01-01 00:00:00'
+        ]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_betAndSettle_validRequestArcade_expectedData()
+    {
+        Carbon::setTestNow('2021-01-01 00:00:00');
+
+        DB::table('ygr.players')->insert([
+            'play_id' => 'testPlayID',
+            'username' => 'testUsername',
+            'currency' => 'IDR'
+        ]);
+
+        DB::table('ygr.playgame')->insert([
+            'play_id' => 'testPlayID',
+            'token' => 'testToken',
+            'expired' => 'FALSE',
+            'status' => 'testGameID-arcade'
         ]);
 
         $request = [
@@ -187,7 +262,7 @@ class YgrBetAndSettleTest extends TestCase
             'play_id' => 'testPlayID',
             'token' => 'testToken',
             'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
 
         DB::table('ygr.reports')->insert([
@@ -254,7 +329,7 @@ class YgrBetAndSettleTest extends TestCase
             'play_id' => 'testPlayID',
             'token' => 'testToken',
             'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
 
         $request = [
@@ -308,7 +383,7 @@ class YgrBetAndSettleTest extends TestCase
             'play_id' => 'testPlayID',
             'token' => 'testToken',
             'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
 
         $request = [
@@ -363,7 +438,7 @@ class YgrBetAndSettleTest extends TestCase
             'play_id' => 'testPlayID',
             'token' => 'testToken',
             'expired' => 'FALSE',
-            'status' => 'testGameID'
+            'status' => 'testGameID-slot'
         ]);
 
         $request = [
