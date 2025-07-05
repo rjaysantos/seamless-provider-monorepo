@@ -8,6 +8,7 @@ use Providers\Pla\PlaApi;
 use Illuminate\Http\Request;
 use App\Contracts\V2\IWallet;
 use App\DTO\CasinoRequestDTO;
+use App\DTO\TransactionDTO;
 use App\Libraries\Randomizer;
 use Providers\Pla\PlaRepository;
 use Providers\Pla\PlaCredentials;
@@ -25,7 +26,6 @@ use Providers\Pla\Exceptions\RefundTransactionNotFoundException;
 use App\Exceptions\Casino\PlayerNotFoundException as CasinoPlayerNotFoundException;
 use Providers\Pla\Exceptions\PlayerNotFoundException as ProviderPlayerNotFoundException;
 use App\Exceptions\Casino\TransactionNotFoundException as CasinoTransactionNotFoundException;
-use Providers\Pla\DTO\PlaRequestDTO;
 use Providers\Pla\Exceptions\TransactionNotFoundException as ProviderTransactionNotFoundException;
 
 class PlaService
@@ -79,12 +79,9 @@ class PlaService
         return $player;
     }
 
-    private function getPlayerBalance(
-        ICredentials $credentials,
-        PlaRequestDTO $requestDTO,
-        PlaPlayerDTO $playerDTO
-    ): float {
-        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $playerDTO->playID);
+    private function getPlayerBalance(ICredentials $credentials, PlaRequestDTO $requestDTO): float
+    {
+        $walletResponse = $this->wallet->balance(credentials: $credentials, playID: $requestDTO->playID);
 
         if ($walletResponse['status_code'] !== 2100)
             throw new WalletErrorException;
@@ -127,20 +124,19 @@ class PlaService
     private function makeReport(
         ICredentials $credentials,
         string $transactionID,
-        string $gameCode,
-        string $betTime
+        PlaTransactionDTO $transactionDTO
     ): Report {
-        if (in_array($gameCode, $credentials->getArcadeGameList()) === true)
+        if (in_array($transactionDTO->gameID, $credentials->getArcadeGameList()) === true)
             return $this->walletReport->makeArcadeReport(
                 transactionID: $transactionID,
-                gameCode: $gameCode,
-                betTime: $betTime
+                gameCode: $transactionDTO->gameID,
+                betTime: $transactionDTO->dateTime
             );
 
         return $this->walletReport->makeSlotReport(
             transactionID: $transactionID,
-            gameCode: $gameCode,
-            betTime: $betTime
+            gameCode: $transactionDTO->gameID,
+            betTime: $transactionDTO->dateTime
         );
     }
 
@@ -288,62 +284,55 @@ class PlaService
         return $walletResponse['credit_after'];
     }
 
-    public function refund(Request $request): float
+    public function refund(PlaRequestDTO $requestDTO): float
     {
-        $player = $this->getPlayerDetails($request);
+        $player = $this->getPlayerDetails(requestDTO: $requestDTO);
 
-        $betTransaction = $this->repository->getBetTransactionByTrxID(trxID: $request->pay['relatedTransactionCode']);
+        $betTransaction = $this->repository->getBetTransactionByRoundID(roundID: $requestDTO->roundID);
 
         if (is_null($betTransaction) === true)
-            throw new RefundTransactionNotFoundException;
+            throw new RefundTransactionNotFoundException(requestDTO: $requestDTO);
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $player->currency);
 
-        $refundTransaction = $this->repository->getTransactionByRefID(refID: $request->pay['relatedTransactionCode']);
+        $refundTransactionDTO = PlaTransactionDTO::wager(
+            requestDTO: $requestDTO,
+            playerDTO: $player
+        );
 
-        if (is_null($refundTransaction) === false)
-            return $this->getPlayerBalance(credentials: $credentials, request: $request, playID: $player->play_id);
+        $existingRefundTransaction = $this->repository->getBetTransactionByExtID(extID: $refundTransactionDTO->extID);
+
+        if (is_null($existingRefundTransaction) === false)
+            return $this->getPlayerBalance(credentials: $credentials, requestDTO: $requestDTO);
 
         try {
-            DB::connection('pgsql_write')->beginTransaction();
+            $this->repository->beginTransaction();
 
-            $transactionDate = Carbon::parse($request->pay['transactionDate'], self::PROVIDER_TIMEZONE)
-                ->setTimezone('GMT+8')
-                ->format('Y-m-d H:i:s');
-
-            $this->repository->createTransaction(
-                trxID: $request->pay['transactionCode'],
-                betAmount: (float) $request->pay['amount'],
-                winAmount: (float) $request->pay['amount'],
-                betTime: $transactionDate,
-                settleTime: $transactionDate,
-                refID: $request->pay['relatedTransactionCode']
-            );
+            $this->repository->createTransaction(transactionDTO: $refundTransactionDTO);
 
             $report = $this->makeReport(
                 credentials: $credentials,
-                transactionID: $request->pay['transactionCode'],
-                gameCode: $request->gameCodeName,
-                betTime: $transactionDate
+                transactionID: $refundTransactionDTO->roundID,
+                transactionDTO: $refundTransactionDTO
             );
 
             $walletResponse = $this->wallet->wagerAndPayout(
                 credentials: $credentials,
-                playID: $player->play_id,
-                currency: $player->currency,
-                wagerTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
+                playID: $refundTransactionDTO->playID,
+                currency: $refundTransactionDTO->currency,
+                wagerTransactionID: $refundTransactionDTO->extID,
                 wagerAmount: 0,
-                payoutTransactionID: "wagerPayout-{$request->pay['transactionCode']}",
-                payoutAmount: (float) $request->pay['amount'],
+                payoutTransactionID: $refundTransactionDTO->extID,
+                payoutAmount: $refundTransactionDTO->betAmount,
                 report: $report
             );
 
             if ($walletResponse['status_code'] !== 2100)
-                throw new WalletErrorException($request);
+                throw new WalletErrorException;
 
-            DB::connection('pgsql_write')->commit();
+            $this->repository->commit();
         } catch (Exception $e) {
-            DB::connection('pgsql_write')->rollBack();
+            $this->repository->rollBack();
             throw $e;
         }
 
