@@ -14,7 +14,7 @@ class Hg5RequestDTO
         public readonly ?float $amount = null,
         public readonly ?string $currency = null,
         public readonly ?string $gameID = null,
-        public readonly ?string $mtCode = null,
+        public readonly ?string $roundID = null,
         public readonly ?string $dateTime = null,
     ) {}
 
@@ -46,7 +46,7 @@ class Hg5RequestDTO
             amount: $request->amount,
             currency: $request->currency,
             gameID: $request->gameCode,
-            mtCode: $request->gameRound,
+            roundID: $request->gameRound,
             dateTime: $request->eventTime,
         );
     }

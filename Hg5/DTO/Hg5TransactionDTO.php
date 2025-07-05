@@ -30,7 +30,7 @@ class Hg5TransactionDTO extends TransactionDTO
     {
         return new self(
             extID: $extID,
-            roundID: $requestDTO->mtCode,
+            roundID: $requestDTO->roundID,
             playID: $playerDTO->playID,
             username: $playerDTO->username,
             webID: self::getWebID(playID: $playerDTO->playID),
@@ -42,7 +42,7 @@ class Hg5TransactionDTO extends TransactionDTO
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
-            shortRoundID: md5($requestDTO->mtCode)
+            shortRoundID: md5($requestDTO->roundID)
         );
     }
 }

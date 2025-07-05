@@ -65,7 +65,7 @@ class Hg5Response
             'data' => [
                 'balance' => $balance,
                 'currency' => $requestDTO->currency,
-                'gameRound' => $requestDTO->mtCode
+                'gameRound' => $requestDTO->roundID
             ],
             'status' => [
                 'code' => '0',
