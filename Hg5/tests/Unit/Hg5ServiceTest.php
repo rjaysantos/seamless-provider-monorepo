@@ -1947,7 +1947,7 @@ class Hg5ServiceTest extends TestCase
             amount: 200,
             currency: 'IDR',
             gameID: 'testGameCode',
-            roundID: 'testGameRound1',
+            mtCode: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00'
         );
 
@@ -2005,7 +2005,7 @@ class Hg5ServiceTest extends TestCase
             amount: 200,
             currency: 'IDR',
             gameID: 'testGameCode',
-            roundID: 'testGameRound1',
+            mtCode: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00'
         );
 
@@ -2067,7 +2067,7 @@ class Hg5ServiceTest extends TestCase
             amount: 200,
             currency: 'IDR',
             gameID: 'testGameCode',
-            roundID: 'testGameRound1',
+            mtCode: 'testGameRound1',
             dateTime: '2024-01-01T00:00:00-04:00'
         );
 

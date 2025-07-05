@@ -333,6 +333,7 @@ class Hg5Service
             throw new InvalidAgentIDException;
 
         $wagerTransactionDTO = Hg5TransactionDTO::wager(
+            extID: "wager-{$requestDTO->mtCode}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
@@ -353,7 +354,7 @@ class Hg5Service
             $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeArcadeReport(
-                transactionID: $wagerTransactionDTO->shortenRoundID,
+                transactionID: $wagerTransactionDTO->shortRoundID,
                 gameCode: $wagerTransactionDTO->gameID,
                 betTime: $wagerTransactionDTO->dateTime,
                 opt: json_encode(['txn_id' => $wagerTransactionDTO->roundID])
