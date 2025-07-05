@@ -98,12 +98,13 @@ class PlaRepository extends AbstractProviderRepository
             ]);
     }
 
-    public function getBetTransactionByRefID(string $refID): ?object
+    public function getTransactionByRoundID(string $roundID): ?PlaTransactionDTO
     {
-        return DB::table('pla.reports')
-            ->where('ref_id', $refID)
-            ->where('updated_at', null)
+        $data = $this->read->table('pla.reports')
+            ->where('round_id', $roundID)
             ->first();
+
+        return $data == null ? null : PlaTransactionDTO::fromDB(dbData: $data);
     }
 
     public function getBetTransactionByTrxID(string $trxID): ?object
