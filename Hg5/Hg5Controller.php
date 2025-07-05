@@ -146,7 +146,8 @@ class Hg5Controller extends AbstractCasinoController
             'currency' => 'required|string',
             'gameCode' => 'required|string',
             'gameRound' => 'required|string',
-            'eventTime' => 'required|string'
+            'eventTime' => 'required|string',
+            'mtCode' => 'required|string'
         ]);
 
         $requestDTO = Hg5RequestDTO::fromWithdrawRequest(request: $request);

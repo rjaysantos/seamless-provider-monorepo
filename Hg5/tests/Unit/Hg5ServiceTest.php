@@ -1948,7 +1948,8 @@ class Hg5ServiceTest extends TestCase
             currency: 'IDR',
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
-            dateTime: '2024-01-01T00:00:00-04:00'
+            dateTime: '2024-01-01T00:00:00-04:00',
+            mtCode: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
@@ -2006,7 +2007,8 @@ class Hg5ServiceTest extends TestCase
             currency: 'IDR',
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
-            dateTime: '2024-01-01T00:00:00-04:00'
+            dateTime: '2024-01-01T00:00:00-04:00',
+            mtCode: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
@@ -2068,7 +2070,8 @@ class Hg5ServiceTest extends TestCase
             currency: 'IDR',
             gameID: 'testGameCode',
             roundID: 'testGameRound1',
-            dateTime: '2024-01-01T00:00:00-04:00'
+            dateTime: '2024-01-01T00:00:00-04:00',
+            mtCode: 'testMtCode'
         );
 
         $stubRepository = $this->createMock(Hg5Repository::class);
@@ -2104,7 +2107,7 @@ class Hg5ServiceTest extends TestCase
                 credentials: $providerCredentials,
                 playID: 'testPlayID',
                 currency: 'IDR',
-                transactionID: "wager-testGameRound1",
+                transactionID: "wager-testMtCode",
                 amount: 200,
                 report: new Report
             )

@@ -59,7 +59,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -87,7 +88,7 @@ class Hg5WithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('hg5.reports', [
-            'ext_id' => 'wager-testGameRound',
+            'ext_id' => 'wager-testMtCode',
             'round_id' => 'testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -114,7 +115,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         unset($request[$parameter]);
@@ -149,7 +151,8 @@ class Hg5WithdrawTest extends TestCase
             ['currency'],
             ['gameCode'],
             ['gameRound'],
-            ['eventTime']
+            ['eventTime'],
+            ['mtCode']
         ];
     }
 
@@ -170,7 +173,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -211,7 +215,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -249,7 +254,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -284,7 +290,7 @@ class Hg5WithdrawTest extends TestCase
         ]);
 
         DB::table('hg5.reports')->insert([
-            'ext_id' => 'wager-testGameRound1',
+            'ext_id' => 'wager-testMtCode',
             'round_id' => 'testGameRound1',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',
@@ -305,7 +311,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound1',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -356,7 +363,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -408,7 +416,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -472,7 +481,8 @@ class Hg5WithdrawTest extends TestCase
             'currency' => 'IDR',
             'gameCode' => 'testGameCode',
             'gameRound' => 'testGameRound',
-            'eventTime' => '2024-01-01T00:00:00-04:00'
+            'eventTime' => '2024-01-01T00:00:00-04:00',
+            'mtCode' => 'testMtCode'
         ];
 
         $response = $this->post(
@@ -496,7 +506,7 @@ class Hg5WithdrawTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('hg5.reports', [
-            'ext_id' => 'wager-testGameRound',
+            'ext_id' => 'wager-testMtCode',
             'round_id' => 'testGameRound',
             'username' => 'testUsername',
             'play_id' => 'testPlayIDu001',

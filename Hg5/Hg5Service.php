@@ -333,7 +333,7 @@ class Hg5Service
             throw new InvalidAgentIDException;
 
         $wagerTransactionDTO = Hg5TransactionDTO::wager(
-            extID: "wager-{$requestDTO->roundID}",
+            extID: "wager-{$requestDTO->mtCode}",
             requestDTO: $requestDTO,
             playerDTO: $player
         );
