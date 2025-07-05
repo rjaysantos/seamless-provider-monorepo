@@ -13,7 +13,8 @@ class TransactionNotFoundException extends Exception
         return response()->json([
             'requestId' => request()->input('requestId'),
             'error' => [
-                'code' => 'INTERNAL_ERROR'
+                'code' => 'INTERNAL_ERROR',
+                'description' => 'No bet found with this gameRoundCode'
             ]
         ], 200);
     }
