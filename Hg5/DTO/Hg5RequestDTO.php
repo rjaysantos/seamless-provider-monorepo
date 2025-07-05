@@ -42,6 +42,7 @@ class Hg5RequestDTO
     {
         foreach ($request->datas as $data) {
             $transactions[] = new self(
+                authToken: $request->header('Authorization'),
                 playID: $data->playerId,
                 agentID: $data->agentId,
                 gameID: $data->gameCode,
@@ -53,7 +54,6 @@ class Hg5RequestDTO
         }
 
         return new self(
-            authToken: $request->header('Authorization'),
             transactions: $transactions
         );
     }

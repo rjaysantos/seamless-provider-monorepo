@@ -25,7 +25,7 @@ class Hg5TransactionDTO extends TransactionDTO
         public readonly ?float $betWinlose = 0,
         public readonly ?string $dateTime = null,
         public readonly ?float $winAmount = 0,
-        public readonly ?string $walletBetID = null
+        public readonly ?string $shortRoundID = null
     ) {}
 
     public static function wager(
@@ -47,7 +47,7 @@ class Hg5TransactionDTO extends TransactionDTO
                 dateTime: $requestDTO->dateTime,
                 providerTimezone: self::PROVIDER_API_TIMEZONE
             ),
-            walletBetID: md5($requestDTO->roundID)
+            shortRoundID: md5($requestDTO->roundID)
         );
     }
 }

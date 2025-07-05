@@ -322,7 +322,7 @@ class Hg5Service
         return $walletResponse['credit_after'];
     }
 
-    private function betTransaction(Hg5RequestDTO $requestDTO, string $authToken): float
+    private function betTransaction(Hg5RequestDTO $requestDTO): float
     {
         $playerDTO = $this->repository->getPlayerByPlayID(playID: $requestDTO->playID);
 
@@ -331,7 +331,7 @@ class Hg5Service
 
         $credentials = $this->credentials->getCredentialsByCurrency(currency: $playerDTO->currency);
 
-        if ($authToken !== $credentials->getAuthorizationToken())
+        if ($requestDTO->authToken !== $credentials->getAuthorizationToken())
             throw new InvalidTokenException;
 
         if ($requestDTO->agentID !== $credentials->getAgentID())
@@ -359,7 +359,7 @@ class Hg5Service
             $this->repository->createTransaction(transactionDTO: $wagerTransactionDTO);
 
             $report = $this->walletReport->makeArcadeReport(
-                transactionID: $wagerTransactionDTO->walletBetID,
+                transactionID: $wagerTransactionDTO->shortRoundID,
                 gameCode: $wagerTransactionDTO->gameID,
                 betTime: $wagerTransactionDTO->dateTime,
                 opt: json_encode(['txn_id' => $requestDTO->roundID])
@@ -465,7 +465,7 @@ class Hg5Service
         foreach ($requestDTO->transactions as $transaction) {
 
             try {
-                $balance = $this->betTransaction(requestDTO: $transaction, authToken: $requestDTO->authToken);
+                $balance = $this->betTransaction(requestDTO: $transaction);
 
                 $data = [
                     'code' => '0',
