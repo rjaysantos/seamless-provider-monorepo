@@ -2585,12 +2585,6 @@ class Hg5ServiceTest extends TestCase
             dateTime: '2024-01-01T00:00:00-04:00'
         );
 
-        $player = new Hg5PlayerDTO(
-            playID: 'testPlayIDu001',
-            username: 'testUsername',
-            currency: 'IDR'
-        );
-
         $transaction = new HG5TransactionDTO(
             roundID: 'testGameRound1',
             playID: 'testPlayIDu001',
@@ -2599,10 +2593,14 @@ class Hg5ServiceTest extends TestCase
             webID: 1,
             currency: 'IDR',
         );
-        
+
         $stubRepository = $this->createMock(Hg5Repository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn(new Hg5PlayerDTO(
+                playID: 'testPlayIDu001',
+                username: 'testUsername',
+                currency: 'IDR'
+            ));
 
         $providerCredentials = $this->createMock(ICredentials::class);
         $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');
@@ -2655,12 +2653,6 @@ class Hg5ServiceTest extends TestCase
             dateTime: '2024-01-01T00:00:00-04:00'
         );
 
-        $player = new Hg5PlayerDTO(
-            playID: 'testPlayIDu001',
-            username: 'testUsername',
-            currency: 'IDR'
-        );
-
         $transaction = new HG5TransactionDTO(
             roundID: 'testGameRound1',
             playID: 'testPlayIDu001',
@@ -2672,7 +2664,11 @@ class Hg5ServiceTest extends TestCase
 
         $stubRepository = $this->createMock(Hg5Repository::class);
         $stubRepository->method('getPlayerByPlayID')
-            ->willReturn($player);
+            ->willReturn(new Hg5PlayerDTO(
+                playID: 'testPlayIDu001',
+                username: 'testUsername',
+                currency: 'IDR'
+            ));
 
         $providerCredentials = $this->createMock(ICredentials::class);
         $providerCredentials->method('getAuthorizationToken')->willReturn('validToken');

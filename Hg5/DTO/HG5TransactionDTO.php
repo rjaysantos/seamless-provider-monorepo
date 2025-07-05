@@ -26,10 +26,13 @@ class HG5TransactionDTO extends TransactionDTO
         public readonly ?string $dateTime = null,
     ) {}
 
-    public static function payout(Hg5RequestDTO $requestDTO, HG5TransactionDTO $wagerTransactionDTO): self
-    {
+    public static function payout(
+        string $extID,
+        Hg5RequestDTO $requestDTO,
+        HG5TransactionDTO $wagerTransactionDTO
+    ): self {
         return new self(
-            extID: "payout-{$requestDTO->roundID}",
+            extID: $extID,
             roundID: $wagerTransactionDTO->roundID,
             playID: $wagerTransactionDTO->playID,
             username: $wagerTransactionDTO->username,

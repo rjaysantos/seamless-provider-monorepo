@@ -23,7 +23,6 @@ use Providers\Hg5\Exceptions\GameNotFoundException;
 use Providers\Hg5\Exceptions\InvalidTokenException;
 use Providers\Hg5\Exceptions\InvalidAgentIDException;
 use App\Exceptions\Casino\TransactionNotFoundException;
-use DateTime;
 use Providers\Hg5\DTO\HG5TransactionDTO;
 use Providers\Hg5\Exceptions\InsufficientFundException;
 use Providers\Hg5\Exceptions\TransactionAlreadyExistsException;
@@ -413,6 +412,7 @@ class Hg5Service
             throw new ProviderTransactionNotFoundException;
 
         $payoutTransactionDTO = HG5TransactionDTO::payout(
+            extID: "payout-{$requestDTO->roundID}"
             requestDTO: $requestDTO,
             wagerTransactionDTO: $wagerTransaction
         );
